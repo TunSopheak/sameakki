@@ -75,6 +75,7 @@ export const Header: React.FC<HeaderProps> = ({ activeTab }) => {
           )}
         </div>
 
+        <div className="flex shrink-0 items-center gap-2">
         <button
           onClick={toggle}
           className="flex size-10 shrink-0 items-center justify-center rounded-xl border border-neutral-200 bg-white text-neutral-600 transition-colors hover:bg-neutral-100"
@@ -113,6 +114,7 @@ export const Header: React.FC<HeaderProps> = ({ activeTab }) => {
               ))}
             </div>
           )}
+        </div>
         </div>
       </div>
     </header>
