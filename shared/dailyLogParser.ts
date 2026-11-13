@@ -1,12 +1,10 @@
 import type { DailyTodoItem } from './types';
 
 /**
- * Parse a free-form daily standup into a title and checklist items.
- *
- *   JulNow - Dashboard              <- first line = title / module
- *   - update export button          <- each following line = one item
- *   - line chart analytics - 80%    <- trailing "- 80%" or "(80%)" = progress tag
- *   - [x] fix login bug             <- "[x]" or "100%" = already done
+ * Turns a daily update into a title and checklist items.
+ *   Project name            <- first line is the title
+ *   - task one - 80%        <- one item per line, optional progress
+ *   - [x] task two          <- [x] or 100% means done
  */
 export const parseRawLogContent = (rawText: string): { title: string; items: DailyTodoItem[] } => {
   const lines = rawText.split('\n').map(l => l.trim()).filter(Boolean);
@@ -21,7 +19,6 @@ export const parseRawLogContent = (rawText: string): { title: string; items: Dai
     const pctMatch = line.match(/[-–—]\s*(\d{1,3}%)\s*$/) || line.match(/\((\d{1,3}%)\)\s*$/);
     const progressTag = pctMatch ? pctMatch[1] : undefined;
 
-    // Strip bullet markers ("-", "*", "•", "1.") from the start of the line.
     let text = line.replace(/^(?:[-*•]|\d+[.)])\s*/, '').trim();
     if (progressTag) {
       text = text.replace(/[-–—]\s*\d{1,3}%\s*$/, '').replace(/\(\d{1,3}%\)\s*$/, '').trim();

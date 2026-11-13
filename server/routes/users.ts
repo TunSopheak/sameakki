@@ -2,15 +2,22 @@ import { Router } from 'express';
 import { z } from 'zod';
 import { getDb } from '../db';
 import { ROLES } from '../../shared/types';
+import { AVATAR_KEYS } from '../../shared/avatars';
 import { requireSuperAdmin } from '../services/access';
 import { logActivity } from '../services/activity';
 import { badRequest, notFound } from '../middleware/errors';
 
 export const usersRouter = Router();
 
+usersRouter.patch('/users/me/avatar', async (req, res) => {
+  const { avatar } = z.object({ avatar: z.enum(AVATAR_KEYS) }).parse(req.body);
+  const db = await getDb();
+  await db.query('UPDATE users SET avatar = $2 WHERE id = $1', [req.user!.id, avatar]);
+  res.status(204).end();
+});
+
 const roleSchema = z.object({
   role: z.enum(ROLES),
-  /** Group whose activity log should record the change. */
   groupId: z.string().uuid().optional(),
 });
 

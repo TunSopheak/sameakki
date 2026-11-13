@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useApp } from '../context/AppContext';
 import { Role } from '../types';
-import { UserPlus, X, Mail, CreditCard, Briefcase } from 'lucide-react';
+import { UserPlus, X, Mail, Briefcase } from 'lucide-react';
 
 interface AddMemberModalProps {
   isOpen: boolean;
@@ -14,7 +14,6 @@ export const AddMemberModal: React.FC<AddMemberModalProps> = ({ isOpen, onClose 
   const [name, setName] = useState('');
   const [nameKm, setNameKm] = useState('');
   const [email, setEmail] = useState('');
-  const [studentId, setStudentId] = useState('');
   const [role, setRole] = useState<Role>('member');
   const [specialty, setSpecialty] = useState('');
   const [department, setDepartment] = useState('Member');
@@ -25,7 +24,6 @@ export const AddMemberModal: React.FC<AddMemberModalProps> = ({ isOpen, onClose 
     setName('');
     setNameKm('');
     setEmail('');
-    setStudentId('');
     setRole('member');
     setSpecialty('');
     setDepartment('Member');
@@ -39,19 +37,6 @@ export const AddMemberModal: React.FC<AddMemberModalProps> = ({ isOpen, onClose 
     if (existing) {
       setName(existing.name);
       setNameKm(existing.nameKm || '');
-      setStudentId(existing.studentId);
-      setRole(existing.role);
-      setSpecialty(existing.specialty || '');
-    }
-  };
-
-  const handleIdChange = (val: string) => {
-    setStudentId(val);
-    const existing = users.find(u => u.studentId.toLowerCase() === val.toLowerCase());
-    if (existing) {
-      setName(existing.name);
-      setNameKm(existing.nameKm || '');
-      setEmail(existing.email);
       setRole(existing.role);
       setSpecialty(existing.specialty || '');
     }
@@ -59,7 +44,7 @@ export const AddMemberModal: React.FC<AddMemberModalProps> = ({ isOpen, onClose 
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!name.trim() || !email.trim() || !studentId.trim() || submitting) return;
+    if (!name.trim() || !email.trim() || submitting) return;
 
     setSubmitting(true);
     try {
@@ -67,7 +52,6 @@ export const AddMemberModal: React.FC<AddMemberModalProps> = ({ isOpen, onClose 
         name: name.trim(),
         nameKm: nameKm.trim() || undefined,
         email: email.trim(),
-        studentId: studentId.trim(),
         role,
         specialty: specialty.trim() || 'Team Contributor',
         department,
@@ -75,7 +59,7 @@ export const AddMemberModal: React.FC<AddMemberModalProps> = ({ isOpen, onClose 
       });
       onClose();
     } catch {
-      // Shown as a notice; keep the form open.
+      // Error is shown as a notice; keep the form open.
     } finally {
       setSubmitting(false);
     }
@@ -89,11 +73,11 @@ export const AddMemberModal: React.FC<AddMemberModalProps> = ({ isOpen, onClose 
   ];
 
   return (
-    <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-2xs flex items-center justify-center p-4">
-      <div className="bg-white rounded-lg max-w-lg w-full p-6 shadow-2xl border border-neutral-300">
+    <div className="modal-overlay fixed inset-0 z-50 bg-black/60 backdrop-blur-2xs flex items-center justify-center p-4">
+      <div className="modal-panel bg-white rounded-xl max-w-lg w-full p-5 sm:p-6 max-h-[92vh] overflow-y-auto shadow-2xl border border-neutral-200">
         <div className="flex items-center justify-between pb-4 border-b border-neutral-200 mb-5">
           <div className="flex items-center gap-2">
-            <div className="w-8 h-8 rounded bg-black text-white flex items-center justify-center">
+            <div className="w-8 h-8 rounded-lg bg-brand text-white flex items-center justify-center">
               <UserPlus className="w-4 h-4" />
             </div>
             <div>
@@ -105,7 +89,7 @@ export const AddMemberModal: React.FC<AddMemberModalProps> = ({ isOpen, onClose 
           </div>
           <button
             onClick={onClose}
-            className="text-neutral-400 hover:text-black p-1 rounded"
+            className="text-neutral-400 hover:text-black p-1 rounded-lg"
           >
             <X className="w-5 h-5" />
           </button>
@@ -123,23 +107,8 @@ export const AddMemberModal: React.FC<AddMemberModalProps> = ({ isOpen, onClose 
                 required
                 value={email}
                 onChange={e => handleEmailChange(e.target.value)}
-                placeholder="sok.student@edu.kh"
-                className="w-full px-3 py-2 text-xs bg-white border border-neutral-300 rounded focus:outline-none focus:ring-1 focus:ring-black"
-              />
-            </div>
-
-            <div>
-              <label className="block text-xs font-bold text-black mb-1 flex items-center gap-1">
-                <CreditCard className="w-3.5 h-3.5 text-neutral-400" />
-                <span>{t.memberId} *</span>
-              </label>
-              <input
-                type="text"
-                required
-                value={studentId}
-                onChange={e => handleIdChange(e.target.value)}
-                placeholder="e.g. ST-2026-115"
-                className="w-full px-3 py-2 text-xs bg-white border border-neutral-300 rounded focus:outline-none focus:ring-1 focus:ring-black font-mono"
+                placeholder="name@email.com"
+                className="w-full px-3 py-2 text-sm bg-white border border-neutral-200 rounded-lg focus:outline-none focus:ring-1 focus:ring-brand/40"
               />
             </div>
           </div>
@@ -154,8 +123,8 @@ export const AddMemberModal: React.FC<AddMemberModalProps> = ({ isOpen, onClose 
                 required
                 value={name}
                 onChange={e => setName(e.target.value)}
-                placeholder="e.g. Sovann Vichea"
-                className="w-full px-3 py-2 text-xs bg-white border border-neutral-300 rounded focus:outline-none focus:ring-1 focus:ring-black"
+                placeholder="Full name"
+                className="w-full px-3 py-2 text-sm bg-white border border-neutral-200 rounded-lg focus:outline-none focus:ring-1 focus:ring-brand/40"
               />
             </div>
 
@@ -167,8 +136,8 @@ export const AddMemberModal: React.FC<AddMemberModalProps> = ({ isOpen, onClose 
                 type="text"
                 value={nameKm}
                 onChange={e => setNameKm(e.target.value)}
-                placeholder="ឧ. សុវណ្ណ វិជ្ជា"
-                className="w-full px-3 py-2 text-xs bg-white border border-neutral-300 rounded focus:outline-none focus:ring-1 focus:ring-black"
+                placeholder="ឈ្មោះជាភាសាខ្មែរ"
+                className="w-full px-3 py-2 text-sm bg-white border border-neutral-200 rounded-lg focus:outline-none focus:ring-1 focus:ring-brand/40"
               />
             </div>
           </div>
@@ -183,14 +152,14 @@ export const AddMemberModal: React.FC<AddMemberModalProps> = ({ isOpen, onClose 
                   key={item.role}
                   type="button"
                   onClick={() => setRole(item.role)}
-                  className={`p-2.5 text-left rounded border text-xs transition-all cursor-pointer ${
+                  className={`p-2.5 text-left rounded-lg border text-xs transition-all cursor-pointer ${
                     role === item.role
-                      ? 'border-black bg-black text-white font-semibold'
-                      : 'border-neutral-300 bg-white hover:bg-neutral-50 text-black'
+                      ? 'border-brand bg-brand text-white font-semibold'
+                      : 'border-neutral-200 bg-white hover:bg-neutral-50 text-black'
                   }`}
                 >
                   <div className="font-bold">{item.label}</div>
-                  <div className={`text-[10px] mt-0.5 line-clamp-1 ${role === item.role ? 'text-neutral-300' : 'text-neutral-500'}`}>
+                  <div className={`text-[11px] mt-0.5 line-clamp-1 ${role === item.role ? 'text-neutral-300' : 'text-neutral-500'}`}>
                     {item.desc}
                   </div>
                 </button>
@@ -207,8 +176,8 @@ export const AddMemberModal: React.FC<AddMemberModalProps> = ({ isOpen, onClose 
               type="text"
               value={specialty}
               onChange={e => setSpecialty(e.target.value)}
-              placeholder="e.g. Frontend UI & Dashboard, Backend API"
-              className="w-full px-3 py-2 text-xs bg-white border border-neutral-300 rounded focus:outline-none focus:ring-1 focus:ring-black"
+              placeholder="e.g. Design, Backend"
+              className="w-full px-3 py-2 text-sm bg-white border border-neutral-200 rounded-lg focus:outline-none focus:ring-1 focus:ring-brand/40"
             />
           </div>
 
@@ -216,14 +185,14 @@ export const AddMemberModal: React.FC<AddMemberModalProps> = ({ isOpen, onClose 
             <button
               type="button"
               onClick={onClose}
-              className="px-4 py-2 text-xs font-medium text-neutral-600 hover:bg-neutral-100 rounded"
+              className="px-4 py-2 text-xs font-medium text-neutral-600 hover:bg-neutral-100 rounded-lg"
             >
               {t.cancel}
             </button>
             <button
               type="submit"
               disabled={submitting}
-              className="px-4 py-2 text-xs font-semibold text-white bg-black hover:bg-neutral-800 disabled:opacity-60 rounded shadow-xs"
+              className="px-4 py-2 text-xs font-semibold text-white bg-brand hover:bg-brand-dark disabled:opacity-60 rounded-lg shadow-xs"
             >
               {t.btnSaveMember}
             </button>

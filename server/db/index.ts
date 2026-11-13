@@ -1,7 +1,8 @@
 import fs from 'node:fs';
+import path from 'node:path';
 import { config } from '../config';
 
-/** Minimal query interface implemented by both node-postgres and PGlite. */
+/** The small query API shared by node-postgres and PGlite. */
 export interface Queryable {
   query<T = any>(sql: string, params?: unknown[]): Promise<{ rows: T[] }>;
 }
@@ -12,7 +13,7 @@ export interface Database extends Queryable {
   kind: 'postgres' | 'pglite';
 }
 
-// Return DATE columns as plain 'YYYY-MM-DD' strings instead of JS Dates (avoids time zone shifts).
+// Keep DATE columns as 'YYYY-MM-DD' text so time zones can't shift them.
 const DATE_OID = 1082;
 
 async function createPostgres(): Promise<Database> {
@@ -24,7 +25,15 @@ async function createPostgres(): Promise<Database> {
     connectionString: config.databaseUrl,
     ssl: config.databaseSsl ? { rejectUnauthorized: false } : undefined,
     max: 10,
+    connectionTimeoutMillis: 10_000,
+    // Stay under Neon's 5 minute sleep so connections are reused, not reopened (~450ms each)
+    idleTimeoutMillis: 240_000,
+    statement_timeout: 15_000,
+    keepAlive: true,
   });
+
+  // Neon drops idle connections when it sleeps. Without this listener the error crashes the app.
+  pool.on('error', err => console.warn('[db] idle connection dropped:', err.message));
 
   return {
     kind: 'postgres',
@@ -37,7 +46,7 @@ async function createPostgres(): Promise<Database> {
         await client.query('COMMIT');
         return result;
       } catch (err) {
-        await client.query('ROLLBACK');
+        await client.query('ROLLBACK').catch(() => {});
         throw err;
       } finally {
         client.release();
@@ -50,10 +59,12 @@ async function createPostgres(): Promise<Database> {
 async function createPglite(): Promise<Database> {
   const { PGlite } = await import('@electric-sql/pglite');
   fs.mkdirSync(config.pgliteDir, { recursive: true });
+  // A crash leaves this lock file behind and PGlite refuses to start. Only one process uses it, so it is always stale.
+  fs.rmSync(path.join(config.pgliteDir, 'postmaster.pid'), { force: true });
   const db = new PGlite(config.pgliteDir, { parsers: { [DATE_OID]: (v: string) => v } });
   await db.waitReady;
 
-  // PGlite runs on a single connection, so serialize transactions to keep them isolated.
+  // PGlite has one connection, so run transactions one at a time.
   let queue: Promise<unknown> = Promise.resolve();
 
   return {

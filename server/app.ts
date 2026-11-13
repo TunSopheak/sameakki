@@ -28,7 +28,7 @@ export function createApp() {
           ...helmet.contentSecurityPolicy.getDefaultDirectives(),
           'style-src': ["'self'", "'unsafe-inline'", 'https://fonts.googleapis.com'],
           'font-src': ["'self'", 'https://fonts.gstatic.com', 'data:'],
-          // Let HTTPS be enforced by the host/proxy; this directive breaks plain-HTTP setups.
+          // The host handles HTTPS; this directive would break plain-HTTP setups.
           'upgrade-insecure-requests': null,
         },
       },
@@ -41,11 +41,19 @@ export function createApp() {
   app.use(express.json({ limit: '1mb' }));
   app.use(cookieParser());
 
-  // ---- API ----
-  app.get('/api/health', async (_req, res) => {
-    const db = await getDb();
-    await db.query('SELECT 1');
-    res.json({ ok: true, db: db.kind });
+  // Host health checks call this often, so it must not touch the database (that would keep Neon awake all day)
+  app.get('/api/health', (_req, res) => {
+    res.json({ ok: true });
+  });
+
+  app.get('/api/health/db', async (_req, res) => {
+    try {
+      const db = await getDb();
+      await db.query('SELECT 1');
+      res.json({ ok: true, db: db.kind });
+    } catch {
+      res.status(503).json({ ok: false });
+    }
   });
 
   app.use('/api/auth', authRouter);
@@ -55,11 +63,19 @@ export function createApp() {
   app.use('/api', api);
   app.use('/api', notFoundApi);
 
-  // ---- Frontend (production build) ----
   const indexHtml = path.join(config.clientDistDir, 'index.html');
   if (fs.existsSync(indexHtml)) {
-    app.use(express.static(config.clientDistDir, { index: false, maxAge: '1y', immutable: true }));
-    // SPA fallback: any non-API GET returns index.html (never cached so new deploys load immediately).
+    // Files in /assets have a hash in the name, so they can be cached for a year. Everything else must refresh.
+    app.use(
+      express.static(config.clientDistDir, {
+        index: false,
+        setHeaders: (res, filePath) => {
+          const hashed = filePath.includes(`${path.sep}assets${path.sep}`);
+          res.setHeader('Cache-Control', hashed ? 'public, max-age=31536000, immutable' : 'no-cache');
+        },
+      })
+    );
+    // Any other GET returns the app. Not cached, so new deploys show up at once.
     app.get(/^(?!\/api\/).*/, (_req, res) => {
       res.setHeader('Cache-Control', 'no-cache');
       res.sendFile(indexHtml);

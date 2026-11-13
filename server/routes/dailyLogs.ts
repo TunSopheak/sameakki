@@ -22,7 +22,6 @@ async function loadLog(db: Queryable, user: User, logId: string) {
 
 const createSchema = z.object({
   rawContent: z.string().trim().min(1).max(10000),
-  /** The author's local calendar date, so "today" matches their time zone. */
   date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).optional(),
 });
 
@@ -75,7 +74,7 @@ dailyLogsRouter.post('/daily-logs/:logId/items/:itemId/toggle', async (req, res)
   item.done = !item.done;
 
   const allDone = items.length > 0 && items.every(i => i.done);
-  // Approved logs stay approved; otherwise status follows the checklist.
+  // Approved stays approved; otherwise follow the checklist
   const status = log.status === 'approved' ? 'approved' : allDone ? 'completed' : 'in_progress';
 
   await db.transaction(async tx => {
@@ -169,7 +168,7 @@ dailyLogsRouter.delete('/daily-logs/:logId', async (req, res) => {
 
 const reactionSchema = z.object({ emoji: z.string().refine(e => ALLOWED_EMOJIS.includes(e), 'unsupported emoji') });
 
-/** Toggle the current user's reaction on a daily update. */
+/** Add or remove the user's reaction. */
 dailyLogsRouter.post('/daily-logs/:logId/reactions', async (req, res) => {
   const user = req.user!;
   const db = await getDb();

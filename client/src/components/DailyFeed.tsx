@@ -7,13 +7,11 @@ import {
   CheckSquare,
   Square,
   Award,
-  Send,
   Trash2,
   Calendar,
-  Layers,
-  Search,
   Check
 } from 'lucide-react';
+import { Avatar } from './Avatar';
 
 export const DailyFeed: React.FC = () => {
   const {
@@ -29,9 +27,9 @@ export const DailyFeed: React.FC = () => {
     addReactionToDailyLog,
     t,
     language,
+    searchQuery,
   } = useApp();
 
-  const [searchQuery, setSearchQuery] = useState('');
   const [filterMode, setFilterMode] = useState<'all' | 'in_progress' | 'completed' | 'approved'>('all');
   const [activeLeaderNoteId, setActiveLeaderNoteId] = useState<string | null>(null);
   const [leaderFeedbackText, setLeaderFeedbackText] = useState<{ [id: string]: string }>({});
@@ -60,15 +58,13 @@ export const DailyFeed: React.FC = () => {
 
   return (
     <div className="space-y-4">
-      {/* Header filter & search */}
-      <div className="bg-white p-4 rounded-lg border border-neutral-200 flex flex-col sm:flex-row items-center justify-between gap-3">
-        {/* Status filters */}
+      <div className="bg-white p-4 rounded-xl border border-neutral-200 flex flex-col sm:flex-row items-center justify-between gap-3">
         <div className="flex flex-wrap items-center gap-1.5 w-full sm:w-auto">
           <button
             onClick={() => setFilterMode('all')}
-            className={`px-3 py-1.5 text-xs font-semibold rounded-md transition-colors cursor-pointer ${
+            className={`px-3 py-1.5 text-xs font-semibold rounded-lg transition-colors cursor-pointer ${
               filterMode === 'all'
-                ? 'bg-black text-white shadow-xs'
+                ? 'bg-brand text-white shadow-xs'
                 : 'bg-neutral-100 text-neutral-800 hover:bg-neutral-200'
             }`}
           >
@@ -76,9 +72,9 @@ export const DailyFeed: React.FC = () => {
           </button>
           <button
             onClick={() => setFilterMode('in_progress')}
-            className={`px-3 py-1.5 text-xs font-semibold rounded-md transition-colors cursor-pointer ${
+            className={`px-3 py-1.5 text-xs font-semibold rounded-lg transition-colors cursor-pointer ${
               filterMode === 'in_progress'
-                ? 'bg-black text-white shadow-xs'
+                ? 'bg-brand text-white shadow-xs'
                 : 'bg-neutral-100 text-neutral-800 hover:bg-neutral-200'
             }`}
           >
@@ -86,9 +82,9 @@ export const DailyFeed: React.FC = () => {
           </button>
           <button
             onClick={() => setFilterMode('completed')}
-            className={`px-3 py-1.5 text-xs font-semibold rounded-md transition-colors cursor-pointer ${
+            className={`px-3 py-1.5 text-xs font-semibold rounded-lg transition-colors cursor-pointer ${
               filterMode === 'completed'
-                ? 'bg-black text-white shadow-xs'
+                ? 'bg-brand text-white shadow-xs'
                 : 'bg-neutral-100 text-neutral-800 hover:bg-neutral-200'
             }`}
           >
@@ -96,9 +92,9 @@ export const DailyFeed: React.FC = () => {
           </button>
           <button
             onClick={() => setFilterMode('approved')}
-            className={`px-3 py-1.5 text-xs font-semibold rounded-md transition-colors cursor-pointer ${
+            className={`px-3 py-1.5 text-xs font-semibold rounded-lg transition-colors cursor-pointer ${
               filterMode === 'approved'
-                ? 'bg-black text-white shadow-xs'
+                ? 'bg-brand text-white shadow-xs'
                 : 'bg-neutral-100 text-neutral-800 hover:bg-neutral-200'
             }`}
           >
@@ -106,22 +102,10 @@ export const DailyFeed: React.FC = () => {
           </button>
         </div>
 
-        {/* Search */}
-        <div className="relative w-full sm:w-60">
-          <Search className="w-3.5 h-3.5 text-neutral-400 absolute left-3 top-1/2 -translate-y-1/2" />
-          <input
-            type="text"
-            value={searchQuery}
-            onChange={e => setSearchQuery(e.target.value)}
-            placeholder={t.search}
-            className="w-full pl-8 pr-3 py-1.5 text-xs bg-white border border-neutral-300 rounded-md focus:outline-none focus:ring-1 focus:ring-black"
-          />
-        </div>
       </div>
 
-      {/* Feed List */}
       {filteredLogs.length === 0 ? (
-        <div className="bg-white rounded-lg border border-neutral-200 p-12 text-center">
+        <div className="bg-white rounded-xl border border-neutral-200 p-12 text-center">
           <Clock className="w-10 h-10 text-neutral-300 mx-auto mb-2" />
           <p className="text-sm font-medium text-black">{t.noDailyLogsFound}</p>
           <p className="text-xs text-neutral-500 mt-1 max-w-sm mx-auto">
@@ -131,13 +115,12 @@ export const DailyFeed: React.FC = () => {
           </p>
         </div>
       ) : (
-        <div className="space-y-4">
+        <div className="stagger space-y-4">
           {filteredLogs.map(log => {
             const author = users.find(u => u.id === log.userId) || {
               id: log.userId,
               name: 'Member',
               email: '',
-              studentId: '',
               role: 'member',
             };
 
@@ -152,14 +135,11 @@ export const DailyFeed: React.FC = () => {
             return (
               <div
                 key={log.id}
-                className="bg-white rounded-lg border border-neutral-200 p-5 transition-all hover:border-neutral-400 shadow-xs"
+                className="lift bg-white rounded-xl border border-neutral-200 p-5 shadow-xs"
               >
-                {/* Header: Author + Module Title + Timestamp + Status */}
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-neutral-100">
                   <div className="flex items-center gap-3">
-                    <div className="w-9 h-9 rounded-md bg-neutral-100 border border-neutral-300 flex items-center justify-center font-bold text-black text-xs shrink-0">
-                      {author.name.charAt(0)}
-                    </div>
+                    <Avatar name={author.name} avatar={author.avatar} className="size-9" />
                     <div>
                       <div className="flex items-center gap-2">
                         <span className="font-bold text-sm text-black">
@@ -170,16 +150,14 @@ export const DailyFeed: React.FC = () => {
                             ({author.nameKm})
                           </span>
                         )}
-                        <span className="text-[10px] font-mono text-neutral-500">
-                          ID: {author.studentId}
-                        </span>
+                        <span className="text-[11px] text-neutral-500">{author.email}</span>
                       </div>
                       <div className="flex items-center gap-2 text-[11px] text-neutral-500 mt-0.5">
-                        <span className="font-semibold text-black bg-neutral-100 px-2 py-0.2 rounded border border-neutral-200">
+                        <span className="font-semibold text-black bg-neutral-100 px-2 py-0.2 rounded-lg border border-neutral-200">
                           {log.title}
                         </span>
                         <span>·</span>
-                        <span className="flex items-center gap-1 font-mono text-neutral-500">
+                        <span className="flex items-center gap-1 text-neutral-500">
                           <Calendar className="w-3 h-3 text-neutral-400" />
                           <span>{formatDateTime(log.timestamp)}</span>
                         </span>
@@ -187,22 +165,21 @@ export const DailyFeed: React.FC = () => {
                     </div>
                   </div>
 
-                  {/* Status Badge & Delete button */}
                   <div className="flex items-center gap-2 self-start sm:self-auto">
                     {log.status === 'approved' && (
-                      <span className="inline-flex items-center gap-1 text-xs font-semibold text-white bg-black px-2.5 py-0.5 rounded">
+                      <span className="inline-flex items-center gap-1 text-xs font-semibold text-white bg-brand px-2.5 py-0.5 rounded-lg">
                         <CheckCircle2 className="w-3.5 h-3.5 text-white" />
                         <span>{language === 'km' ? 'បានអនុម័តជោគជ័យ' : 'Approved & Verified'}</span>
                       </span>
                     )}
                     {log.status === 'completed' && (
-                      <span className="inline-flex items-center gap-1 text-xs font-semibold text-black bg-neutral-200 px-2.5 py-0.5 rounded border border-neutral-300">
+                      <span className="inline-flex items-center gap-1 text-xs font-semibold text-black bg-neutral-200 px-2.5 py-0.5 rounded-lg border border-neutral-200">
                         <Clock className="w-3.5 h-3.5 text-black" />
                         <span>{language === 'km' ? 'បានសម្រេច (រង់ចាំ Leader ពិនិត្យ)' : 'Done (Pending Review)'}</span>
                       </span>
                     )}
                     {log.status === 'in_progress' && (
-                      <span className="inline-flex items-center gap-1 text-xs font-medium text-neutral-800 bg-neutral-100 border border-neutral-300 px-2.5 py-0.5 rounded">
+                      <span className="inline-flex items-center gap-1 text-xs font-medium text-neutral-800 bg-neutral-100 border border-neutral-200 px-2.5 py-0.5 rounded-lg">
                         <span>{language === 'km' ? 'កំពុងដំណើរការ' : 'In Progress'}</span>
                         <span className="font-mono font-bold">({calcPercent}%)</span>
                       </span>
@@ -215,7 +192,7 @@ export const DailyFeed: React.FC = () => {
                             deleteDailyLog(log.id);
                           }
                         }}
-                        className="text-neutral-400 hover:text-black p-1 rounded transition-colors cursor-pointer"
+                        className="text-neutral-400 hover:text-black p-1 rounded-lg transition-colors cursor-pointer"
                         title={t.delete}
                       >
                         <Trash2 className="w-3.5 h-3.5" />
@@ -224,7 +201,6 @@ export const DailyFeed: React.FC = () => {
                   </div>
                 </div>
 
-                {/* Parsed Checklist / Bullet Items */}
                 <div className="py-4 space-y-1.5">
                   {log.items.length > 0 ? (
                     <div className="space-y-1.5">
@@ -232,7 +208,7 @@ export const DailyFeed: React.FC = () => {
                         <div
                           key={item.id}
                           onClick={() => canEditChecklist && toggleDailyTodoItem(log.id, item.id)}
-                          className={`flex items-start gap-2.5 p-2 rounded-md transition-colors text-xs ${
+                          className={`flex items-start gap-2.5 p-2 rounded-lg transition-colors text-xs ${
                             canEditChecklist ? 'cursor-pointer' : 'cursor-default'
                           } ${
                             item.done
@@ -253,10 +229,10 @@ export const DailyFeed: React.FC = () => {
                             </span>
                             {item.progressTag && (
                               <span
-                                className={`font-mono text-[11px] font-bold px-1.5 py-0.5 rounded ${
+                                className={`font-mono text-[11px] font-bold px-1.5 py-0.5 rounded-lg ${
                                   item.done
                                     ? 'bg-neutral-200 text-neutral-800'
-                                    : 'bg-black text-white'
+                                    : 'bg-brand text-white'
                                 }`}
                               >
                                 {item.progressTag}
@@ -267,30 +243,28 @@ export const DailyFeed: React.FC = () => {
                       ))}
                     </div>
                   ) : (
-                    <p className="text-sm text-black whitespace-pre-line leading-relaxed bg-neutral-50 p-3 rounded-md border border-neutral-200 font-mono">
+                    <p className="text-sm text-black whitespace-pre-line leading-relaxed bg-neutral-50 p-3 rounded-lg border border-neutral-200">
                       {log.rawContent}
                     </p>
                   )}
                 </div>
 
-                {/* Leader Note / Praise */}
                 {log.leaderChecked && log.leaderNote && (
-                  <div className="p-3 mb-3 bg-neutral-50 border border-neutral-300 rounded-md text-xs flex items-start gap-2.5 text-black">
+                  <div className="p-3 mb-3 bg-neutral-50 border border-neutral-200 rounded-lg text-xs flex items-start gap-2.5 text-black">
                     <Award className="w-4 h-4 text-black shrink-0 mt-0.5" />
                     <div className="flex-1">
                       <div className="font-bold text-black mb-0.5">
-                        {language === 'km' ? 'មតិបញ្ជាក់ពីប្រធានក្រុម (Leader Feedback):' : 'Leader Feedback:'}
+                        {language === 'km' ? 'មតិបញ្ជាក់ពីប្រធានក្រុម:' : 'Leader Feedback:'}
                       </div>
                       <p className="font-medium text-neutral-700">"{log.leaderNote}"</p>
                     </div>
                   </div>
                 )}
 
-                {/* Inline Leader Approve form */}
                 {isTeamLead && log.status !== 'approved' && (
                   <div className="mb-3">
                     {activeLeaderNoteId === log.id ? (
-                      <div className="p-3 bg-neutral-50 border border-neutral-300 rounded-md space-y-2">
+                      <div className="p-3 bg-neutral-50 border border-neutral-200 rounded-lg space-y-2">
                         <div className="flex items-center justify-between text-xs font-semibold text-black">
                           <span>{language === 'km' ? 'បញ្ជាក់ការអនុម័ត និងផ្តល់មតិកែលម្អ' : 'Sign off & Provide Feedback'}</span>
                           <button
@@ -307,13 +281,13 @@ export const DailyFeed: React.FC = () => {
                             onChange={e =>
                               setLeaderFeedbackText(prev => ({ ...prev, [log.id]: e.target.value }))
                             }
-                            placeholder={language === 'km' ? 'ឧ. ធ្វើបានល្អណាស់! ត្រឹមត្រូវតាម requirement' : 'e.g. Great progress, clean code!'}
-                            className="flex-1 px-3 py-1.5 text-xs bg-white border border-neutral-300 rounded focus:outline-none focus:ring-1 focus:ring-black"
+                            placeholder={language === 'km' ? 'សរសេរមតិយោបល់...' : 'Write a comment...'}
+                            className="flex-1 px-3 py-1.5 text-xs bg-white border border-neutral-200 rounded-lg focus:outline-none focus:ring-1 focus:ring-brand/40"
                           />
                           <button
                             type="button"
                             onClick={() => handleApproveWithNote(log.id)}
-                            className="px-3.5 py-1.5 bg-black hover:bg-neutral-800 text-white text-xs font-semibold rounded flex items-center gap-1 cursor-pointer"
+                            className="px-3.5 py-1.5 bg-brand hover:bg-brand-dark text-white text-xs font-semibold rounded-lg flex items-center gap-1 cursor-pointer"
                           >
                             <Check className="w-3.5 h-3.5" />
                             <span>{language === 'km' ? 'អនុម័ត' : 'Approve'}</span>
@@ -324,26 +298,22 @@ export const DailyFeed: React.FC = () => {
                   </div>
                 )}
 
-                {/* Bottom Row: Completion Buttons & Reactions */}
                 <div className="pt-3 border-t border-neutral-100 flex flex-wrap items-center justify-between gap-3 text-xs">
-                  {/* Left: Action buttons */}
                   <div className="flex flex-wrap items-center gap-2">
-                    {/* Member button: Mark Done */}
                     {log.status === 'in_progress' && canEditChecklist && (
                       <button
                         onClick={() => markDailyLogDone(log.id)}
-                        className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-white hover:bg-neutral-100 text-black border border-neutral-300 rounded-md font-semibold text-xs transition-colors cursor-pointer"
+                        className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-white hover:bg-neutral-100 text-black border border-neutral-200 rounded-lg font-semibold text-xs transition-colors cursor-pointer"
                       >
                         <Check className="w-3.5 h-3.5" />
                         <span>{t.btnMarkDone}</span>
                       </button>
                     )}
 
-                    {/* Leader button: Approve & Verify */}
                     {isTeamLead && log.status !== 'approved' && activeLeaderNoteId !== log.id && (
                       <button
                         onClick={() => setActiveLeaderNoteId(log.id)}
-                        className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-black hover:bg-neutral-800 text-white rounded-md font-semibold text-xs transition-colors cursor-pointer shadow-xs"
+                        className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-brand hover:bg-brand-dark text-white rounded-lg font-semibold text-xs transition-colors cursor-pointer shadow-xs"
                       >
                         <Award className="w-3.5 h-3.5" />
                         <span>{t.btnApproveTask}</span>
@@ -351,7 +321,6 @@ export const DailyFeed: React.FC = () => {
                     )}
                   </div>
 
-                  {/* Right: Emoji reactions */}
                   <div className="flex items-center gap-1.5">
                     {log.reactions.map(r => {
                       const userHasReacted = r.userIds.includes(currentUser.id);
@@ -361,12 +330,12 @@ export const DailyFeed: React.FC = () => {
                           onClick={() => addReactionToDailyLog(log.id, r.emoji)}
                           className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs border transition-colors cursor-pointer ${
                             userHasReacted
-                              ? 'bg-black border-black text-white'
+                              ? 'bg-brand border-brand text-white'
                               : 'bg-white border-neutral-200 text-neutral-700 hover:bg-neutral-100'
                           }`}
                         >
                           <span>{r.emoji}</span>
-                          <span className="font-mono text-[10px]">{r.count}</span>
+                          <span className="font-mono text-[11px]">{r.count}</span>
                         </button>
                       );
                     })}

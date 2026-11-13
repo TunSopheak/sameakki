@@ -8,12 +8,26 @@ services:
       POSTGRES_USER: leadersync
       POSTGRES_PASSWORD: leadersync
       POSTGRES_DB: leadersync
+    ports:
+      - '5432:5432' # so pgAdmin on your PC can connect to localhost:5432
     volumes:
       - pgdata:/var/lib/postgresql/data
     healthcheck:
       test: ['CMD-SHELL', 'pg_isready -U leadersync']
       interval: 5s
       retries: 10
+
+  # Optional database GUI at http://localhost:5050 (login: admin@local.dev / admin).
+  # Register server: host "db", port 5432, user/password "leadersync".
+  pgadmin:
+    image: dpage/pgadmin4
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@local.dev
+      PGADMIN_DEFAULT_PASSWORD: admin
+    ports:
+      - '5050:80'
+    depends_on:
+      - db
 
   app:
     build: .

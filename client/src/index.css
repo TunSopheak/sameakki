@@ -1,25 +1,186 @@
 @import "tailwindcss";
 
+/* Colours: deep maroon brand on a warm cream base. Edit them here only. */
+@theme {
+  --color-brand: #840015;
+  --color-brand-dark: #66000f;
+  --color-brand-soft: #fceaed;
+  --color-black: #1a1410;
+
+  /* Warm greys replace Tailwind's cool neutral scale */
+  --color-neutral-50: #faf8f6;
+  --color-neutral-100: #f3f0ec;
+  --color-neutral-200: #e3ddd6;
+  --color-neutral-300: #d3cbc2;
+  --color-neutral-400: #9a9088;
+  --color-neutral-500: #6f645b;
+  --color-neutral-600: #4a3f37;
+  --color-neutral-700: #3b322c;
+  --color-neutral-800: #2a221d;
+  --color-neutral-900: #1a1410;
+
+  /* Inter for Latin letters, Kantumruy Pro for Khmer (the browser picks per character) */
+  --font-sans: 'Inter', 'Kantumruy Pro', ui-sans-serif, system-ui, sans-serif;
+
+  --shadow-xs: 0 1px 2px rgb(26 20 16 / 0.05), 0 4px 12px rgb(26 20 16 / 0.04);
+}
+
 @layer base {
-  * {
-    font-family: 'Kantumruy Pro', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-  }
-  
   body {
-    font-family: 'Kantumruy Pro', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-    color: #000000;
-    background-color: #fafafa;
+    font-family: var(--font-sans);
+    color: var(--color-black);
+    background-color: var(--color-neutral-50);
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
-    letter-spacing: -0.01em;
   }
 
   input, textarea, select, button {
-    font-family: 'Kantumruy Pro', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    font-family: inherit;
+  }
+
+  ::selection {
+    background: color-mix(in srgb, var(--color-brand) 25%, transparent);
   }
 }
 
+/* Khmer needs taller lines, and no capital letters or letter spacing */
+html[lang='km'] body {
+  line-height: 1.8;
+}
+html[lang='km'] :is(h1, h2, h3, h4, p, li, a, button, span, label) {
+  line-height: 1.75;
+}
+html[lang='km'] .uppercase {
+  text-transform: none;
+}
+html[lang='km'] :is(.tracking-wide, .tracking-wider) {
+  letter-spacing: normal;
+}
+
 .font-mono-numbers {
-  font-family: 'JetBrains Mono', monospace;
   font-variant-numeric: tabular-nums;
+}
+
+/* Angkor Wat line drawing, used as a mask so it takes the brand colour */
+.angkor-watermark {
+  position: fixed;
+  bottom: 0;
+  left: 50%;
+  z-index: 5;
+  width: min(34rem, 92vw);
+  aspect-ratio: 1000 / 616.5;
+  translate: -50% 0;
+  background-color: var(--color-brand);
+  mask: url('/khmer/angkor-wat-outline.svg') center / contain no-repeat;
+  mask-mode: luminance;
+  opacity: 0.07;
+  pointer-events: none;
+}
+@media (min-width: 1024px) {
+  .angkor-watermark {
+    width: min(52rem, 70vw);
+  }
+}
+
+.flag-kh {
+  display: inline-block;
+  width: 1.5em;
+  aspect-ratio: 800 / 512;
+  border-radius: 2px;
+  box-shadow: 0 0 0 1px rgb(0 0 0 / 0.08);
+  vertical-align: -0.15em;
+}
+
+
+/* ---- Motion ---- */
+:root {
+  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(-4px); }
+  to { opacity: 1; transform: none; }
+}
+@keyframes rise {
+  from { opacity: 0; transform: translateY(14px); }
+  to { opacity: 1; transform: none; }
+}
+@keyframes pop {
+  from { opacity: 0; transform: translateY(10px) scale(0.96); }
+  to { opacity: 1; transform: none; }
+}
+@keyframes overlay-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+@keyframes toast-in {
+  from { opacity: 0; transform: translateY(18px) scale(0.98); }
+  to { opacity: 1; transform: none; }
+}
+@keyframes float {
+  50% { transform: translateY(-4px); }
+}
+@keyframes breathe {
+  50% { transform: scale(1.08); opacity: 0.8; }
+}
+
+.animate-rise { animation: rise 0.5s var(--ease-out) both; }
+.fade-late { animation: overlay-in 0.3s ease-out 0.35s both; }
+.animate-toast { animation: toast-in 0.35s var(--ease-out) both; }
+.modal-overlay { animation: overlay-in 0.2s ease-out both; }
+.modal-panel { animation: pop 0.3s var(--ease-out) both; }
+.logo-float:hover { animation: float 1.2s ease-in-out infinite; }
+.logo-breathe { animation: breathe 1.6s ease-in-out infinite; }
+
+/* Children fade up one after another */
+.stagger > * {
+  animation: rise 0.5s var(--ease-out) both;
+  animation-delay: calc(var(--i, 8) * 60ms);
+}
+.stagger > :nth-child(1) { --i: 0; }
+.stagger > :nth-child(2) { --i: 1; }
+.stagger > :nth-child(3) { --i: 2; }
+.stagger > :nth-child(4) { --i: 3; }
+.stagger > :nth-child(5) { --i: 4; }
+.stagger > :nth-child(6) { --i: 5; }
+.stagger > :nth-child(7) { --i: 6; }
+
+/* Cards rise a little on hover */
+.lift {
+  transition: transform 0.25s var(--ease-out), box-shadow 0.25s ease, border-color 0.25s ease;
+}
+.lift:hover {
+  transform: translateY(-3px);
+  border-color: color-mix(in srgb, var(--color-brand) 35%, var(--color-neutral-200));
+  box-shadow: 0 12px 28px rgb(26 20 16 / 0.09);
+}
+
+/* Buttons respond to press */
+button {
+  transition-property: color, background-color, border-color, box-shadow, transform, opacity;
+  transition-duration: 0.18s;
+  transition-timing-function: ease;
+}
+button:not(:disabled):active {
+  transform: scale(0.97);
+}
+
+/* Slim warm scrollbars */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--color-neutral-300) transparent;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation: none !important;
+    transition: none !important;
+    scroll-behavior: auto !important;
+  }
 }

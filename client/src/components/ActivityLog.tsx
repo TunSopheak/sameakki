@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useApp } from '../context/AppContext';
 import { formatDateTime } from '../lib/dates';
-import { ActivityEvent, ActivityEventType } from '../types';
+import { ActivityEventType } from '../types';
 import {
   History,
   CheckCircle2,
@@ -11,8 +11,6 @@ import {
   Calendar,
   Clock,
   Sparkles,
-  Search,
-  Filter,
   CheckSquare,
   Shield,
   Layers
@@ -30,13 +28,12 @@ export const ActivityLog: React.FC<ActivityLogProps> = ({
   const {
     activeGroupActivityEvents,
     language,
-    t,
     isSuperAdmin,
     clearActivityLogs,
+    searchQuery,
   } = useApp();
 
   const [filterType, setFilterType] = useState<'all' | 'tasks' | 'members' | 'deadlines' | 'standups'>('all');
-  const [searchQuery, setSearchQuery] = useState('');
 
   const getEventBadge = (type: ActivityEventType) => {
     switch (type) {
@@ -114,7 +111,6 @@ export const ActivityLog: React.FC<ActivityLogProps> = ({
   };
 
   const filteredEvents = activeGroupActivityEvents.filter(ev => {
-    // Type filter
     if (filterType === 'tasks') {
       if (!['task_completed', 'task_approved', 'task_assigned'].includes(ev.type)) return false;
     } else if (filterType === 'members') {
@@ -125,7 +121,6 @@ export const ActivityLog: React.FC<ActivityLogProps> = ({
       if (!['daily_todo_posted', 'daily_todo_completed', 'daily_todo_approved'].includes(ev.type)) return false;
     }
 
-    // Search query
     if (searchQuery.trim()) {
       const q = searchQuery.toLowerCase();
       const match =
@@ -142,19 +137,18 @@ export const ActivityLog: React.FC<ActivityLogProps> = ({
   const displayedEvents = maxItems ? filteredEvents.slice(0, maxItems) : filteredEvents;
 
   return (
-    <div className="bg-white rounded-lg border border-neutral-200 p-5 shadow-xs">
-      {/* Header */}
+    <div className="bg-white rounded-xl border border-neutral-200 p-5 shadow-xs">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-4 border-b border-neutral-100">
         <div className="flex items-center gap-2">
-          <div className="w-8 h-8 rounded bg-black text-white flex items-center justify-center">
+          <div className="w-8 h-8 rounded-lg bg-brand text-white flex items-center justify-center">
             <History className="w-4 h-4" />
           </div>
           <div>
             <div className="flex items-center gap-2">
               <h3 className="text-base font-bold text-black tracking-tight">
-                {language === 'km' ? 'កំណត់ត្រាសកម្មភាពក្រុម (Activity Log)' : 'Group Activity Log'}
+                {language === 'km' ? 'កំណត់ត្រាសកម្មភាពក្រុម' : 'Group Activity Log'}
               </h3>
-              <span className="text-[10px] font-mono px-1.5 py-0.2 rounded bg-neutral-100 text-neutral-800 border border-neutral-200 font-bold">
+              <span className="text-[11px] px-1.5 py-0.2 rounded-lg bg-neutral-100 text-neutral-800 border border-neutral-200 font-bold">
                 {activeGroupActivityEvents.length}
               </span>
             </div>
@@ -166,7 +160,6 @@ export const ActivityLog: React.FC<ActivityLogProps> = ({
           </div>
         </div>
 
-        {/* Clear Logs button for Super Admin */}
         {isSuperAdmin && activeGroupActivityEvents.length > 0 && (
           <button
             onClick={() => {
@@ -181,16 +174,14 @@ export const ActivityLog: React.FC<ActivityLogProps> = ({
         )}
       </div>
 
-      {/* Filter and Search Bar */}
       {showFilters && (
         <div className="py-3 border-b border-neutral-100 flex flex-col md:flex-row items-stretch md:items-center justify-between gap-2.5">
-          {/* Filter Pills */}
           <div className="flex flex-wrap items-center gap-1 text-xs">
             <button
               onClick={() => setFilterType('all')}
-              className={`px-2.5 py-1 rounded transition-colors font-semibold cursor-pointer ${
+              className={`px-2.5 py-1 rounded-lg transition-colors font-semibold cursor-pointer ${
                 filterType === 'all'
-                  ? 'bg-black text-white'
+                  ? 'bg-brand text-white'
                   : 'bg-neutral-100 text-neutral-700 hover:bg-neutral-200'
               }`}
             >
@@ -198,9 +189,9 @@ export const ActivityLog: React.FC<ActivityLogProps> = ({
             </button>
             <button
               onClick={() => setFilterType('tasks')}
-              className={`px-2.5 py-1 rounded transition-colors font-semibold cursor-pointer ${
+              className={`px-2.5 py-1 rounded-lg transition-colors font-semibold cursor-pointer ${
                 filterType === 'tasks'
-                  ? 'bg-black text-white'
+                  ? 'bg-brand text-white'
                   : 'bg-neutral-100 text-neutral-700 hover:bg-neutral-200'
               }`}
             >
@@ -208,9 +199,9 @@ export const ActivityLog: React.FC<ActivityLogProps> = ({
             </button>
             <button
               onClick={() => setFilterType('deadlines')}
-              className={`px-2.5 py-1 rounded transition-colors font-semibold cursor-pointer ${
+              className={`px-2.5 py-1 rounded-lg transition-colors font-semibold cursor-pointer ${
                 filterType === 'deadlines'
-                  ? 'bg-black text-white'
+                  ? 'bg-brand text-white'
                   : 'bg-neutral-100 text-neutral-700 hover:bg-neutral-200'
               }`}
             >
@@ -218,9 +209,9 @@ export const ActivityLog: React.FC<ActivityLogProps> = ({
             </button>
             <button
               onClick={() => setFilterType('members')}
-              className={`px-2.5 py-1 rounded transition-colors font-semibold cursor-pointer ${
+              className={`px-2.5 py-1 rounded-lg transition-colors font-semibold cursor-pointer ${
                 filterType === 'members'
-                  ? 'bg-black text-white'
+                  ? 'bg-brand text-white'
                   : 'bg-neutral-100 text-neutral-700 hover:bg-neutral-200'
               }`}
             >
@@ -228,9 +219,9 @@ export const ActivityLog: React.FC<ActivityLogProps> = ({
             </button>
             <button
               onClick={() => setFilterType('standups')}
-              className={`px-2.5 py-1 rounded transition-colors font-semibold cursor-pointer ${
+              className={`px-2.5 py-1 rounded-lg transition-colors font-semibold cursor-pointer ${
                 filterType === 'standups'
-                  ? 'bg-black text-white'
+                  ? 'bg-brand text-white'
                   : 'bg-neutral-100 text-neutral-700 hover:bg-neutral-200'
               }`}
             >
@@ -238,24 +229,12 @@ export const ActivityLog: React.FC<ActivityLogProps> = ({
             </button>
           </div>
 
-          {/* Search box */}
-          <div className="relative">
-            <Search className="w-3.5 h-3.5 text-neutral-400 absolute left-2.5 top-1/2 -translate-y-1/2" />
-            <input
-              type="text"
-              value={searchQuery}
-              onChange={e => setSearchQuery(e.target.value)}
-              placeholder={language === 'km' ? 'ស្វែងរកសកម្មភាព...' : 'Search activity...'}
-              className="w-full md:w-56 pl-8 pr-3 py-1 text-xs bg-white border border-neutral-300 rounded focus:outline-none focus:ring-1 focus:ring-black"
-            />
-          </div>
         </div>
       )}
 
-      {/* Events Stream / Timeline */}
       <div className="pt-4">
         {displayedEvents.length === 0 ? (
-          <div className="py-8 text-center text-xs text-neutral-500 bg-neutral-50 rounded border border-neutral-200">
+          <div className="py-8 text-center text-xs text-neutral-500 bg-neutral-50 rounded-lg border border-neutral-200">
             <Clock className="w-6 h-6 text-neutral-400 mx-auto mb-1.5" />
             <span className="font-semibold block text-neutral-700">
               {language === 'km' ? 'មិនទាន់មានកំណត់ត្រាសកម្មភាពនៅឡើយទេ' : 'No activity recorded yet'}
@@ -271,19 +250,17 @@ export const ActivityLog: React.FC<ActivityLogProps> = ({
 
               return (
                 <div key={event.id} className="relative group">
-                  {/* Timeline Node Icon */}
                   <div
-                    className={`absolute -left-6 top-1 w-5 h-5 rounded flex items-center justify-center border shadow-2xs ${
+                    className={`absolute -left-6 top-1 w-5 h-5 rounded-lg flex items-center justify-center border shadow-2xs ${
                       badge.isBlack
-                        ? 'bg-black border-black text-white'
-                        : 'bg-white border-neutral-300 text-black'
+                        ? 'bg-brand border-brand text-white'
+                        : 'bg-white border-neutral-200 text-black'
                     }`}
                   >
                     {badge.icon}
                   </div>
 
-                  {/* Event Content Card */}
-                  <div className="p-3 bg-neutral-50 hover:bg-neutral-100/70 border border-neutral-200 rounded-md transition-colors text-xs space-y-1">
+                  <div className="p-3 bg-neutral-50 hover:bg-neutral-100/70 border border-neutral-200 rounded-lg transition-colors text-xs space-y-1">
                     <div className="flex flex-wrap items-center justify-between gap-2">
                       <div className="flex items-center gap-1.5 flex-wrap">
                         <span className="font-bold text-black">
@@ -294,23 +271,21 @@ export const ActivityLog: React.FC<ActivityLogProps> = ({
                         </span>
                       </div>
 
-                      {/* Timestamp */}
-                      <span className="text-[10px] font-mono text-neutral-500 shrink-0">
+                      <span className="text-[11px] text-neutral-500 shrink-0">
                         {formatDateTime(event.timestamp)}
                       </span>
                     </div>
 
-                    {/* Target highlight tag if available */}
                     {event.targetTitle && (
                       <div className="flex items-center gap-2 pt-0.5">
-                        <span className="text-[10px] font-mono px-1.5 py-0.2 rounded bg-white text-black font-semibold border border-neutral-300">
+                        <span className="text-[11px] px-1.5 py-0.2 rounded-lg bg-white text-black font-semibold border border-neutral-200">
                           {badge.tag}
                         </span>
                         <span className="font-semibold text-black truncate max-w-md">
                           "{event.targetTitle}"
                         </span>
                         {event.metadata?.newValue && (
-                          <span className="text-[11px] font-mono text-neutral-600 bg-neutral-200 px-1.5 py-0.2 rounded">
+                          <span className="text-[11px] text-neutral-600 bg-neutral-200 px-1.5 py-0.2 rounded-lg">
                             → {event.metadata.newValue}
                           </span>
                         )}

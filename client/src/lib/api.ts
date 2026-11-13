@@ -6,7 +6,7 @@ export class ApiError extends Error {
   }
 }
 
-// Same-origin by default (Express serves the app). Set VITE_API_URL only if the API lives elsewhere.
+// Same origin by default. Set VITE_API_URL only if the API is hosted elsewhere.
 const BASE = (import.meta.env.VITE_API_URL || '').replace(/\/$/, '') + '/api';
 
 async function request<T = void>(method: string, path: string, body?: unknown): Promise<T> {
@@ -34,10 +34,9 @@ const patch = (path: string, body: unknown) => request('PATCH', path, body);
 const del = (path: string) => request('DELETE', path);
 
 export const api = {
-  // Auth
   me: () => get<{ user: User }>('/auth/me'),
   login: (email: string, password: string) => post<{ user: User }>('/auth/login', { email, password }),
-  register: (data: { name: string; nameKm?: string; email: string; studentId: string; password: string }) =>
+  register: (data: { name: string; nameKm?: string; email: string; password: string }) =>
     post<{ user: User }>('/auth/register', data),
   logout: () => post('/auth/logout'),
   changePassword: (currentPassword: string, newPassword: string) =>
@@ -45,7 +44,6 @@ export const api = {
 
   bootstrap: () => get<BootstrapData>('/bootstrap'),
 
-  // Groups & members
   createGroup: (data: {
     name: string;
     nameKm?: string;
@@ -55,17 +53,18 @@ export const api = {
     deadline?: string;
     category: GroupCategory;
   }) => post<{ id: string }>('/groups', data),
+  joinGroup: (code: string) => post<{ id: string }>('/groups/join', { code }),
   updateGroup: (groupId: string, data: { deadline?: string | null }) => patch(`/groups/${groupId}`, data),
   deleteGroup: (groupId: string) => del(`/groups/${groupId}`),
   addMember: (
     groupId: string,
-    data: { name: string; nameKm?: string; email: string; studentId: string; role: Role; specialty?: string; department?: string }
+    data: { name: string; nameKm?: string; email: string; role: Role; specialty?: string; department?: string }
   ) => post<{ id: string }>(`/groups/${groupId}/members`, data),
   removeMember: (groupId: string, userId: string) => del(`/groups/${groupId}/members/${userId}`),
   clearActivity: (groupId: string) => del(`/groups/${groupId}/activity`),
+  updateAvatar: (avatar: string) => patch('/users/me/avatar', { avatar }),
   updateUserRole: (userId: string, role: Role, groupId?: string) => patch(`/users/${userId}/role`, { role, groupId }),
 
-  // Tasks
   createTask: (
     groupId: string,
     data: { title: string; module: string; description: string; assignedTo: string; priority: TaskPriority; dueDate: string; dueTime?: string }
@@ -77,7 +76,6 @@ export const api = {
   approveTask: (taskId: string, feedback?: string) => post(`/tasks/${taskId}/approve`, { feedback }),
   deleteTask: (taskId: string) => del(`/tasks/${taskId}`),
 
-  // Daily standups
   createDailyLog: (groupId: string, rawContent: string, date: string) =>
     post<{ id: string }>(`/groups/${groupId}/daily-logs`, { rawContent, date }),
   toggleDailyLogItem: (logId: string, itemId: string) => post(`/daily-logs/${logId}/items/${itemId}/toggle`),

@@ -15,7 +15,7 @@ export const bootstrapRouter = Router();
 
 const ACTIVITY_LIMIT_PER_GROUP = 200;
 
-/** Returns every group, member, task, standup and activity entry the signed-in user may see. */
+/** Everything the signed-in user may see, in one response. */
 bootstrapRouter.get('/bootstrap', async (req, res) => {
   const user = req.user!;
   const db = await getDb();

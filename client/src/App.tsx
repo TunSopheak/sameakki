@@ -9,6 +9,9 @@ import { TaskBoard } from './components/TaskBoard';
 import { MembersList } from './components/MembersList';
 import { OverviewDashboard } from './components/OverviewDashboard';
 import { CreateGroupModal } from './components/CreateGroupModal';
+import { JoinGroupModal } from './components/JoinGroupModal';
+import { AngkorWatermark } from './components/AngkorWatermark';
+import { Logo } from './components/Logo';
 import { AssignTaskModal } from './components/AssignTaskModal';
 import { AddMemberModal } from './components/AddMemberModal';
 import { DeleteGroupModal } from './components/DeleteGroupModal';
@@ -16,26 +19,25 @@ import { LeaveGroupModal } from './components/LeaveGroupModal';
 import { AssignmentReportModal } from './components/AssignmentReportModal';
 import { AuthScreen } from './components/AuthScreen';
 import { Notice } from './components/Notice';
-import { Loader2 } from 'lucide-react';
 
 const MainApp: React.FC = () => {
-  const { currentUser, language, t } = useApp();
+  const { currentUser, language, setSearchQuery } = useApp();
 
   const [activeTab, setActiveTab] = useState<'dashboard' | 'tasks' | 'daily' | 'members' | 'report'>('dashboard');
-  const [searchQuery, setSearchQuery] = useState('');
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
   const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
 
-  // Modals state
   const [isCreateGroupOpen, setIsCreateGroupOpen] = useState(false);
+  const [isJoinGroupOpen, setIsJoinGroupOpen] = useState(false);
   const [isAssignTaskOpen, setIsAssignTaskOpen] = useState(false);
   const [isAddMemberOpen, setIsAddMemberOpen] = useState(false);
   const [deleteGroupId, setDeleteGroupId] = useState<string | null>(null);
   const [leaveGroupId, setLeaveGroupId] = useState<string | null>(null);
   const [isReportModalOpen, setIsReportModalOpen] = useState(false);
 
-  // If user clicks report tab directly, open report modal
+  // The report opens as a modal, not a tab
   const handleTabChange = (tab: 'dashboard' | 'tasks' | 'daily' | 'members' | 'report') => {
+    setSearchQuery('');
     if (tab === 'report') {
       setIsReportModalOpen(true);
     } else {
@@ -43,17 +45,8 @@ const MainApp: React.FC = () => {
     }
   };
 
-  // Trigger search focus
-  const handleTriggerSearch = () => {
-    const searchInput = document.querySelector('header input[type="text"]') as HTMLInputElement;
-    if (searchInput) {
-      searchInput.focus();
-    }
-  };
-
   return (
-    <div className="min-h-screen bg-neutral-50 flex text-black selection:bg-black selection:text-white">
-      {/* Modern Left Sidebar */}
+    <div className="min-h-screen bg-neutral-50 flex text-black selection:bg-brand selection:text-white">
       <Sidebar
         activeTab={activeTab}
         setActiveTab={handleTabChange}
@@ -63,47 +56,30 @@ const MainApp: React.FC = () => {
         setIsMobileOpen={setIsMobileSidebarOpen}
         onOpenAssignTask={() => setIsAssignTaskOpen(true)}
         onOpenCreateGroup={() => setIsCreateGroupOpen(true)}
-        onOpenAddMember={() => setIsAddMemberOpen(true)}
-        onTriggerSearch={handleTriggerSearch}
+        onOpenJoinGroup={() => setIsJoinGroupOpen(true)}
       />
 
-      {/* Main Workspace Area (Offset dynamically by sidebar width) */}
       <div
         className={`flex-1 flex flex-col min-w-0 transition-all duration-200 ease-in-out ${
           isSidebarCollapsed ? 'lg:pl-20' : 'lg:pl-64'
         }`}
       >
-        {/* Sleek Top Bar with Global Search and Mobile Hamburger */}
-        <Header
-          activeTab={activeTab}
-          setActiveTab={handleTabChange}
-          onOpenAssignTask={() => setIsAssignTaskOpen(true)}
-          onOpenCreateGroup={() => setIsCreateGroupOpen(true)}
-          onOpenAddMember={() => setIsAddMemberOpen(true)}
-          searchQuery={searchQuery}
-          setSearchQuery={setSearchQuery}
-          onToggleMobileSidebar={() => setIsMobileSidebarOpen(!isMobileSidebarOpen)}
-          isSidebarCollapsed={isSidebarCollapsed}
-        />
+        <Header activeTab={activeTab} onToggleMobileSidebar={() => setIsMobileSidebarOpen(open => !open)} />
 
-        {/* Workspace Body */}
         <main className="flex-1 pb-16">
-          {/* Active Group Banner with Selector and Stats */}
           <GroupBanner
             onOpenCreateGroup={() => setIsCreateGroupOpen(true)}
+            onOpenJoinGroup={() => setIsJoinGroupOpen(true)}
             onOpenAddMember={() => setIsAddMemberOpen(true)}
             onOpenDeleteGroup={id => setDeleteGroupId(id)}
             onOpenLeaveGroup={id => setLeaveGroupId(id)}
           />
 
-          {/* Content Container (Standard responsive layout) */}
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div key={activeTab} className="animate-rise max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             {activeTab === 'dashboard' && (
               <div className="space-y-6">
-                {/* Daily Standup Box: Quick entry right on top */}
                 <DailyStandupBox />
 
-                {/* High-level KPIs and Section Split + Activity Log */}
                 <OverviewDashboard
                   onGoToTab={tab => handleTabChange(tab)}
                   onOpenAssignTask={() => setIsAssignTaskOpen(true)}
@@ -115,8 +91,6 @@ const MainApp: React.FC = () => {
             {activeTab === 'tasks' && (
               <TaskBoard
                 onOpenAssignTask={() => setIsAssignTaskOpen(true)}
-                searchQuery={searchQuery}
-                onSearchChange={setSearchQuery}
               />
             )}
 
@@ -131,16 +105,15 @@ const MainApp: React.FC = () => {
               <MembersList
                 onOpenAddMember={() => setIsAddMemberOpen(true)}
                 onOpenLeaveGroup={id => setLeaveGroupId(id)}
-                searchQuery={searchQuery}
               />
             )}
           </div>
         </main>
 
-        {/* Minimalist Footer */}
         <footer className="border-t border-neutral-200 bg-white py-6 text-xs text-neutral-500">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row items-center justify-between gap-4">
             <div className="flex items-center gap-2">
+              <img src="/khmer/flag-of-cambodia.svg" alt="" width="24" height="15" className="flag-kh" />
               <span className="font-bold text-black">LeaderSync</span>
               <span>·</span>
               <span>
@@ -150,13 +123,6 @@ const MainApp: React.FC = () => {
               </span>
             </div>
             <div className="flex items-center gap-4">
-              <button
-                onClick={() => setIsReportModalOpen(true)}
-                className="text-black hover:underline font-bold cursor-pointer"
-              >
-                {t.tabReport}
-              </button>
-              <span>·</span>
               <span>
                 {currentUser.name} ({currentUser.email})
               </span>
@@ -165,10 +131,14 @@ const MainApp: React.FC = () => {
         </footer>
       </div>
 
-      {/* Interactive Modals */}
       <CreateGroupModal
         isOpen={isCreateGroupOpen}
         onClose={() => setIsCreateGroupOpen(false)}
+      />
+
+      <JoinGroupModal
+        isOpen={isJoinGroupOpen}
+        onClose={() => setIsJoinGroupOpen(false)}
       />
 
       <AssignTaskModal
@@ -206,8 +176,8 @@ const SessionGate: React.FC = () => {
 
   if (status === 'loading') {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-neutral-50 text-neutral-600 text-sm gap-2">
-        <Loader2 className="w-4 h-4 animate-spin" />
+      <div className="fade-late min-h-screen flex flex-col items-center justify-center bg-neutral-50 text-neutral-600 text-sm gap-3">
+        <Logo className="logo-breathe size-14 text-black" />
         <span>{t.loading}</span>
       </div>
     );
@@ -228,6 +198,7 @@ const SessionGate: React.FC = () => {
 export default function App() {
   return (
     <AppProvider>
+      <AngkorWatermark />
       <SessionGate />
     </AppProvider>
   );

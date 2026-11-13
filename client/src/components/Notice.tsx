@@ -2,17 +2,17 @@ import React from 'react';
 import { useApp } from '../context/AppContext';
 import { AlertCircle, CheckCircle2, X } from 'lucide-react';
 
-/** Toast for API errors and confirmations. */
+/** Toast for errors and confirmations. */
 export const Notice: React.FC = () => {
   const { notice, dismissNotice } = useApp();
   if (!notice) return null;
 
   const isError = notice.type === 'error';
   return (
-    <div className="fixed bottom-4 right-4 left-4 sm:left-auto z-[60] sm:max-w-sm print:hidden" role={isError ? 'alert' : 'status'}>
+    <div className="animate-toast fixed bottom-4 right-4 left-4 sm:left-auto z-[60] sm:max-w-sm print:hidden" role={isError ? 'alert' : 'status'}>
       <div
-        className={`flex items-start gap-2.5 p-3 rounded-lg shadow-2xl border text-xs ${
-          isError ? 'bg-black text-white border-black' : 'bg-white text-black border-neutral-300'
+        className={`flex items-start gap-2.5 p-3 rounded-xl shadow-2xl border text-xs ${
+          isError ? 'bg-brand text-white border-brand' : 'bg-white text-black border-neutral-200'
         }`}
       >
         {isError ? <AlertCircle className="w-4 h-4 shrink-0 mt-0.5" /> : <CheckCircle2 className="w-4 h-4 shrink-0 mt-0.5" />}

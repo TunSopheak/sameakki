@@ -26,12 +26,12 @@ export const errorHandler: ErrorRequestHandler = (err, _req, res, _next) => {
     res.status(400).json({ error: field ? `${field}: ${first.message}` : 'Invalid request.' });
     return;
   }
-  // Postgres unique violation
+  // Duplicate value
   if (err?.code === '23505') {
     res.status(409).json({ error: 'A record with the same unique value already exists.' });
     return;
   }
-  // Malformed UUIDs in URLs
+  // Bad id in the URL
   if (err?.code === '22P02') {
     res.status(404).json({ error: 'Not found.' });
     return;

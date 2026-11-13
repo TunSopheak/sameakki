@@ -11,26 +11,26 @@ interface AppContextType {
   setLanguage: (lang: Language) => void;
   t: typeof translations['km'];
 
-  // Session
   status: SessionStatus;
   currentUser: User;
   login: (email: string, password: string) => Promise<void>;
-  register: (data: { name: string; nameKm?: string; email: string; studentId: string; password: string }) => Promise<void>;
+  register: (data: { name: string; nameKm?: string; email: string; password: string }) => Promise<void>;
   logout: () => Promise<void>;
   refresh: () => Promise<void>;
 
-  // Notifications
+  // The header search filters the list on screen
+  searchQuery: string;
+  setSearchQuery: (q: string) => void;
+
   notice: { type: 'error' | 'success'; message: string } | null;
   dismissNotice: () => void;
 
-  // Permissions (for the active group)
   isSuperAdmin: boolean;
   /** Can assign/approve tasks and approve standups in the active group. */
   isTeamLead: boolean;
   /** Can post standups and work on tasks in the active group (not a viewer). */
   canContribute: boolean;
 
-  // Data
   users: User[];
   groups: Group[];
   activeGroupId: string;
@@ -44,18 +44,17 @@ interface AppContextType {
   activityEvents: ActivityEvent[];
   activeGroupActivityEvents: ActivityEvent[];
 
-  // Group & member actions
   addMemberToGroup: (data: {
     name: string;
     nameKm?: string;
     email: string;
-    studentId: string;
     role: Role;
     specialty?: string;
     department?: string;
     groupId?: string;
   }) => Promise<void>;
   removeMemberFromGroup: (userId: string, groupId?: string) => Promise<void>;
+  updateAvatar: (avatar: string) => Promise<void>;
   updateUserRole: (userId: string, newRole: Role) => Promise<void>;
   createGroup: (data: {
     name: string;
@@ -66,11 +65,12 @@ interface AppContextType {
     deadline?: string;
     category: Group['category'];
   }) => Promise<void>;
+  /** Join an existing group using the group code its leader shared. */
+  joinGroup: (code: string) => Promise<void>;
   deleteGroup: (groupId: string) => Promise<void>;
   leaveGroup: (userId: string, groupId?: string) => Promise<void>;
   updateGroupDeadline: (groupId: string, newDeadline: string) => Promise<void>;
 
-  // Daily standups
   addSimpleDailyLog: (rawContent: string) => Promise<void>;
   toggleDailyTodoItem: (logId: string, itemId: string) => Promise<void>;
   markDailyLogDone: (logId: string) => Promise<void>;
@@ -78,7 +78,6 @@ interface AppContextType {
   deleteDailyLog: (logId: string) => Promise<void>;
   addReactionToDailyLog: (logId: string, emoji: string) => Promise<void>;
 
-  // Tasks
   assignTask: (data: {
     title: string;
     module: string;
@@ -96,7 +95,7 @@ interface AppContextType {
   clearActivityLogs: (groupId?: string) => Promise<void>;
 }
 
-// Only UI preferences live in localStorage; all team data lives in the database.
+// localStorage keeps UI preferences only; team data lives in the database.
 const STORAGE_KEYS = {
   ACTIVE_GROUP: 'leadersync_active_group',
   LANGUAGE: 'leadersync_language',
@@ -119,7 +118,7 @@ const writeStorage = (key: string, value: string) => {
   }
 };
 
-const EMPTY_USER: User = { id: '', name: '', email: '', studentId: '', role: 'viewer' };
+const EMPTY_USER: User = { id: '', name: '', email: '', role: 'viewer' };
 
 const AppContext = createContext<AppContextType | undefined>(undefined);
 
@@ -130,6 +129,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const [status, setStatus] = useState<SessionStatus>('loading');
   const [data, setData] = useState<BootstrapData | null>(null);
   const [activeGroupId, setActiveGroupIdState] = useState<string>(() => readStorage(STORAGE_KEYS.ACTIVE_GROUP) || '');
+  const [searchQuery, setSearchQuery] = useState('');
   const [notice, setNotice] = useState<AppContextType['notice']>(null);
   const noticeTimer = useRef<number | undefined>(undefined);
 
@@ -156,7 +156,6 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     }
   }, []);
 
-  // Initial session check
   useEffect(() => {
     refresh().catch(err => {
       setStatus('signed_out');
@@ -164,7 +163,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     });
   }, [refresh, showNotice]);
 
-  // Keep everyone's view in sync: poll while the tab is visible, and refresh when it regains focus.
+  // Refresh while the tab is open and when it regains focus
   useEffect(() => {
     if (status !== 'ready') return;
     const tick = () => {
@@ -178,12 +177,14 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     };
   }, [status, refresh]);
 
-  useEffect(() => writeStorage(STORAGE_KEYS.LANGUAGE, language), [language]);
+  useEffect(() => {
+    writeStorage(STORAGE_KEYS.LANGUAGE, language);
+    document.documentElement.lang = language;
+  }, [language]);
   useEffect(() => {
     if (activeGroupId) writeStorage(STORAGE_KEYS.ACTIVE_GROUP, activeGroupId);
   }, [activeGroupId]);
 
-  // ---- Derived state ----
   const currentUser = data?.currentUser ?? EMPTY_USER;
   const users = data?.users ?? [];
   const groups = data?.groups ?? [];
@@ -211,7 +212,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     (isMemberOfActive && (currentUser.role === 'team_lead' || activeGroup?.leaderId === currentUser.id));
   const canContribute = isSuperAdmin || (isMemberOfActive && currentUser.role !== 'viewer');
 
-  // ---- Action helper: call the API, show errors, then reload data ----
+  // Call the API, show any error, then reload the data
   const run = useCallback(
     async (action: () => Promise<unknown>, successMessage?: string) => {
       try {
@@ -230,13 +231,15 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     },
     [refresh, showNotice]
   );
-  // For fire-and-forget UI handlers: the error is already shown as a notice.
+  // For handlers that ignore the result; the error is already shown
   const quiet = (p: Promise<unknown>) => p.then(() => undefined, () => undefined);
 
   const value: AppContextType = {
     language,
     setLanguage: setLanguageState,
     t,
+    searchQuery,
+    setSearchQuery,
 
     status,
     currentUser,
@@ -272,22 +275,26 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     dailyLogs,
     activityEvents,
 
-    // Groups & members
     addMemberToGroup: ({ groupId, ...member }) =>
       run(() => api.addMember(groupId || resolvedGroupId, member)),
     removeMemberFromGroup: (userId, groupId) =>
       quiet(run(() => api.removeMember(groupId || resolvedGroupId, userId))),
+    updateAvatar: avatar => run(() => api.updateAvatar(avatar)),
     updateUserRole: (userId, role) => quiet(run(() => api.updateUserRole(userId, role, resolvedGroupId || undefined))),
     createGroup: input =>
       run(async () => {
         const { id } = await api.createGroup(input);
         setActiveGroupIdState(id);
       }),
+    joinGroup: code =>
+      run(async () => {
+        const { id } = await api.joinGroup(code);
+        setActiveGroupIdState(id);
+      }),
     deleteGroup: groupId => run(() => api.deleteGroup(groupId)),
     leaveGroup: (userId, groupId) => run(() => api.removeMember(groupId || resolvedGroupId, userId)),
     updateGroupDeadline: (groupId, deadline) => quiet(run(() => api.updateGroup(groupId, { deadline }))),
 
-    // Daily standups
     addSimpleDailyLog: rawContent => run(() => api.createDailyLog(resolvedGroupId, rawContent, todayLocal())),
     toggleDailyTodoItem: (logId, itemId) => quiet(run(() => api.toggleDailyLogItem(logId, itemId))),
     markDailyLogDone: logId => quiet(run(() => api.completeDailyLog(logId))),
@@ -295,7 +302,6 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     deleteDailyLog: logId => quiet(run(() => api.deleteDailyLog(logId))),
     addReactionToDailyLog: (logId, emoji) => quiet(run(() => api.toggleReaction(logId, emoji))),
 
-    // Tasks
     assignTask: input => run(() => api.createTask(resolvedGroupId, input)),
     updateTaskStatus: (taskId, status, notes) => quiet(run(() => api.updateTaskStatus(taskId, status, notes))),
     updateTaskDeadline: (taskId, dueDate, dueTime) => quiet(run(() => api.updateTaskDeadline(taskId, dueDate, dueTime))),

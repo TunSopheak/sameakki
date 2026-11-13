@@ -1,14 +1,15 @@
 import React, { useState } from 'react';
 import { useApp } from '../context/AppContext';
+import { Brand } from './Brand';
 import { Loader2, LogIn, UserPlus } from 'lucide-react';
 
 const inputClass =
-  'w-full px-3 py-2 text-sm bg-white border border-neutral-300 rounded-md focus:outline-none focus:ring-1 focus:ring-black focus:border-black';
+  'w-full px-3 py-2 text-sm bg-white border border-neutral-200 rounded-lg focus:outline-none focus:ring-1 focus:ring-brand/40 focus:border-brand';
 
 export const AuthScreen: React.FC = () => {
   const { login, register, t, language, setLanguage } = useApp();
   const [mode, setMode] = useState<'login' | 'register'>('login');
-  const [form, setForm] = useState({ name: '', nameKm: '', email: '', studentId: '', password: '' });
+  const [form, setForm] = useState({ name: '', nameKm: '', email: '', password: '' });
   const [error, setError] = useState('');
   const [submitting, setSubmitting] = useState(false);
 
@@ -27,7 +28,6 @@ export const AuthScreen: React.FC = () => {
           name: form.name.trim(),
           nameKm: form.nameKm.trim() || undefined,
           email: form.email.trim(),
-          studentId: form.studentId.trim(),
           password: form.password,
         });
       }
@@ -47,29 +47,21 @@ export const AuthScreen: React.FC = () => {
     <div className="min-h-screen bg-neutral-50 flex items-center justify-center p-4">
       <div className="w-full max-w-md">
         <div className="flex items-center justify-between mb-6">
-          <div className="flex items-center gap-2.5">
-            <div className="w-10 h-10 rounded-lg bg-black text-white flex items-center justify-center font-bold">LS</div>
-            <div>
-              <p className="font-bold text-black leading-tight">LeaderSync</p>
-              <p className="text-xs text-neutral-500">{t.appSubtitle}</p>
-            </div>
-          </div>
+          <Brand />
           <button
             onClick={() => setLanguage(language === 'km' ? 'en' : 'km')}
-            className="text-xs font-bold px-2 py-1 rounded border border-neutral-300 bg-white hover:bg-neutral-100 cursor-pointer"
+            className="text-xs font-bold px-2 py-1 rounded-lg border border-neutral-200 bg-white hover:bg-neutral-100 cursor-pointer"
           >
             {language === 'km' ? '🇬🇧 EN' : '🇰🇭 ខ្មែរ'}
           </button>
         </div>
 
-        <div className="bg-white rounded-lg border border-neutral-200 shadow-xs p-6">
+        <div className="animate-rise bg-white rounded-xl border border-neutral-200 shadow-xs p-6">
           <h1 className="text-lg font-bold text-black">{mode === 'login' ? t.authWelcome : t.signUp}</h1>
-          <p className="text-xs text-neutral-500 mt-1 mb-5">
-            {mode === 'login' ? t.authSubtitle : t.authInviteNote}
-          </p>
+          <p className="text-xs text-neutral-500 mt-1 mb-5 min-h-4">{mode === 'login' ? t.authSubtitle : ''}</p>
 
           {error && (
-            <div role="alert" className="mb-4 p-3 text-xs rounded-md border border-black bg-neutral-100 text-black font-medium">
+            <div role="alert" className="mb-4 p-3 text-xs rounded-lg border border-brand bg-neutral-100 text-black font-medium">
               {error}
             </div>
           )}
@@ -89,27 +81,19 @@ export const AuthScreen: React.FC = () => {
                     <input value={form.nameKm} onChange={update('nameKm')} className={inputClass} />
                   </label>
                 </div>
-                <label className="block">
-                  <span className="block text-xs font-bold text-black mb-1">{t.memberId} *</span>
-                  <input
-                    required
-                    value={form.studentId}
-                    onChange={update('studentId')}
-                    placeholder="ST-2026-115"
-                    className={`${inputClass} font-mono`}
-                  />
-                </label>
               </>
             )}
 
             <label className="block">
-              <span className="block text-xs font-bold text-black mb-1">{t.memberEmail} *</span>
+              <span className="block text-xs font-bold text-black mb-1">
+                {mode === 'login' ? t.emailOrUsername : t.memberEmail} *
+              </span>
               <input
-                type="email"
+                type={mode === 'login' ? 'text' : 'email'}
                 required
                 value={form.email}
                 onChange={update('email')}
-                autoComplete="email"
+                autoComplete={mode === 'login' ? 'username' : 'email'}
                 className={inputClass}
               />
             </label>
@@ -119,19 +103,17 @@ export const AuthScreen: React.FC = () => {
               <input
                 type="password"
                 required
-                minLength={mode === 'register' ? 8 : undefined}
                 value={form.password}
                 onChange={update('password')}
                 autoComplete={mode === 'login' ? 'current-password' : 'new-password'}
                 className={inputClass}
               />
-              {mode === 'register' && <span className="text-[11px] text-neutral-500">{t.passwordHint}</span>}
             </label>
 
             <button
               type="submit"
               disabled={submitting}
-              className="w-full inline-flex items-center justify-center gap-2 py-2.5 bg-black hover:bg-neutral-800 disabled:opacity-60 text-white text-sm font-semibold rounded-md cursor-pointer"
+              className="w-full inline-flex items-center justify-center gap-2 py-2.5 bg-brand hover:bg-brand-dark disabled:opacity-60 text-white text-sm font-semibold rounded-lg cursor-pointer"
             >
               {submitting ? (
                 <Loader2 className="w-4 h-4 animate-spin" />

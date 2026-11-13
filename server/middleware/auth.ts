@@ -9,7 +9,6 @@ import { unauthorized } from './errors';
 export const AUTH_COOKIE = 'leadersync_token';
 
 declare global {
-  // eslint-disable-next-line @typescript-eslint/no-namespace
   namespace Express {
     interface Request {
       user?: User;
@@ -17,7 +16,7 @@ declare global {
   }
 }
 
-// A frontend on another domain (CORS_ORIGINS) needs SameSite=None, which browsers only accept with Secure.
+// A frontend on another domain needs SameSite=None, which browsers only allow with Secure.
 const crossSite = config.corsOrigins.length > 0;
 const cookieOptions = {
   httpOnly: true,
@@ -40,7 +39,7 @@ export function clearAuthCookie(res: Response) {
   res.clearCookie(AUTH_COOKIE, cookieOptions);
 }
 
-/** Loads the signed-in user (fresh from the DB so role changes apply immediately) or responds 401. */
+/** Loads the signed-in user from the database, so role changes apply at once. */
 export const requireAuth: RequestHandler = async (req, _res, next) => {
   const header = req.headers.authorization;
   const token =

@@ -2,12 +2,8 @@ import type { Queryable } from '../db';
 import type { User } from '../../shared/types';
 import { forbidden, notFound } from '../middleware/errors';
 
-// Permission model
-// - super_admin: full control over every group, member, and role.
-// - team_lead:   in groups they belong to, can assign/approve/reschedule tasks and approve standups.
-// - group leader (groups.leader_id): same powers as a team_lead inside their own group.
-// - member:      posts standups, updates their own tasks, reacts, leaves groups.
-// - viewer:      read-only.
+// Roles: super_admin does everything. team_lead (or the group leader) manages tasks and
+// standups in their groups. member works on own tasks. viewer is read-only.
 
 export const isSuperAdmin = (user: User) => user.role === 'super_admin';
 
@@ -15,9 +11,7 @@ export interface GroupAccess {
   groupId: string;
   leaderId: string | null;
   isMember: boolean;
-  /** May assign/approve tasks and approve standups in this group. */
   canLead: boolean;
-  /** May post standups and update own work in this group. */
   canContribute: boolean;
 }
 

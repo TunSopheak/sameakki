@@ -1,24 +1,23 @@
 import type { ActivityEvent, DailyLog, DailyLogReaction, Group, Task, User } from '../../shared/types';
 
-// Convert snake_case database rows into the camelCase shapes the client uses.
+// Database rows (snake_case) to API objects (camelCase)
 
 const iso = (v: Date | string | null | undefined) =>
   v == null ? undefined : v instanceof Date ? v.toISOString() : new Date(v).toISOString();
 const opt = <T>(v: T | null | undefined) => (v == null ? undefined : v);
 
 export const USER_COLUMNS =
-  'id, name, name_km, email, student_id, role, specialty, department, avatar_url';
+  'id, name, name_km, email, role, specialty, department, avatar';
 
 export const toUser = (r: any): User => ({
   id: r.id,
   name: r.name,
   nameKm: opt(r.name_km),
   email: r.email,
-  studentId: r.student_id,
   role: r.role,
   specialty: opt(r.specialty),
   department: opt(r.department),
-  avatarUrl: opt(r.avatar_url),
+  avatar: opt(r.avatar),
 });
 
 export const toGroup = (r: any, memberIds: string[]): Group => ({

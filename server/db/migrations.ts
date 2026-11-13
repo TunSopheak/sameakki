@@ -1,5 +1,4 @@
-// Schema migrations. Each entry runs exactly once, in order, and is recorded in schema_migrations.
-// Never edit a migration that has already been deployed — append a new one instead.
+// Each migration runs once, in order. Never edit an old one; add a new one.
 
 export const migrations: { id: string; sql: string }[] = [
   {
@@ -111,5 +110,19 @@ export const migrations: { id: string; sql: string }[] = [
       );
       CREATE INDEX activity_events_group_idx ON activity_events (group_id, created_at DESC);
     `,
+  },
+  {
+    // People are identified by email now; username is an optional sign-in name
+    id: '002_drop_student_id_add_username',
+    sql: `
+      ALTER TABLE users DROP COLUMN student_id;
+      ALTER TABLE users ADD COLUMN username TEXT;
+      CREATE UNIQUE INDEX users_username_unique ON users (lower(username)) WHERE username IS NOT NULL;
+    `,
+  },
+  {
+    // Sticker avatars: the column now holds a key like "m1" or "f3"
+    id: '003_avatar_key',
+    sql: `ALTER TABLE users RENAME COLUMN avatar_url TO avatar`,
   },
 ];

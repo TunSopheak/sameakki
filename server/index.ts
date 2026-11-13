@@ -3,24 +3,39 @@ import { config } from './config';
 import { closeDb, getDb } from './db';
 import { runMigrations } from './db/migrate';
 
+const sleep = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
+
+/** Hosted databases may still be waking up, so try a few times before giving up. */
+async function connectDatabase(attempts = 5) {
+  for (let attempt = 1; ; attempt++) {
+    try {
+      const db = await getDb();
+      await runMigrations(db);
+      // Open a few connections now so the first visitors don't wait for them
+      await Promise.all([db.query('SELECT 1'), db.query('SELECT 1'), db.query('SELECT 1')]);
+      return db;
+    } catch (err) {
+      if (attempt >= attempts) throw err;
+      console.warn(`[db] connection failed (${attempt}/${attempts}), retrying...`, (err as Error).message);
+      await sleep(2000 * attempt);
+    }
+  }
+}
+
 async function main() {
-  const db = await getDb();
-  await runMigrations(db);
-  console.log(`[db] connected (${db.kind === 'pglite' ? `embedded PGlite at ${config.pgliteDir}` : 'PostgreSQL'})`);
-  if (db.kind === 'pglite' && config.isProduction) {
-    console.warn(
-      '[db] WARNING: DATABASE_URL is not set, so data is stored on local disk. On most cloud hosts that disk ' +
-        'is wiped on every deploy/restart. Set DATABASE_URL to a PostgreSQL database for production.'
-    );
+  if (config.isProduction && !config.databaseUrl) {
+    throw new Error('DATABASE_URL is required in production. The embedded database loses data on most hosts.');
   }
 
-  const app = createApp();
-  const server = app.listen(config.port, () => {
-    console.log(`[server] LeaderSync API listening on http://localhost:${config.port}`);
+  const db = await connectDatabase();
+  console.log(`[db] connected (${db.kind === 'pglite' ? 'embedded PGlite' : 'PostgreSQL'})`);
+
+  const server = createApp().listen(config.port, () => {
+    console.log(`[server] listening on port ${config.port}`);
   });
 
   const shutdown = (signal: string) => {
-    console.log(`[server] ${signal} received, shutting down...`);
+    console.log(`[server] ${signal} received, shutting down`);
     server.close(async () => {
       await closeDb();
       process.exit(0);
@@ -30,6 +45,8 @@ async function main() {
   process.on('SIGINT', () => shutdown('SIGINT'));
   process.on('SIGTERM', () => shutdown('SIGTERM'));
 }
+
+process.on('unhandledRejection', err => console.error('[server] unhandled rejection:', err));
 
 main().catch(err => {
   console.error('[server] failed to start:', err);

@@ -1,4 +1,4 @@
-// Domain types shared by the client (React) and the server (Express API).
+// Types shared by the client and the server
 
 export const ROLES = ['super_admin', 'team_lead', 'member', 'viewer'] as const;
 export type Role = (typeof ROLES)[number];
@@ -22,8 +22,7 @@ export interface User {
   name: string;
   nameKm?: string;
   email: string;
-  studentId: string;
-  avatarUrl?: string;
+  avatar?: string;
   role: Role;
   specialty?: string;
   department?: string;
@@ -129,7 +128,7 @@ export interface ActivityEvent {
   };
 }
 
-/** Everything the signed-in user is allowed to see, returned by GET /api/bootstrap. */
+/** Response of GET /api/bootstrap. */
 export interface BootstrapData {
   currentUser: User;
   users: User[];

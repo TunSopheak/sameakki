@@ -41,7 +41,7 @@ export const CreateGroupModal: React.FC<CreateGroupModalProps> = ({ isOpen, onCl
       await createGroup({
         name: name.trim(),
         nameKm: nameKm.trim() || undefined,
-        code: code.trim(), // empty = server generates one
+        code: code.trim(),
         courseOrProject: courseOrProject.trim(),
         description: description.trim() || 'Collaborative team workspace.',
         deadline: deadline || undefined,
@@ -49,18 +49,18 @@ export const CreateGroupModal: React.FC<CreateGroupModalProps> = ({ isOpen, onCl
       });
       onClose();
     } catch {
-      // Shown as a notice (e.g. duplicate group code); keep the form open.
+      // Error is shown as a notice; keep the form open.
     } finally {
       setSubmitting(false);
     }
   };
 
   return (
-    <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-2xs flex items-center justify-center p-4">
-      <div className="bg-white rounded-lg max-w-lg w-full p-6 shadow-2xl border border-neutral-300">
+    <div className="modal-overlay fixed inset-0 z-50 bg-black/60 backdrop-blur-2xs flex items-center justify-center p-4">
+      <div className="modal-panel bg-white rounded-xl max-w-lg w-full p-5 sm:p-6 max-h-[92vh] overflow-y-auto shadow-2xl border border-neutral-200">
         <div className="flex items-center justify-between pb-4 border-b border-neutral-200 mb-5">
           <div className="flex items-center gap-2">
-            <div className="w-8 h-8 rounded bg-black text-white flex items-center justify-center">
+            <div className="w-8 h-8 rounded-lg bg-brand text-white flex items-center justify-center">
               <FolderKanban className="w-4 h-4" />
             </div>
             <div>
@@ -72,7 +72,7 @@ export const CreateGroupModal: React.FC<CreateGroupModalProps> = ({ isOpen, onCl
           </div>
           <button
             onClick={onClose}
-            className="text-neutral-400 hover:text-black p-1 rounded"
+            className="text-neutral-400 hover:text-black p-1 rounded-lg"
           >
             <X className="w-5 h-5" />
           </button>
@@ -88,8 +88,8 @@ export const CreateGroupModal: React.FC<CreateGroupModalProps> = ({ isOpen, onCl
               required
               value={name}
               onChange={e => setName(e.target.value)}
-              placeholder="e.g. JulNow Development Team"
-              className="w-full px-3 py-2 text-xs bg-white border border-neutral-300 rounded focus:outline-none focus:ring-1 focus:ring-black"
+              placeholder="Group name"
+              className="w-full px-3 py-2 text-sm bg-white border border-neutral-200 rounded-lg focus:outline-none focus:ring-1 focus:ring-brand/40"
             />
           </div>
 
@@ -101,8 +101,8 @@ export const CreateGroupModal: React.FC<CreateGroupModalProps> = ({ isOpen, onCl
               type="text"
               value={nameKm}
               onChange={e => setNameKm(e.target.value)}
-              placeholder="ឧ. ក្រុមការងារ JulNow"
-              className="w-full px-3 py-2 text-xs bg-white border border-neutral-300 rounded focus:outline-none focus:ring-1 focus:ring-black"
+              placeholder="ឈ្មោះក្រុមជាភាសាខ្មែរ"
+              className="w-full px-3 py-2 text-sm bg-white border border-neutral-200 rounded-lg focus:outline-none focus:ring-1 focus:ring-brand/40"
             />
           </div>
 
@@ -115,8 +115,8 @@ export const CreateGroupModal: React.FC<CreateGroupModalProps> = ({ isOpen, onCl
                 type="text"
                 value={code}
                 onChange={e => setCode(e.target.value)}
-                placeholder="e.g. GRP-JULNOW"
-                className="w-full px-3 py-2 text-xs bg-white border border-neutral-300 rounded focus:outline-none focus:ring-1 focus:ring-black font-mono uppercase"
+                placeholder="Leave blank to auto-generate"
+                className="w-full px-3 py-2 text-sm bg-white border border-neutral-200 rounded-lg focus:outline-none focus:ring-1 focus:ring-brand/40 font-mono uppercase placeholder:normal-case"
               />
             </div>
 
@@ -127,7 +127,7 @@ export const CreateGroupModal: React.FC<CreateGroupModalProps> = ({ isOpen, onCl
               <select
                 value={category}
                 onChange={e => setCategory(e.target.value as any)}
-                className="w-full px-3 py-2 text-xs bg-white border border-neutral-300 rounded focus:outline-none focus:ring-1 focus:ring-black"
+                className="w-full px-3 py-2 text-sm bg-white border border-neutral-200 rounded-lg focus:outline-none focus:ring-1 focus:ring-brand/40"
               >
                 <option value="assignment">School Assignment</option>
                 <option value="research">Academic Research</option>
@@ -139,15 +139,15 @@ export const CreateGroupModal: React.FC<CreateGroupModalProps> = ({ isOpen, onCl
 
           <div>
             <label className="block text-xs font-bold text-black mb-1">
-              {language === 'km' ? 'មុខវិជ្ជា ឬគម្រោង (Course / Project Title)' : 'Course / Project Name'} *
+              {language === 'km' ? 'មុខវិជ្ជា ឬគម្រោង' : 'Course / Project Name'} *
             </label>
             <input
               type="text"
               required
               value={courseOrProject}
               onChange={e => setCourseOrProject(e.target.value)}
-              placeholder="e.g. Web Architecture & Frontend Engineering"
-              className="w-full px-3 py-2 text-xs bg-white border border-neutral-300 rounded focus:outline-none focus:ring-1 focus:ring-black"
+              placeholder="Course or project name"
+              className="w-full px-3 py-2 text-sm bg-white border border-neutral-200 rounded-lg focus:outline-none focus:ring-1 focus:ring-brand/40"
             />
           </div>
 
@@ -159,7 +159,7 @@ export const CreateGroupModal: React.FC<CreateGroupModalProps> = ({ isOpen, onCl
               type="date"
               value={deadline}
               onChange={e => setDeadline(e.target.value)}
-              className="w-full px-3 py-2 text-xs bg-white border border-neutral-300 rounded focus:outline-none focus:ring-1 focus:ring-black"
+              className="w-full px-3 py-2 text-sm bg-white border border-neutral-200 rounded-lg focus:outline-none focus:ring-1 focus:ring-brand/40"
             />
           </div>
 
@@ -171,8 +171,8 @@ export const CreateGroupModal: React.FC<CreateGroupModalProps> = ({ isOpen, onCl
               rows={2}
               value={description}
               onChange={e => setDescription(e.target.value)}
-              placeholder="e.g. Workspace for daily standups, task assignment, and progress verification."
-              className="w-full px-3 py-2 text-xs bg-white border border-neutral-300 rounded focus:outline-none focus:ring-1 focus:ring-black"
+              placeholder="What is this group for? (optional)"
+              className="w-full px-3 py-2 text-sm bg-white border border-neutral-200 rounded-lg focus:outline-none focus:ring-1 focus:ring-brand/40"
             />
           </div>
 
@@ -180,14 +180,14 @@ export const CreateGroupModal: React.FC<CreateGroupModalProps> = ({ isOpen, onCl
             <button
               type="button"
               onClick={onClose}
-              className="px-4 py-2 text-xs font-medium text-neutral-600 hover:bg-neutral-100 rounded"
+              className="px-4 py-2 text-xs font-medium text-neutral-600 hover:bg-neutral-100 rounded-lg"
             >
               {t.cancel}
             </button>
             <button
               type="submit"
               disabled={submitting}
-              className="px-4 py-2 text-xs font-semibold text-white bg-black hover:bg-neutral-800 disabled:opacity-60 rounded shadow-xs"
+              className="px-4 py-2 text-xs font-semibold text-white bg-brand hover:bg-brand-dark disabled:opacity-60 rounded-lg shadow-xs"
             >
               {t.createGroup}
             </button>
