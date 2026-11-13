@@ -27,10 +27,11 @@ usersRouter.patch('/users/:userId/role', async (req, res) => {
   const input = roleSchema.parse(req.body);
   const targetId = req.params.userId;
   if (targetId === user.id) throw badRequest('You cannot change your own role.');
+  if (input.role === 'super_admin') throw badRequest('There is only one Super Admin.');
 
   const db = await getDb();
   await db.transaction(async tx => {
-    const { rows } = await tx.query('UPDATE users SET role = $2 WHERE id = $1 RETURNING name', [
+    const { rows } = await tx.query('UPDATE users SET role = $2 WHERE id = $1 AND is_active = 1 RETURNING name', [
       targetId,
       input.role,
     ]);

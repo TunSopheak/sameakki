@@ -128,6 +128,44 @@ export interface ActivityEvent {
   };
 }
 
+export interface AdminUserRow {
+  id: string;
+  name: string;
+  nameKm?: string;
+  email: string;
+  username?: string;
+  role: Role;
+  avatar?: string;
+  createdAt: string;
+  /** Last time the person used the app (checked every few minutes while it is open) */
+  lastSeenAt?: string;
+  /** false = added by an admin but has not created the password yet */
+  registered: boolean;
+  /** false = deleted (kept in the database, can be restored) */
+  isActive: boolean;
+  groupCount: number;
+}
+
+export interface AdminGroupRow {
+  id: string;
+  name: string;
+  nameKm?: string;
+  code: string;
+  status: GroupStatus;
+  category: GroupCategory;
+  createdAt: string;
+  leaderName?: string;
+  memberCount: number;
+  taskCount: number;
+  isActive: boolean;
+}
+
+/** Response of GET /api/admin/overview (Super Admin only). */
+export interface AdminOverview {
+  users: AdminUserRow[];
+  groups: AdminGroupRow[];
+}
+
 /** Response of GET /api/bootstrap. */
 export interface BootstrapData {
   currentUser: User;

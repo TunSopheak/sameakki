@@ -11,6 +11,8 @@ import { OverviewDashboard } from './components/OverviewDashboard';
 import { CreateGroupModal } from './components/CreateGroupModal';
 import { JoinGroupModal } from './components/JoinGroupModal';
 import { AngkorWatermark } from './components/AngkorWatermark';
+import { AdminOverview } from './components/AdminOverview';
+import type { Tab } from './components/sidebar/SidebarNav';
 import { Logo } from './components/Logo';
 import { AssignTaskModal } from './components/AssignTaskModal';
 import { AddMemberModal } from './components/AddMemberModal';
@@ -23,7 +25,7 @@ import { Notice } from './components/Notice';
 const MainApp: React.FC = () => {
   const { currentUser, language, setSearchQuery } = useApp();
 
-  const [activeTab, setActiveTab] = useState<'dashboard' | 'tasks' | 'daily' | 'members' | 'report'>('dashboard');
+  const [activeTab, setActiveTab] = useState<Tab>('dashboard');
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
   const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
 
@@ -36,7 +38,7 @@ const MainApp: React.FC = () => {
   const [isReportModalOpen, setIsReportModalOpen] = useState(false);
 
   // The report opens as a modal, not a tab
-  const handleTabChange = (tab: 'dashboard' | 'tasks' | 'daily' | 'members' | 'report') => {
+  const handleTabChange = (tab: Tab) => {
     setSearchQuery('');
     if (tab === 'report') {
       setIsReportModalOpen(true);
@@ -67,13 +69,15 @@ const MainApp: React.FC = () => {
         <Header activeTab={activeTab} onToggleMobileSidebar={() => setIsMobileSidebarOpen(open => !open)} />
 
         <main className="flex-1 pb-16">
-          <GroupBanner
-            onOpenCreateGroup={() => setIsCreateGroupOpen(true)}
-            onOpenJoinGroup={() => setIsJoinGroupOpen(true)}
-            onOpenAddMember={() => setIsAddMemberOpen(true)}
-            onOpenDeleteGroup={id => setDeleteGroupId(id)}
-            onOpenLeaveGroup={id => setLeaveGroupId(id)}
-          />
+          {activeTab !== 'admin' && (
+            <GroupBanner
+              onOpenCreateGroup={() => setIsCreateGroupOpen(true)}
+              onOpenJoinGroup={() => setIsJoinGroupOpen(true)}
+              onOpenAddMember={() => setIsAddMemberOpen(true)}
+              onOpenDeleteGroup={id => setDeleteGroupId(id)}
+              onOpenLeaveGroup={id => setLeaveGroupId(id)}
+            />
+          )}
 
           <div key={activeTab} className="animate-rise max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             {activeTab === 'dashboard' && (
@@ -100,6 +104,8 @@ const MainApp: React.FC = () => {
                 <DailyFeed />
               </div>
             )}
+
+            {activeTab === 'admin' && <AdminOverview />}
 
             {activeTab === 'members' && (
               <MembersList

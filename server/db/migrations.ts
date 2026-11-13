@@ -125,4 +125,21 @@ export const migrations: { id: string; sql: string }[] = [
     id: '003_avatar_key',
     sql: `ALTER TABLE users RENAME COLUMN avatar_url TO avatar`,
   },
+  {
+    // Lets the Super Admin see who has signed in and when
+    id: '004_last_seen',
+    sql: `ALTER TABLE users ADD COLUMN last_seen_at TIMESTAMPTZ`,
+  },
+  {
+    // is_active: 1 = in use, 0 = deleted (kept for history), 2 = old version (reserved)
+    id: '005_soft_delete',
+    sql: `
+      ALTER TABLE users ADD COLUMN is_active SMALLINT NOT NULL DEFAULT 1 CHECK (is_active IN (0, 1, 2));
+      ALTER TABLE groups ADD COLUMN is_active SMALLINT NOT NULL DEFAULT 1 CHECK (is_active IN (0, 1, 2));
+      DROP INDEX users_email_unique;
+      DROP INDEX users_username_unique;
+      CREATE UNIQUE INDEX users_email_unique ON users (lower(email)) WHERE is_active = 1;
+      CREATE UNIQUE INDEX users_username_unique ON users (lower(username)) WHERE username IS NOT NULL AND is_active = 1;
+    `,
+  },
 ];

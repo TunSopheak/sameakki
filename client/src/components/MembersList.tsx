@@ -209,7 +209,6 @@ export const MembersList: React.FC<MembersListProps> = ({
                     onChange={e => updateUserRole(member.id, e.target.value as Role)}
                     className="rounded-lg border border-neutral-200 bg-white px-2 py-1.5 text-sm font-medium text-black"
                   >
-                    <option value="super_admin">{t.superAdminBadge}</option>
                     <option value="team_lead">{t.teamLeadBadge}</option>
                     <option value="member">{t.memberBadge}</option>
                     <option value="viewer">{t.viewerBadge}</option>
@@ -318,7 +317,6 @@ export const MembersList: React.FC<MembersListProps> = ({
                           onChange={e => updateUserRole(member.id, e.target.value as Role)}
                           className="text-xs bg-white border border-neutral-200 rounded-lg px-2 py-1 text-black font-medium focus:outline-none focus:ring-1 focus:ring-brand/40 cursor-pointer"
                         >
-                          <option value="super_admin">{t.superAdminBadge}</option>
                           <option value="team_lead">{t.teamLeadBadge}</option>
                           <option value="member">{t.memberBadge}</option>
                           <option value="viewer">{t.viewerBadge}</option>

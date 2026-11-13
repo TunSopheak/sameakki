@@ -41,7 +41,7 @@ authRouter.post('/register', authLimiter, async (req, res) => {
     const isFirstUser = countRows[0].n === 0;
 
     const { rows: existing } = await tx.query(
-      'SELECT id, password_hash FROM users WHERE lower(email) = $1',
+      'SELECT id, password_hash FROM users WHERE lower(email) = $1 AND is_active = 1',
       [input.email]
     );
 
@@ -87,7 +87,7 @@ authRouter.post('/login', authLimiter, async (req, res) => {
   const input = loginSchema.parse(req.body);
   const db = await getDb();
   const { rows } = await db.query(
-    `SELECT ${USER_COLUMNS}, password_hash FROM users WHERE lower(email) = $1 OR lower(username) = $1`,
+    `SELECT ${USER_COLUMNS}, password_hash FROM users WHERE (lower(email) = $1 OR lower(username) = $1) AND is_active = 1`,
     [input.email]
   );
   const row = rows[0];

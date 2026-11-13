@@ -1,9 +1,9 @@
 import React from 'react';
-import { CheckSquare, FileText, FolderKanban, LayoutDashboard, Plus, Users } from 'lucide-react';
+import { CheckSquare, FileText, FolderKanban, LayoutDashboard, Plus, ShieldCheck, Users } from 'lucide-react';
 import { useApp } from '../../context/AppContext';
 import { todayLocal } from '../../lib/dates';
 
-export type Tab = 'dashboard' | 'tasks' | 'daily' | 'members' | 'report';
+export type Tab = 'dashboard' | 'tasks' | 'daily' | 'members' | 'report' | 'admin';
 
 interface SidebarNavProps {
   activeTab: Tab;
@@ -23,7 +23,7 @@ const Badge: React.FC<{ children: React.ReactNode; strong?: boolean; active: boo
 );
 
 export const SidebarNav: React.FC<SidebarNavProps> = ({ activeTab, onSelect, isCollapsed, onOpenAssignTask }) => {
-  const { t, isTeamLead, currentUser, activeGroupTasks, activeGroupMembers, activeGroupDailyLogs } = useApp();
+  const { t, isTeamLead, isSuperAdmin, currentUser, activeGroupTasks, activeGroupMembers, activeGroupDailyLogs } = useApp();
 
   const today = todayLocal();
   const postedToday = new Set(activeGroupDailyLogs.filter(l => l.date === today).map(l => l.userId));
@@ -45,6 +45,7 @@ export const SidebarNav: React.FC<SidebarNavProps> = ({ activeTab, onSelect, isC
     },
     { id: 'members', label: t.tabMembers, icon: Users, badge: { text: String(activeGroupMembers.length) } },
     { id: 'report', label: t.tabReport, icon: FileText },
+    ...(isSuperAdmin ? [{ id: 'admin' as const, label: t.tabAdmin, icon: ShieldCheck }] : []),
   ];
 
   return (

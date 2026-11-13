@@ -39,6 +39,7 @@ export const Header: React.FC<HeaderProps> = ({ activeTab, onToggleMobileSidebar
     tasks: t.tabTasks,
     members: t.tabMembers,
     report: t.tabReport,
+    admin: t.tabAdmin,
   };
   const groupName = activeGroup ? (language === 'km' && activeGroup.nameKm ? activeGroup.nameKm : activeGroup.name) : 'LeaderSync';
 

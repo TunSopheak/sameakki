@@ -19,7 +19,7 @@ export async function getGroupAccess(db: Queryable, user: User, groupId: string)
   const { rows } = await db.query(
     `SELECT g.id, g.leader_id,
             EXISTS (SELECT 1 FROM group_members m WHERE m.group_id = g.id AND m.user_id = $2) AS is_member
-       FROM groups g WHERE g.id = $1`,
+       FROM groups g WHERE g.id = $1 AND g.is_active = 1`,
     [groupId, user.id]
   );
   const row = rows[0];

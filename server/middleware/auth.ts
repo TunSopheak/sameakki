@@ -55,7 +55,7 @@ export const requireAuth: RequestHandler = async (req, _res, next) => {
   }
 
   const db = await getDb();
-  const { rows } = await db.query(`SELECT ${USER_COLUMNS} FROM users WHERE id = $1`, [userId]);
+  const { rows } = await db.query(`SELECT ${USER_COLUMNS} FROM users WHERE id = $1 AND is_active = 1`, [userId]);
   if (!rows[0]) return next(unauthorized());
   req.user = toUser(rows[0]);
   next();

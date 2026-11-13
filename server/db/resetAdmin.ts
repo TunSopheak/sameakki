@@ -16,7 +16,7 @@ async function resetAdmin() {
   const passwordHash = await hashPassword(password);
 
   const { rows } = await db.query<{ id: string }>(
-    `SELECT id FROM users WHERE role = 'super_admin' ORDER BY created_at LIMIT 1`
+    `SELECT id FROM users WHERE role = 'super_admin' AND is_active = 1 ORDER BY created_at LIMIT 1`
   );
 
   if (rows[0]) {

@@ -68,7 +68,6 @@ export const AddMemberModal: React.FC<AddMemberModalProps> = ({ isOpen, onClose 
   const quickRoles: { role: Role; label: string; desc: string }[] = [
     { role: 'member', label: t.memberBadge, desc: 'Can submit daily standups and complete assigned tasks' },
     { role: 'team_lead', label: t.teamLeadBadge, desc: 'Can assign tasks and verify/approve member deliverables' },
-    { role: 'super_admin', label: t.superAdminBadge, desc: 'Full system control: add/remove members, create/delete groups' },
     { role: 'viewer', label: t.viewerBadge, desc: 'Read-only audit view for supervisor or observer' },
   ];
 

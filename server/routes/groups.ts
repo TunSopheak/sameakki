@@ -3,7 +3,7 @@ import { Router } from 'express';
 import rateLimit from 'express-rate-limit';
 import { z } from 'zod';
 import { getDb } from '../db';
-import { GROUP_CATEGORIES, GROUP_STATUSES, ROLES } from '../../shared/types';
+import { GROUP_CATEGORIES, GROUP_STATUSES } from '../../shared/types';
 import { assert, getGroupAccess, isSuperAdmin, requireSuperAdmin } from '../services/access';
 import { logActivity } from '../services/activity';
 import { badRequest, conflict, notFound } from '../middleware/errors';
@@ -87,7 +87,7 @@ groupsRouter.post('/groups/join', joinLimiter, async (req, res) => {
   const db = await getDb();
 
   const group = await db.transaction(async tx => {
-    const { rows } = await tx.query('SELECT id, name, status FROM groups WHERE upper(code) = upper($1)', [input.code]);
+    const { rows } = await tx.query('SELECT id, name, status FROM groups WHERE upper(code) = upper($1) AND is_active = 1', [input.code]);
     const g = rows[0];
     if (!g) throw notFound('No group matches that code.');
     if (g.status === 'archived') throw badRequest('This group is archived and no longer accepts members.');
@@ -171,7 +171,7 @@ groupsRouter.delete('/groups/:groupId', async (req, res) => {
   const user = req.user!;
   requireSuperAdmin(user);
   const db = await getDb();
-  const { rows } = await db.query('DELETE FROM groups WHERE id = $1 RETURNING id', [req.params.groupId]);
+  const { rows } = await db.query('UPDATE groups SET is_active = 0 WHERE id = $1 AND is_active = 1 RETURNING id', [req.params.groupId]);
   if (!rows[0]) throw notFound('Group not found.');
   res.status(204).end();
 });
@@ -180,7 +180,8 @@ const addMemberSchema = z.object({
   name: z.string().trim().min(1).max(120),
   nameKm: optionalText(120),
   email: z.string().trim().toLowerCase().email().max(200),
-  role: z.enum(ROLES).default('member'),
+  // There is only one Super Admin, so it cannot be given here
+  role: z.enum(['team_lead', 'member', 'viewer']).default('member'),
   specialty: optionalText(200),
   department: optionalText(120),
 });
@@ -194,7 +195,7 @@ groupsRouter.post('/groups/:groupId/members', async (req, res) => {
 
   const member = await db.transaction(async tx => {
     const { rows: matches } = await tx.query(
-      `SELECT ${USER_COLUMNS} FROM users WHERE lower(email) = $1`,
+      `SELECT ${USER_COLUMNS} FROM users WHERE lower(email) = $1 AND is_active = 1`,
       [input.email]
     );
 

@@ -1,4 +1,4 @@
-import type { BootstrapData, Role, TaskPriority, TaskStatus, User, GroupCategory } from '@shared/types';
+import type { AdminOverview, BootstrapData, Role, TaskPriority, TaskStatus, User, GroupCategory } from '@shared/types';
 
 export class ApiError extends Error {
   constructor(public status: number, message: string) {
@@ -62,6 +62,9 @@ export const api = {
   ) => post<{ id: string }>(`/groups/${groupId}/members`, data),
   removeMember: (groupId: string, userId: string) => del(`/groups/${groupId}/members/${userId}`),
   clearActivity: (groupId: string) => del(`/groups/${groupId}/activity`),
+  adminOverview: () => get<AdminOverview>('/admin/overview'),
+  setUserActive: (userId: string, active: boolean) => post(`/admin/users/${userId}/active`, { active }),
+  setGroupActive: (groupId: string, active: boolean) => post(`/admin/groups/${groupId}/active`, { active }),
   updateAvatar: (avatar: string) => patch('/users/me/avatar', { avatar }),
   updateUserRole: (userId: string, role: Role, groupId?: string) => patch(`/users/${userId}/role`, { role, groupId }),
 

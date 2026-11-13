@@ -20,11 +20,21 @@ bootstrapRouter.get('/bootstrap', async (req, res) => {
   const user = req.user!;
   const db = await getDb();
 
+  // Not awaited so it never slows the response. Writes at most once every 5 minutes per person.
+  void db
+    .query(
+      `UPDATE users SET last_seen_at = now()
+        WHERE id = $1 AND (last_seen_at IS NULL OR last_seen_at < now() - interval '5 minutes')`,
+      [user.id]
+    )
+    .catch(() => undefined);
+
   const { rows: groupRows } = isSuperAdmin(user)
-    ? await db.query('SELECT * FROM groups ORDER BY created_at DESC')
+    ? await db.query('SELECT * FROM groups WHERE is_active = 1 ORDER BY created_at DESC')
     : await db.query(
         `SELECT g.* FROM groups g
            JOIN group_members m ON m.group_id = g.id AND m.user_id = $1
+          WHERE g.is_active = 1
           ORDER BY g.created_at DESC`,
         [user.id]
       );
