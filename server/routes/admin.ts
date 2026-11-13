@@ -22,7 +22,7 @@ adminRouter.get('/admin/overview', async (req, res) => {
     db.query(
       `SELECT g.id, g.name, g.name_km, g.code, g.status, g.category, g.created_at, g.is_active, leader.name AS leader_name,
               (SELECT count(*)::int FROM group_members m WHERE m.group_id = g.id) AS member_count,
-              (SELECT count(*)::int FROM tasks t WHERE t.group_id = g.id) AS task_count
+              (SELECT count(*)::int FROM tasks t WHERE t.group_id = g.id AND t.is_active = 1) AS task_count
          FROM groups g LEFT JOIN users leader ON leader.id = g.leader_id
         ORDER BY g.created_at DESC`
     ),

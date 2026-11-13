@@ -13,7 +13,7 @@ const isoDate = z.string().regex(/^\d{4}-\d{2}-\d{2}$/, 'must be a date (YYYY-MM
 const time = z.string().regex(/^\d{2}:\d{2}$/, 'must be a time (HH:mm)');
 
 async function loadTask(db: Queryable, user: User, taskId: string) {
-  const { rows } = await db.query('SELECT * FROM tasks WHERE id = $1', [taskId]);
+  const { rows } = await db.query('SELECT * FROM tasks WHERE id = $1 AND is_active = 1', [taskId]);
   const task = rows[0];
   if (!task) throw notFound('Task not found.');
   const access = await getGroupAccess(db, user, task.group_id);
@@ -181,6 +181,6 @@ tasksRouter.delete('/tasks/:taskId', async (req, res) => {
   const db = await getDb();
   const { task, access } = await loadTask(db, user, req.params.taskId);
   assert(access.canLead, 'Only team leads can delete tasks.');
-  await db.query('DELETE FROM tasks WHERE id = $1', [task.id]);
+  await db.query('UPDATE tasks SET is_active = 0 WHERE id = $1', [task.id]);
   res.status(204).end();
 });

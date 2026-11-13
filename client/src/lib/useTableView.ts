@@ -9,11 +9,14 @@ interface Options<T> {
   compare: Record<string, (a: T, b: T) => number>;
   initialSort: { key: string; dir: SortDir };
   pageSize?: number;
+  /** Use this text for searching instead of the table's own search box */
+  externalQuery?: string;
 }
 
 /** Search, sort and paging for a list that is already in memory. */
-export function useTableView<T>(rows: T[], { searchText, compare, initialSort, pageSize = 10 }: Options<T>) {
-  const [query, setQuery] = useState('');
+export function useTableView<T>(rows: T[], { searchText, compare, initialSort, pageSize = 10, externalQuery }: Options<T>) {
+  const [ownQuery, setQuery] = useState('');
+  const query = externalQuery ?? ownQuery;
   const [sort, setSort] = useState(initialSort);
   const [page, setPage] = useState(0);
 
@@ -36,6 +39,10 @@ export function useTableView<T>(rows: T[], { searchText, compare, initialSort, p
       setPage(0);
     },
     sort,
+    setSort: (key: string, dir: SortDir) => {
+      setSort({ key, dir });
+      setPage(0);
+    },
     toggleSort: (key: string) => {
       setSort(prev => (prev.key === key ? { key, dir: prev.dir === 'asc' ? 'desc' : 'asc' } : { key, dir: 'asc' }));
       setPage(0);

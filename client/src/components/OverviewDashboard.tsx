@@ -58,17 +58,17 @@ export const OverviewDashboard: React.FC<OverviewDashboardProps> = ({
 
   return (
     <div className="space-y-6">
-      <div className="stagger grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        <div className="lift bg-white p-5 rounded-xl border border-neutral-200 shadow-xs flex flex-col justify-between">
+      <div className="stagger grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+        <div className="lift bg-white p-3.5 sm:p-5 rounded-xl border border-neutral-200 shadow-xs flex flex-col justify-between">
           <div className="flex items-center justify-between">
-            <span className="text-xs font-semibold text-neutral-500 uppercase tracking-wider">
+            <span className="text-[11px] sm:text-xs font-semibold text-neutral-500 uppercase tracking-wider">
               {language === 'km' ? 'វឌ្ឍនភាពសម្រេច' : 'Project Completion'}
             </span>
             <CheckCircle2 className="w-4 h-4 text-black" />
           </div>
           <div className="mt-3">
-            <div className="flex items-baseline gap-2">
-              <span className="text-3xl font-bold text-black font-mono-numbers">
+            <div className="flex flex-wrap items-baseline gap-x-2">
+              <span className="text-2xl sm:text-3xl font-bold text-black font-mono-numbers">
                 <AnimatedNumber value={progressPercent} suffix="%" />
               </span>
               <span className="text-xs text-neutral-500">
@@ -84,16 +84,16 @@ export const OverviewDashboard: React.FC<OverviewDashboardProps> = ({
           </div>
         </div>
 
-        <div className="lift bg-white p-5 rounded-xl border border-neutral-200 shadow-xs flex flex-col justify-between">
+        <div className="lift bg-white p-3.5 sm:p-5 rounded-xl border border-neutral-200 shadow-xs flex flex-col justify-between">
           <div className="flex items-center justify-between">
-            <span className="text-xs font-semibold text-neutral-500 uppercase tracking-wider">
+            <span className="text-[11px] sm:text-xs font-semibold text-neutral-500 uppercase tracking-wider">
               {language === 'km' ? 'របាយការណ៍ ToDo ថ្ងៃនេះ' : "Today's Standup"}
             </span>
             <Clock className="w-4 h-4 text-black" />
           </div>
           <div className="mt-3">
-            <div className="flex items-baseline gap-2">
-              <span className="text-3xl font-bold text-black font-mono-numbers">
+            <div className="flex flex-wrap items-baseline gap-x-2">
+              <span className="text-2xl sm:text-3xl font-bold text-black font-mono-numbers">
                 {submittedCount}/{totalMemberCount}
               </span>
               <span className="text-xs text-neutral-700 font-bold font-mono-numbers">
@@ -108,16 +108,16 @@ export const OverviewDashboard: React.FC<OverviewDashboardProps> = ({
           </div>
         </div>
 
-        <div className="lift bg-white p-5 rounded-xl border border-neutral-200 shadow-xs flex flex-col justify-between">
+        <div className="lift bg-white p-3.5 sm:p-5 rounded-xl border border-neutral-200 shadow-xs flex flex-col justify-between">
           <div className="flex items-center justify-between">
-            <span className="text-xs font-semibold text-neutral-500 uppercase tracking-wider">
+            <span className="text-[11px] sm:text-xs font-semibold text-neutral-500 uppercase tracking-wider">
               {language === 'km' ? 'រង់ចាំប្រធានត្រួតពិនិត្យ' : 'Pending Verification'}
             </span>
             <Award className="w-4 h-4 text-black" />
           </div>
           <div className="mt-3">
-            <div className="flex items-baseline gap-2">
-              <span className="text-3xl font-bold text-black font-mono-numbers">
+            <div className="flex flex-wrap items-baseline gap-x-2">
+              <span className="text-2xl sm:text-3xl font-bold text-black font-mono-numbers">
                 {reviewTasks}
               </span>
               <span className="text-xs text-neutral-500">
@@ -132,16 +132,16 @@ export const OverviewDashboard: React.FC<OverviewDashboardProps> = ({
           </div>
         </div>
 
-        <div className="lift bg-white p-5 rounded-xl border border-neutral-200 shadow-xs flex flex-col justify-between">
+        <div className="lift bg-white p-3.5 sm:p-5 rounded-xl border border-neutral-200 shadow-xs flex flex-col justify-between">
           <div className="flex items-center justify-between">
-            <span className="text-xs font-semibold text-neutral-500 uppercase tracking-wider">
+            <span className="text-[11px] sm:text-xs font-semibold text-neutral-500 uppercase tracking-wider">
               {language === 'km' ? 'សមាជិកក្នុងក្រុម' : 'Team Members'}
             </span>
             <Users className="w-4 h-4 text-neutral-400" />
           </div>
           <div className="mt-3">
-            <div className="flex items-baseline gap-2">
-              <span className="text-3xl font-bold text-black font-mono-numbers">
+            <div className="flex flex-wrap items-baseline gap-x-2">
+              <span className="text-2xl sm:text-3xl font-bold text-black font-mono-numbers">
                 {totalMemberCount}
               </span>
               <span className="text-xs text-neutral-500">

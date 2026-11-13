@@ -142,4 +142,11 @@ export const migrations: { id: string; sql: string }[] = [
       CREATE UNIQUE INDEX users_username_unique ON users (lower(username)) WHERE username IS NOT NULL AND is_active = 1;
     `,
   },
+  {
+    id: '006_soft_delete_work',
+    sql: `
+      ALTER TABLE tasks ADD COLUMN is_active SMALLINT NOT NULL DEFAULT 1 CHECK (is_active IN (0, 1, 2));
+      ALTER TABLE daily_logs ADD COLUMN is_active SMALLINT NOT NULL DEFAULT 1 CHECK (is_active IN (0, 1, 2));
+    `,
+  },
 ];

@@ -95,7 +95,7 @@ export const GroupBanner: React.FC<GroupBannerProps> = ({
   const deadlineInfo = getDeadlineText();
 
   return (
-    <div className="bg-white border-b border-neutral-200 py-6 mb-6">
+    <div className="bg-white border-b border-neutral-200 py-4 sm:py-6 mb-4 sm:mb-6">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6">
           <div className="space-y-2 flex-1">
@@ -232,14 +232,14 @@ export const GroupBanner: React.FC<GroupBannerProps> = ({
               </h1>
               <p className="text-xs sm:text-sm text-neutral-600 mt-1 max-w-3xl">
                 <span className="font-semibold text-black">{activeGroup.courseOrProject}</span>
-                <span className="mx-1.5 text-neutral-300">·</span>
-                <span>{activeGroup.description}</span>
+                <span className="mx-1.5 hidden text-neutral-300 sm:inline">·</span>
+                <span className="hidden sm:inline">{activeGroup.description}</span>
               </p>
             </div>
           </div>
 
           <div className="flex flex-col sm:flex-row lg:flex-col items-start lg:items-end justify-between gap-4">
-            <div className="flex items-center gap-3 text-xs">
+            <div className="hidden items-center gap-3 text-xs sm:flex">
               <div className="flex items-center gap-1 text-neutral-700">
                 <Users className="w-4 h-4 text-neutral-500" />
                 <span className="font-bold text-black font-mono-numbers">
@@ -288,7 +288,7 @@ export const GroupBanner: React.FC<GroupBannerProps> = ({
                 title={t.leaveGroup}
               >
                 <LogOut className="w-3.5 h-3.5 text-neutral-500" />
-                <span>{t.leaveGroup}</span>
+                <span className="hidden sm:inline">{t.leaveGroup}</span>
               </button>
               )}
 

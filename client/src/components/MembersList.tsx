@@ -13,6 +13,8 @@ import {
   Users,
 } from 'lucide-react';
 import { Avatar } from './Avatar';
+import { Pager, SortHeader } from './TableParts';
+import { useTableView } from '../lib/useTableView';
 
 interface MembersListProps {
   onOpenAddMember: () => void;
@@ -38,20 +40,20 @@ export const MembersList: React.FC<MembersListProps> = ({
   const [roleFilter, setRoleFilter] = useState<'all' | Role>('all');
   const todayStr = todayLocal();
 
-  const filteredMembers = activeGroupMembers.filter(member => {
-    if (roleFilter !== 'all' && member.role !== roleFilter) return false;
-    if (searchQuery.trim()) {
-      const q = searchQuery.toLowerCase();
-      const match =
-        member.name.toLowerCase().includes(q) ||
-        (member.nameKm && member.nameKm.toLowerCase().includes(q)) ||
-        member.email.toLowerCase().includes(q) ||
-        (member.specialty && member.specialty.toLowerCase().includes(q)) ||
-        member.role.toLowerCase().includes(q);
-      if (!match) return false;
-    }
-    return true;
+  const byRole = roleFilter === 'all' ? activeGroupMembers : activeGroupMembers.filter(m => m.role === roleFilter);
+  const view = useTableView(byRole, {
+    externalQuery: searchQuery,
+    searchText: m => `${m.name} ${m.nameKm ?? ''} ${m.email} ${m.specialty ?? ''} ${m.role}`,
+    compare: {
+      name: (a, b) => a.name.localeCompare(b.name),
+      email: (a, b) => a.email.localeCompare(b.email),
+      role: (a, b) => a.role.localeCompare(b.role),
+      specialty: (a, b) => (a.specialty ?? '').localeCompare(b.specialty ?? ''),
+    },
+    initialSort: { key: 'name', dir: 'asc' },
+    pageSize: 10,
   });
+  const filteredMembers = view.pageRows;
 
   const getRoleBadge = (role: Role) => {
     switch (role) {
@@ -240,10 +242,10 @@ export const MembersList: React.FC<MembersListProps> = ({
         <table className="w-full text-left border-collapse">
           <thead>
             <tr className="bg-neutral-50 border-b border-neutral-200 text-[11px] font-semibold text-neutral-600 uppercase tracking-wider">
-              <th className="py-3 px-6">{t.memberName}</th>
-              <th className="py-3 px-4">{t.memberEmail}</th>
-              <th className="py-3 px-4">{t.memberRole}</th>
-              <th className="py-3 px-4">{t.memberSpecialty}</th>
+              <SortHeader label={t.memberName} column="name" sort={view.sort} onSort={view.toggleSort} className="py-3 px-6" />
+              <SortHeader label={t.memberEmail} column="email" sort={view.sort} onSort={view.toggleSort} className="py-3 px-4" />
+              <SortHeader label={t.memberRole} column="role" sort={view.sort} onSort={view.toggleSort} className="py-3 px-4" />
+              <SortHeader label={t.memberSpecialty} column="specialty" sort={view.sort} onSort={view.toggleSort} className="py-3 px-4" />
               <th className="py-3 px-4 text-center">{language === 'km' ? 'ToDo ថ្ងៃនេះ' : 'Today Standup'}</th>
               <th className="py-3 px-4 text-center">{language === 'km' ? 'កិច្ចការ' : 'Tasks'}</th>
               {isSuperAdmin && <th className="py-3 px-6 text-right">{language === 'km' ? 'សកម្មភាព' : 'Actions'}</th>}
@@ -384,6 +386,7 @@ export const MembersList: React.FC<MembersListProps> = ({
           </tbody>
         </table>
       </div>
+      <Pager page={view.page} pageCount={view.pageCount} total={view.total} onPage={view.setPage} />
     </div>
   );
 };

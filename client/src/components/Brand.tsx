@@ -16,7 +16,7 @@ export const Brand: React.FC<BrandProps> = ({ short = false, iconOnly = false })
       {!iconOnly && (
         <div className="min-w-0">
           <p className="truncate text-sm font-bold leading-tight text-black">LeaderSync</p>
-          <p className="truncate text-xs text-neutral-500">{short ? t.appTagline : t.appSubtitle}</p>
+          <p className={`text-xs text-neutral-500 ${short ? 'truncate' : 'leading-snug'}`}>{short ? t.appTagline : t.appSubtitle}</p>
         </div>
       )}
     </div>

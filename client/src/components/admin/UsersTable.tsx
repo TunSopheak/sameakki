@@ -4,7 +4,7 @@ import { formatDateTime } from '../../lib/dates';
 import { useTableView } from '../../lib/useTableView';
 import { useApp } from '../../context/AppContext';
 import { Avatar } from '../Avatar';
-import { FilterSelect, Pager, RowAction, SearchBox, SortHeader } from './TableParts';
+import { FilterSelect, Pager, RowAction, SearchBox, SortHeader } from '../TableParts';
 
 const ONLINE_MINUTES = 10;
 const ACTIVE_DAYS = 7;

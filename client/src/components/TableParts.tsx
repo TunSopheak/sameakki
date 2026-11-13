@@ -1,6 +1,6 @@
 import React from 'react';
 import { ArrowDown, ArrowUp, ChevronLeft, ChevronRight, RotateCcw, Search, Trash2 } from 'lucide-react';
-import type { SortDir } from '../../lib/useTableView';
+import type { SortDir } from '../lib/useTableView';
 
 interface SortHeaderProps {
   label: string;

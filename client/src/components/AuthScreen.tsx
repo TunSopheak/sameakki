@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useApp } from '../context/AppContext';
 import { Brand } from './Brand';
+import { Flag } from './Flag';
 import { Loader2, LogIn, UserPlus } from 'lucide-react';
 
 const inputClass =
@@ -44,15 +45,16 @@ export const AuthScreen: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-neutral-50 flex items-center justify-center p-4">
+    <div className="min-h-screen bg-neutral-50 flex items-start sm:items-center justify-center px-4 pb-8 pt-10 sm:p-4">
       <div className="w-full max-w-md">
         <div className="flex items-center justify-between mb-6">
           <Brand />
           <button
             onClick={() => setLanguage(language === 'km' ? 'en' : 'km')}
-            className="text-xs font-bold px-2 py-1 rounded-lg border border-neutral-200 bg-white hover:bg-neutral-100 cursor-pointer"
+            className="inline-flex items-center gap-1.5 text-xs font-bold px-3 py-2 rounded-lg border border-neutral-200 bg-white hover:bg-neutral-100 cursor-pointer shrink-0"
           >
-            {language === 'km' ? '🇬🇧 EN' : '🇰🇭 ខ្មែរ'}
+            <Flag code={language === 'km' ? 'en' : 'km'} className="h-3.5" />
+            {language === 'km' ? 'EN' : 'ខ្មែរ'}
           </button>
         </div>
 

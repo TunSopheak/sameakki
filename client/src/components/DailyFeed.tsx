@@ -12,6 +12,8 @@ import {
   Check
 } from 'lucide-react';
 import { Avatar } from './Avatar';
+import { Pager } from './TableParts';
+import { useTableView } from '../lib/useTableView';
 
 export const DailyFeed: React.FC = () => {
   const {
@@ -46,6 +48,13 @@ export const DailyFeed: React.FC = () => {
       if (!fullText.includes(q)) return false;
     }
     return true;
+  });
+
+  const view = useTableView(filteredLogs, {
+    searchText: () => '',
+    compare: { newest: (a, b) => a.timestamp.localeCompare(b.timestamp) },
+    initialSort: { key: 'newest', dir: 'desc' },
+    pageSize: 8,
   });
 
   const availableEmojis = ['👏', '🔥', '👍', '🚀', '💡'];
@@ -115,8 +124,9 @@ export const DailyFeed: React.FC = () => {
           </p>
         </div>
       ) : (
+        <>
         <div className="stagger space-y-4">
-          {filteredLogs.map(log => {
+          {view.pageRows.map(log => {
             const author = users.find(u => u.id === log.userId) || {
               id: log.userId,
               name: 'Member',
@@ -360,6 +370,8 @@ export const DailyFeed: React.FC = () => {
             );
           })}
         </div>
+        <Pager page={view.page} pageCount={view.pageCount} total={view.total} onPage={view.setPage} />
+        </>
       )}
     </div>
   );

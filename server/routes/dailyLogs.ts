@@ -12,7 +12,7 @@ export const dailyLogsRouter = Router();
 const ALLOWED_EMOJIS = ['👏', '🔥', '👍', '🚀', '💡'];
 
 async function loadLog(db: Queryable, user: User, logId: string) {
-  const { rows } = await db.query('SELECT * FROM daily_logs WHERE id = $1', [logId]);
+  const { rows } = await db.query('SELECT * FROM daily_logs WHERE id = $1 AND is_active = 1', [logId]);
   const log = rows[0];
   if (!log) throw notFound('Daily update not found.');
   const access = await getGroupAccess(db, user, log.group_id);
@@ -162,7 +162,7 @@ dailyLogsRouter.delete('/daily-logs/:logId', async (req, res) => {
   const db = await getDb();
   const { log, access, isAuthor } = await loadLog(db, user, req.params.logId);
   assert(isAuthor || access.canLead, 'Only the author or a team lead can delete this update.');
-  await db.query('DELETE FROM daily_logs WHERE id = $1', [log.id]);
+  await db.query('UPDATE daily_logs SET is_active = 0 WHERE id = $1', [log.id]);
   res.status(204).end();
 });
 

@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useApp } from '../context/AppContext';
 import { daysUntil } from '../lib/dates';
-import { TaskPriority, TaskStatus } from '../types';
+import type { TaskPriority, TaskStatus } from '../types';
 import {
   CheckCircle2,
   Clock,
@@ -15,6 +15,8 @@ import {
   User as UserIcon
 } from 'lucide-react';
 import { Avatar } from './Avatar';
+import { FilterSelect, Pager } from './TableParts';
+import { useTableView } from '../lib/useTableView';
 
 interface TaskBoardProps {
   onOpenAssignTask: () => void;
@@ -69,6 +71,21 @@ export const TaskBoard: React.FC<TaskBoardProps> = ({
     }
     return true;
   });
+
+  const PRIORITY_ORDER = { urgent: 0, high: 1, medium: 2, low: 3 } as const;
+  const STATUS_ORDER = { todo: 0, in_progress: 1, ready_for_review: 2, approved: 3 } as const;
+  const view = useTableView(filteredTasks, {
+    searchText: () => '',
+    compare: {
+      due: (a, b) => `${a.dueDate} ${a.dueTime ?? ''}`.localeCompare(`${b.dueDate} ${b.dueTime ?? ''}`),
+      priority: (a, b) => PRIORITY_ORDER[a.priority] - PRIORITY_ORDER[b.priority],
+      status: (a, b) => STATUS_ORDER[a.status] - STATUS_ORDER[b.status],
+      created: (a, b) => a.createdAt.localeCompare(b.createdAt),
+    },
+    initialSort: { key: 'due', dir: 'asc' },
+    pageSize: 8,
+  });
+  const sortValue = `${view.sort.key}:${view.sort.dir}`;
 
   const isAnyFilterActive =
     statusFilter !== 'all' ||
@@ -241,6 +258,20 @@ export const TaskBoard: React.FC<TaskBoardProps> = ({
           </div>
 
           <div className="flex items-center gap-2">
+            <FilterSelect
+              value={sortValue}
+              onChange={v => {
+                const [key, dir] = v.split(':');
+                view.setSort(key, dir as 'asc' | 'desc');
+              }}
+              options={[
+                { value: 'due:asc', label: t.sortDueSoon },
+                { value: 'due:desc', label: t.sortDueLate },
+                { value: 'priority:asc', label: t.sortPriority },
+                { value: 'status:asc', label: t.sortStatus },
+                { value: 'created:desc', label: t.sortNewest },
+              ]}
+            />
             <span className="text-[11px] text-neutral-500">
               {filteredTasks.length} {language === 'km' ? 'កិច្ចការត្រូវបានបង្ហាញ' : 'tasks match'}
             </span>
@@ -317,8 +348,9 @@ export const TaskBoard: React.FC<TaskBoardProps> = ({
           ) : null}
         </div>
       ) : (
+        <>
         <div className="stagger grid grid-cols-1 md:grid-cols-2 gap-4">
-          {filteredTasks.map(task => {
+          {view.pageRows.map(task => {
             const assignee = users.find(u => u.id === task.assignedTo) || {
               id: task.assignedTo,
               name: 'Unassigned',
@@ -591,6 +623,8 @@ export const TaskBoard: React.FC<TaskBoardProps> = ({
             );
           })}
         </div>
+        <Pager page={view.page} pageCount={view.pageCount} total={view.total} onPage={view.setPage} />
+        </>
       )}
     </div>
   );

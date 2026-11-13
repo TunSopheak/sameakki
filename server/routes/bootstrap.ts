@@ -67,12 +67,12 @@ bootstrapRouter.get('/bootstrap', async (req, res) => {
             ORDER BY created_at`,
           [groupIds, user.id]
         ),
-    db.query('SELECT * FROM tasks WHERE group_id = ANY($1::uuid[]) ORDER BY created_at DESC', [groupIds]),
-    db.query('SELECT * FROM daily_logs WHERE group_id = ANY($1::uuid[]) ORDER BY created_at DESC', [groupIds]),
+    db.query('SELECT * FROM tasks WHERE group_id = ANY($1::uuid[]) AND is_active = 1 ORDER BY created_at DESC', [groupIds]),
+    db.query('SELECT * FROM daily_logs WHERE group_id = ANY($1::uuid[]) AND is_active = 1 ORDER BY created_at DESC', [groupIds]),
     db.query(
       `SELECT r.log_id, r.emoji, r.user_id FROM daily_log_reactions r
          JOIN daily_logs l ON l.id = r.log_id
-        WHERE l.group_id = ANY($1::uuid[]) ORDER BY r.created_at`,
+        WHERE l.group_id = ANY($1::uuid[]) AND l.is_active = 1 ORDER BY r.created_at`,
       [groupIds]
     ),
     db.query(

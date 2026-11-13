@@ -11,6 +11,7 @@ import { OverviewDashboard } from './components/OverviewDashboard';
 import { CreateGroupModal } from './components/CreateGroupModal';
 import { JoinGroupModal } from './components/JoinGroupModal';
 import { AngkorWatermark } from './components/AngkorWatermark';
+import { MobileTabBar } from './components/MobileTabBar';
 import { AdminOverview } from './components/AdminOverview';
 import type { Tab } from './components/sidebar/SidebarNav';
 import { Logo } from './components/Logo';
@@ -66,9 +67,9 @@ const MainApp: React.FC = () => {
           isSidebarCollapsed ? 'lg:pl-20' : 'lg:pl-64'
         }`}
       >
-        <Header activeTab={activeTab} onToggleMobileSidebar={() => setIsMobileSidebarOpen(open => !open)} />
+        <Header activeTab={activeTab} />
 
-        <main className="flex-1 pb-16">
+        <main className="flex-1 pb-8 lg:pb-16">
           {activeTab !== 'admin' && (
             <GroupBanner
               onOpenCreateGroup={() => setIsCreateGroupOpen(true)}
@@ -116,7 +117,7 @@ const MainApp: React.FC = () => {
           </div>
         </main>
 
-        <footer className="border-t border-neutral-200 bg-white py-6 text-xs text-neutral-500">
+        <footer className="border-t border-neutral-200 bg-white pb-24 pt-6 text-xs text-neutral-500 lg:pb-6">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row items-center justify-between gap-4">
             <div className="flex items-center gap-2">
               <img src="/khmer/flag-of-cambodia.svg" alt="" width="24" height="15" className="flag-kh" />
@@ -136,6 +137,8 @@ const MainApp: React.FC = () => {
           </div>
         </footer>
       </div>
+
+      <MobileTabBar activeTab={activeTab} onSelect={handleTabChange} onOpenMenu={() => setIsMobileSidebarOpen(true)} />
 
       <CreateGroupModal
         isOpen={isCreateGroupOpen}

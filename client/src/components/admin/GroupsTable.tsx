@@ -3,7 +3,7 @@ import type { AdminGroupRow } from '@shared/types';
 import { formatDateTime } from '../../lib/dates';
 import { useTableView } from '../../lib/useTableView';
 import { useApp } from '../../context/AppContext';
-import { FilterSelect, Pager, RowAction, SearchBox, SortHeader } from './TableParts';
+import { FilterSelect, Pager, RowAction, SearchBox, SortHeader } from '../TableParts';
 
 interface GroupsTableProps {
   groups: AdminGroupRow[];
