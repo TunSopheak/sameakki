@@ -1,6 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { ChevronDown, Search, X } from 'lucide-react';
+import { ChevronDown, Moon, Search, Sun, X } from 'lucide-react';
 import { useApp } from '../context/AppContext';
+import { useTheme } from '../lib/theme';
 import { useDismiss } from '../lib/useDismiss';
 import { Flag } from './Flag';
 import { Logo } from './Logo';
@@ -17,6 +18,7 @@ const LANGUAGES = [
 
 export const Header: React.FC<HeaderProps> = ({ activeTab }) => {
   const { language, setLanguage, t, activeGroup, searchQuery, setSearchQuery } = useApp();
+  const { theme, toggle } = useTheme();
   const [langOpen, setLangOpen] = useState(false);
   const searchRef = useRef<HTMLInputElement>(null);
   const langRef = useRef<HTMLDivElement>(null);
@@ -72,6 +74,15 @@ export const Header: React.FC<HeaderProps> = ({ activeTab }) => {
             </button>
           )}
         </div>
+
+        <button
+          onClick={toggle}
+          className="flex size-10 shrink-0 items-center justify-center rounded-xl border border-neutral-200 bg-white text-neutral-600 transition-colors hover:bg-neutral-100"
+          title={theme === 'dark' ? 'Light mode' : 'Dark mode'}
+          aria-label={theme === 'dark' ? 'Light mode' : 'Dark mode'}
+        >
+          {theme === 'dark' ? <Sun className="size-4" /> : <Moon className="size-4" />}
+        </button>
 
         <div ref={langRef} className="relative shrink-0">
           <button

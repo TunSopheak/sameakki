@@ -25,6 +25,44 @@
   --shadow-xs: 0 1px 2px rgb(26 20 16 / 0.05), 0 4px 12px rgb(26 20 16 / 0.04);
 }
 
+/*
+ * Dark mode: the same tokens, flipped. Surfaces use the "white" token, text uses the neutral scale.
+ * Black stays black (overlays use bg-black/60); text-black is remapped below.
+ */
+html.dark {
+  color-scheme: dark;
+  --color-white: #1e1814;
+  --color-brand: #c42a42;
+  --color-brand-dark: #a01f35;
+  --color-brand-soft: #3a1119;
+  --color-neutral-50: #14100d;
+  --color-neutral-100: #2a221d;
+  --color-neutral-200: #3a312a;
+  --color-neutral-300: #4d4239;
+  --color-neutral-400: #8c8178;
+  --color-neutral-500: #a89d94;
+  --color-neutral-600: #c4bab1;
+  --color-neutral-700: #d6cdc5;
+  --color-neutral-800: #e8e1da;
+  --color-neutral-900: #f5efe9;
+  --shadow-xs: 0 1px 2px rgb(0 0 0 / 0.4);
+}
+html.dark :is(.text-black, .hover\:text-black:hover) {
+  color: #f5efe9;
+}
+html.dark .text-white {
+  color: #fff;
+}
+html.dark :is(.bg-neutral-900, .bg-neutral-800) {
+  background-color: #3a2f28;
+}
+html.dark .border-neutral-800 {
+  border-color: #4d4239;
+}
+html.dark .angkor-watermark {
+  opacity: 0.1;
+}
+
 @layer base {
   body {
     font-family: var(--font-sans);

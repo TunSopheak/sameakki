@@ -4,6 +4,8 @@ Team and assignment tracker in Khmer and English. Leaders create groups, assign 
 
 **Stack:** React 19, Vite, Tailwind 4 · Node.js, Express 5, TypeScript · PostgreSQL
 
+**Features:** Khmer and English, light and dark mode (☾/☀ button in the header; remembers your choice and follows the system setting at first), avatars, Super Admin page with soft delete and restore, mobile tab bar.
+
 ## Run locally
 
 Needs Node.js 20.19+ and a PostgreSQL database (pgAdmin works fine).
@@ -48,6 +50,8 @@ Health:  /api/health (no database call; /api/health/db also checks the database)
 Env:     NODE_ENV=production, DATABASE_URL, JWT_SECRET
 ```
 
+Free hosting sleeps when idle. To keep it awake, add one UptimeRobot HTTP monitor on `/api/health` (every 5 minutes).
+
 Then run `npm run admin:reset:prod -- <username> <password>` once against the production database. A `Dockerfile` and `docker-compose.yml` are included for Docker.
 
 ## Commands
@@ -80,5 +84,7 @@ server/   API, database, migrations
 shared/   code used by both
 tests/    unit tests
 ```
+
+Colours are tokens at the top of `client/src/index.css`; dark mode overrides them under `html.dark`.
 
 To change the database, add a new entry to `server/db/migrations.ts`. Never edit an old one.
