@@ -55,6 +55,7 @@ interface AppContextType {
   }) => Promise<void>;
   removeMemberFromGroup: (userId: string, groupId?: string) => Promise<void>;
   updateAvatar: (avatar: string) => Promise<void>;
+  updateProfile: (data: { name: string; nameKm?: string; specialty?: string }) => Promise<void>;
   updateUserRole: (userId: string, newRole: Role) => Promise<void>;
   createGroup: (data: {
     name: string;
@@ -280,6 +281,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     removeMemberFromGroup: (userId, groupId) =>
       quiet(run(() => api.removeMember(groupId || resolvedGroupId, userId))),
     updateAvatar: avatar => run(() => api.updateAvatar(avatar)),
+    updateProfile: data => run(() => api.updateProfile(data)),
     updateUserRole: (userId, role) => quiet(run(() => api.updateUserRole(userId, role, resolvedGroupId || undefined))),
     createGroup: input =>
       run(async () => {

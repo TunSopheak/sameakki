@@ -1,9 +1,10 @@
 import React, { useRef, useState } from 'react';
-import { ChevronsUpDown, LogOut, Smile } from 'lucide-react';
+import { ChevronsUpDown, LogOut, Settings, Smile } from 'lucide-react';
 import { useApp } from '../../context/AppContext';
 import { useDismiss } from '../../lib/useDismiss';
 import { Avatar } from '../Avatar';
 import { AvatarPickerModal } from '../AvatarPickerModal';
+import { ProfileModal } from '../ProfileModal';
 
 const ROLE_LABEL = { super_admin: 'Admin', team_lead: 'Lead', member: 'Member', viewer: 'Viewer' } as const;
 
@@ -11,6 +12,7 @@ export const UserMenu: React.FC<{ isCollapsed: boolean }> = ({ isCollapsed }) =>
   const { currentUser, logout, language, t } = useApp();
   const [open, setOpen] = useState(false);
   const [pickerOpen, setPickerOpen] = useState(false);
+  const [profileOpen, setProfileOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
   useDismiss(ref, open, () => setOpen(false));
 
@@ -56,9 +58,21 @@ export const UserMenu: React.FC<{ isCollapsed: boolean }> = ({ isCollapsed }) =>
             role="menuitem"
             onClick={() => {
               setOpen(false);
-              setPickerOpen(true);
+              setProfileOpen(true);
             }}
             className="mt-1 flex w-full items-center gap-2 rounded-lg px-2.5 py-2 text-sm font-medium text-black transition-colors hover:bg-neutral-100"
+          >
+            <Settings className="size-4 text-neutral-500" />
+            {t.mySettings}
+          </button>
+          <button
+            type="button"
+            role="menuitem"
+            onClick={() => {
+              setOpen(false);
+              setPickerOpen(true);
+            }}
+            className="flex w-full items-center gap-2 rounded-lg px-2.5 py-2 text-sm font-medium text-black transition-colors hover:bg-neutral-100"
           >
             <Smile className="size-4 text-neutral-500" />
             {t.changeAvatar}
@@ -78,6 +92,7 @@ export const UserMenu: React.FC<{ isCollapsed: boolean }> = ({ isCollapsed }) =>
         </div>
       )}
       <AvatarPickerModal isOpen={pickerOpen} onClose={() => setPickerOpen(false)} />
+      <ProfileModal isOpen={profileOpen} onClose={() => setProfileOpen(false)} />
     </div>
   );
 };

@@ -5,7 +5,7 @@ import { z } from 'zod';
 import { config } from '../config';
 import { getDb } from '../db';
 import { clearAuthCookie, requireAuth, setAuthCookie } from '../middleware/auth';
-import { conflict, forbidden, unauthorized } from '../middleware/errors';
+import { badRequest, conflict, forbidden, unauthorized } from '../middleware/errors';
 import { toUser, USER_COLUMNS } from '../services/mappers';
 import { hashPassword } from '../services/password';
 
@@ -117,7 +117,7 @@ authRouter.post('/change-password', requireAuth, authLimiter, async (req, res) =
   const db = await getDb();
   const { rows } = await db.query('SELECT password_hash FROM users WHERE id = $1', [req.user!.id]);
   const ok = rows[0]?.password_hash && (await bcrypt.compare(input.currentPassword, rows[0].password_hash));
-  if (!ok) throw unauthorized('Current password is incorrect.');
+  if (!ok) throw badRequest('Current password is incorrect.');
   await db.query('UPDATE users SET password_hash = $2 WHERE id = $1', [
     req.user!.id,
     await hashPassword(input.newPassword),

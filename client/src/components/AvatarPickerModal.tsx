@@ -1,3 +1,4 @@
+import { createPortal } from 'react-dom';
 import React from 'react';
 import { Check, X } from 'lucide-react';
 import { BOY_AVATARS, GIRL_AVATARS, type AvatarKey } from '@shared/avatars';
@@ -51,20 +52,22 @@ export const AvatarPickerModal: React.FC<AvatarPickerModalProps> = ({ isOpen, on
     </div>
   );
 
-  return (
-    <div className="modal-overlay fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-2xs">
-      <div className="modal-panel w-full max-w-sm rounded-xl border border-neutral-200 bg-white p-5 shadow-2xl sm:p-6">
-        <div className="mb-4 flex items-center justify-between">
-          <h2 className="text-base font-bold text-black">{t.chooseAvatar}</h2>
-          <button onClick={onClose} aria-label={t.cancel} className="rounded p-1 text-neutral-400 hover:text-black">
-            <X className="size-5" />
-          </button>
+  // Rendered on <body>: the sidebar has its own stacking context and would trap a fixed overlay.
+  return createPortal(
+      <div className="modal-overlay fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-2xs">
+        <div className="modal-panel w-full max-w-sm rounded-xl border border-neutral-200 bg-white p-5 shadow-2xl sm:p-6">
+          <div className="mb-4 flex items-center justify-between">
+            <h2 className="text-base font-bold text-black">{t.chooseAvatar}</h2>
+            <button onClick={onClose} aria-label={t.cancel} className="rounded p-1 text-neutral-400 hover:text-black">
+              <X className="size-5" />
+            </button>
+          </div>
+          <div className="space-y-4">
+            {group(t.boys, BOY_AVATARS)}
+            {group(t.girls, GIRL_AVATARS)}
+          </div>
         </div>
-        <div className="space-y-4">
-          {group(t.boys, BOY_AVATARS)}
-          {group(t.girls, GIRL_AVATARS)}
-        </div>
-      </div>
-    </div>
+      </div>,
+    document.body
   );
 };

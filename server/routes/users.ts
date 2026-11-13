@@ -9,6 +9,25 @@ import { badRequest, notFound } from '../middleware/errors';
 
 export const usersRouter = Router();
 
+const profileSchema = z.object({
+  name: z.string().trim().min(1).max(120),
+  nameKm: z.string().trim().max(120).optional(),
+  specialty: z.string().trim().max(200).optional(),
+});
+
+/** People edit only their own details. Email and role stay under the admin's control. */
+usersRouter.patch('/users/me', async (req, res) => {
+  const input = profileSchema.parse(req.body);
+  const db = await getDb();
+  await db.query('UPDATE users SET name = $2, name_km = $3, specialty = $4 WHERE id = $1', [
+    req.user!.id,
+    input.name,
+    input.nameKm || null,
+    input.specialty || null,
+  ]);
+  res.status(204).end();
+});
+
 usersRouter.patch('/users/me/avatar', async (req, res) => {
   const { avatar } = z.object({ avatar: z.enum(AVATAR_KEYS) }).parse(req.body);
   const db = await getDb();

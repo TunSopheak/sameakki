@@ -65,6 +65,7 @@ export const api = {
   adminOverview: () => get<AdminOverview>('/admin/overview'),
   setUserActive: (userId: string, active: boolean) => post(`/admin/users/${userId}/active`, { active }),
   setGroupActive: (groupId: string, active: boolean) => post(`/admin/groups/${groupId}/active`, { active }),
+  updateProfile: (data: { name: string; nameKm?: string; specialty?: string }) => patch('/users/me', data),
   updateAvatar: (avatar: string) => patch('/users/me/avatar', { avatar }),
   updateUserRole: (userId: string, role: Role, groupId?: string) => patch(`/users/${userId}/role`, { role, groupId }),
 
