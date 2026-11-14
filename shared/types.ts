@@ -85,6 +85,8 @@ export interface Task {
   assignedBy: string;
   priority: TaskPriority;
   status: TaskStatus;
+  /** First day of work, YYYY-MM-DD. Never after dueDate. */
+  startDate: string;
   dueDate: string; // YYYY-MM-DD
   dueTime?: string; // HH:mm
   createdAt: string;
@@ -159,6 +161,7 @@ export const NOTIFICATION_TYPES = [
   'plan_expiring',
   'comment_added',
   'password_reset',
+  'task_rescheduled',
 ] as const;
 export type NotificationType = (typeof NOTIFICATION_TYPES)[number];
 

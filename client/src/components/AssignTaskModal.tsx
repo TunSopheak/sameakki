@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useApp } from '../context/AppContext';
 import { TaskPriority } from '../types';
-import { addDays } from '../lib/dates';
+import { addDays, todayLocal } from '../lib/dates';
 import { Plus, X } from 'lucide-react';
 
 interface AssignTaskModalProps {
@@ -17,6 +17,7 @@ export const AssignTaskModal: React.FC<AssignTaskModalProps> = ({ isOpen, onClos
   const [description, setDescription] = useState('');
   const [assignedTo, setAssignedTo] = useState('');
   const [priority, setPriority] = useState<TaskPriority>('medium');
+  const [startDate, setStartDate] = useState(todayLocal);
   const [dueDate, setDueDate] = useState(() => addDays(5));
   const [dueTime, setDueTime] = useState('18:00');
   const [submitting, setSubmitting] = useState(false);
@@ -27,6 +28,7 @@ export const AssignTaskModal: React.FC<AssignTaskModalProps> = ({ isOpen, onClos
     setTitle('');
     setDescription('');
     setPriority('medium');
+    setStartDate(todayLocal());
     setDueDate(addDays(5));
     setDueTime('18:00');
     setAssignedTo(activeGroupMembers[0]?.id || '');
@@ -46,6 +48,7 @@ export const AssignTaskModal: React.FC<AssignTaskModalProps> = ({ isOpen, onClos
         description: description.trim() || 'Deliver specified module requirements.',
         assignedTo,
         priority,
+        startDate,
         dueDate,
         dueTime,
       });
@@ -144,24 +147,38 @@ export const AssignTaskModal: React.FC<AssignTaskModalProps> = ({ isOpen, onClos
             </div>
           </div>
 
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
             <div>
-              <label className="block text-xs font-bold text-black mb-1">
-                {t.taskDeadline} *
-              </label>
+              <label className="block text-xs font-bold text-black mb-1">{t.taskStartDate}</label>
               <input
                 type="date"
                 required
-                value={dueDate}
-                onChange={e => setDueDate(e.target.value)}
+                value={startDate}
+                onChange={e => {
+                  setStartDate(e.target.value);
+                  // The two dates never cross: moving one past the other takes the other along
+                  if (e.target.value > dueDate) setDueDate(e.target.value);
+                }}
                 className="w-full px-3 py-2 text-sm bg-white border border-neutral-200 rounded-lg focus:outline-none focus:ring-1 focus:ring-brand/40"
               />
             </div>
 
             <div>
-              <label className="block text-xs font-bold text-black mb-1">
-                {t.taskTime}
-              </label>
+              <label className="block text-xs font-bold text-black mb-1">{t.taskDeadline} *</label>
+              <input
+                type="date"
+                required
+                value={dueDate}
+                onChange={e => {
+                  setDueDate(e.target.value);
+                  if (e.target.value < startDate) setStartDate(e.target.value);
+                }}
+                className="w-full px-3 py-2 text-sm bg-white border border-neutral-200 rounded-lg focus:outline-none focus:ring-1 focus:ring-brand/40"
+              />
+            </div>
+
+            <div>
+              <label className="block text-xs font-bold text-black mb-1">{t.taskTime}</label>
               <input
                 type="time"
                 value={dueTime}

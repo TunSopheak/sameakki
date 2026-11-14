@@ -22,7 +22,7 @@ export function buildDemoData(): BootstrapData {
     { id: 'demo-4', name: 'Vibol', nameKm: 'វិបុល', email: 'vibol@demo.local', role: 'viewer', department: 'Member', avatar: 'm3' },
   ];
 
-  const task = (id: string, title: string, assignedTo: string, status: Task['status'], priority: Task['priority'], dueIn: number, module: string): Task => ({
+  const task = (id: string, title: string, assignedTo: string, status: Task['status'], priority: Task['priority'], startIn: number, dueIn: number, module: string): Task => ({
     id,
     groupId: DEMO_GROUP_ID,
     title,
@@ -32,6 +32,7 @@ export function buildDemoData(): BootstrapData {
     assignedBy: lead.id,
     priority,
     status,
+    startDate: dateOffset(startIn),
     dueDate: dateOffset(dueIn),
     createdAt: isoOffset(-5),
     completedAt: status === 'ready_for_review' || status === 'approved' ? isoOffset(-1) : undefined,
@@ -40,11 +41,11 @@ export function buildDemoData(): BootstrapData {
     leaderFeedback: status === 'approved' ? 'Great work!' : undefined,
   });
   const tasks: Task[] = [
-    task('demo-t1', 'Design the login screen', 'demo-3', 'approved', 'medium', -2, 'Design'),
-    task('demo-t2', 'Build the dashboard page', 'demo-1', 'in_progress', 'high', 3, 'Frontend'),
-    task('demo-t3', 'Create the tasks API', 'demo-2', 'ready_for_review', 'high', 1, 'Backend'),
-    task('demo-t4', 'Write the user guide', 'demo-3', 'todo', 'low', 7, 'Docs'),
-    task('demo-t5', 'Fix the mobile menu', 'demo-1', 'todo', 'urgent', 2, 'Frontend'),
+    task('demo-t1', 'Design the login screen', 'demo-3', 'approved', 'medium', -6, -2, 'Design'),
+    task('demo-t2', 'Build the dashboard page', 'demo-1', 'in_progress', 'high', -1, 3, 'Frontend'),
+    task('demo-t3', 'Create the tasks API', 'demo-2', 'ready_for_review', 'high', -3, 1, 'Backend'),
+    task('demo-t4', 'Write the user guide', 'demo-3', 'todo', 'low', 2, 7, 'Docs'),
+    task('demo-t5', 'Fix the mobile menu', 'demo-1', 'todo', 'urgent', 0, 2, 'Frontend'),
   ];
 
   const log = (id: string, userId: string, title: string, items: [string, boolean][], status: DailyLog['status']): DailyLog => ({

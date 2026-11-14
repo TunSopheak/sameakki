@@ -39,6 +39,13 @@ export function describeNotification(n: AppNotification, language: Language): No
         note,
         text: km ? `${who} បានអនុម័តកិច្ចការ «${title}»` : `${who} approved your task "${title}"`,
       };
+    case 'task_rescheduled':
+      return {
+        tab: 'tasks',
+        text: km
+          ? `${who} បានកែកាលវិភាគកិច្ចការ «${title}» ទៅ ${p.startDate} → ${p.dueDate}`
+          : `${who} rescheduled "${title}" to ${p.startDate} → ${p.dueDate}`,
+      };
     case 'task_due_soon':
       return {
         tab: 'tasks',

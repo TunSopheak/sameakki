@@ -388,6 +388,53 @@ test('dates and times must be real', async () => {
   assert.equal((await lead.patch(`/api/groups/${ids.g1}`, { deadline: '2030-04-30' })).status, 204);
 });
 
+test('tasks have a start date, and leaders can reschedule them', async () => {
+  const lead = sessions.lead;
+  const boot = async () => (await lead.get('/api/bootstrap')).body;
+  const create = (extra: object) => lead.post(`/api/groups/${ids.g1}/tasks`, { title: 'Sched', assignedTo: ids.m1, ...extra });
+  const startOf = async (id: string) => (await boot()).tasks.find((t: Json) => t.id === id).startDate;
+
+  // No start date means today; an earlier due date pulls the start back so they never cross
+  const a = await create({ dueDate: day(10) });
+  assert.equal(await startOf(a.body.id), day(0), 'the start date defaults to today');
+  const b = await create({ startDate: day(2), dueDate: day(5) });
+  assert.equal(await startOf(b.body.id), day(2));
+  const past = await create({ dueDate: day(-3) });
+  assert.equal(await startOf(past.body.id), day(-3), 'a past due date keeps the start from landing after it');
+  assert.equal((await create({ startDate: day(6), dueDate: day(5) })).status, 400, 'a task cannot start after it is due');
+
+  // The database refuses a bad pair even if some code forgets to check
+  await assert.rejects(query('UPDATE tasks SET start_date = due_date + 1 WHERE id = $1', [b.body.id]));
+
+  // Rescheduling is for leaders, and the assignee hears about it once
+  const url = `/api/tasks/${b.body.id}/schedule`;
+  const heard = async () => (await sessions.m1.get('/api/notifications')).body.items.filter((i: Json) => i.type === 'task_rescheduled');
+  const before = (await heard()).length;
+  assert.equal((await lead.patch(url, { startDate: day(3), dueDate: day(8) })).status, 204);
+  assert.equal(await startOf(b.body.id), day(3));
+  const after = await heard();
+  assert.equal(after.length, before + 1);
+  assert.equal(after[0].params.startDate, day(3));
+  assert.equal(after[0].params.dueDate, day(8));
+  assert.equal(after[0].actorName, 'Lead');
+  assert.equal((await lead.patch(url, { startDate: day(3), dueDate: day(8) })).status, 204);
+  assert.equal((await heard()).length, before + 1, 'saving the same dates again says nothing');
+
+  assert.equal((await sessions.m2.patch(url, { startDate: day(3), dueDate: day(9) })).status, 403, 'a member cannot reschedule');
+  assert.equal((await sessions.m1.patch(url, { startDate: day(3), dueDate: day(9) })).status, 403, 'not even their own task');
+  assert.equal((await sessions.outsider.patch(url, { startDate: day(3), dueDate: day(9) })).status, 404);
+  assert.equal((await lead.patch(url, { startDate: day(9), dueDate: day(8) })).status, 400);
+  assert.equal((await lead.patch(url, { startDate: '2025-02-30', dueDate: day(8) })).status, 400);
+  assert.equal((await lead.patch(url, { dueDate: day(8) })).status, 400, 'both dates are needed');
+  assert.equal((await lead.patch(`/api/tasks/00000000-0000-0000-0000-000000000000/schedule`, { startDate: day(1), dueDate: day(2) })).status, 404);
+  assert.ok((await boot()).activityEvents.some((e: Json) => e.type === 'task_deadline_changed' && e.description.includes('→')), 'the change is in the group log');
+
+  // The older "change due date" call keeps working, and moves the start back when it has to
+  assert.equal((await lead.patch(`/api/tasks/${b.body.id}/deadline`, { dueDate: day(1) })).status, 204);
+  assert.equal(await startOf(b.body.id), day(1));
+  assert.equal((await boot()).tasks.find((t: Json) => t.id === b.body.id).dueDate, day(1));
+});
+
 test('resetting a password ends old sessions and leaves a trace', async () => {
   const lead = sessions.lead;
   const m2Old = sessions.m2;

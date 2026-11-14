@@ -29,6 +29,7 @@ const ICONS: Record<NotificationType, React.ComponentType<{ className?: string }
   task_ready_for_review: Eye,
   task_approved: Award,
   task_due_soon: Clock,
+  task_rescheduled: CalendarClock,
   task_overdue: AlertTriangle,
   daily_approved: Award,
   daily_reaction: Smile,

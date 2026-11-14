@@ -1,8 +1,7 @@
 import type { Queryable } from '../db';
 import type { NotificationType } from '../../shared/types';
+import { TIME_ZONE } from './time';
 
-/** Day boundaries for reminders follow this time zone, not the server's. */
-const TIME_ZONE = process.env.APP_TIME_ZONE || 'Asia/Phnom_Penh';
 const KEEP_DAYS = 60;
 
 interface NewNotification {

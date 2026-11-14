@@ -92,11 +92,15 @@ interface AppContextType {
     description: string;
     assignedTo: string;
     priority: Task['priority'];
+    /** Left out = today. */
+    startDate?: string;
     dueDate: string;
     dueTime?: string;
   }) => Promise<void>;
   updateTaskStatus: (taskId: string, status: Exclude<TaskStatus, 'approved'>, memberNotes?: string) => Promise<void>;
   updateTaskDeadline: (taskId: string, newDueDate: string, newDueTime?: string) => Promise<void>;
+  /** Moves a task on the timeline: new start and due dates together. */
+  rescheduleTask: (taskId: string, startDate: string, dueDate: string) => Promise<void>;
   approveTask: (taskId: string, leaderFeedback?: string) => Promise<void>;
   deleteTask: (taskId: string) => Promise<void>;
 
@@ -338,6 +342,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
     assignTask: input => run(() => api.createTask(resolvedGroupId, input)),
     updateTaskStatus: (taskId, status, notes) => quiet(run(() => api.updateTaskStatus(taskId, status, notes))),
+    rescheduleTask: (taskId, startDate, dueDate) => quiet(run(() => api.scheduleTask(taskId, startDate, dueDate))),
     updateTaskDeadline: (taskId, dueDate, dueTime) => quiet(run(() => api.updateTaskDeadline(taskId, dueDate, dueTime))),
     approveTask: (taskId, feedback) => quiet(run(() => api.approveTask(taskId, feedback))),
     deleteTask: taskId => quiet(run(() => api.deleteTask(taskId))),

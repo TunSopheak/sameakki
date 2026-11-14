@@ -5,7 +5,7 @@ import { Header } from './components/Header';
 import { GroupBanner } from './components/GroupBanner';
 import { DailyStandupBox } from './components/DailyStandupBox';
 import { DailyFeed } from './components/DailyFeed';
-import { TaskBoard } from './components/TaskBoard';
+import { TasksTab } from './components/TasksTab';
 import { MembersList } from './components/MembersList';
 import { OverviewDashboard } from './components/OverviewDashboard';
 import { CreateGroupModal } from './components/CreateGroupModal';
@@ -97,9 +97,7 @@ const MainApp: React.FC = () => {
             )}
 
             {activeTab === 'tasks' && (
-              <TaskBoard
-                onOpenAssignTask={() => setIsAssignTaskOpen(true)}
-              />
+              <TasksTab onOpenAssignTask={() => setIsAssignTaskOpen(true)} />
             )}
 
             {activeTab === 'daily' && (

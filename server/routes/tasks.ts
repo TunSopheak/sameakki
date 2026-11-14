@@ -8,6 +8,7 @@ import { logActivity } from '../services/activity';
 import { groupLeadIds, notify } from '../services/notifications';
 import { badRequest, notFound } from '../middleware/errors';
 import { isoDate, isoTime as time } from '../services/validation';
+import { TIME_ZONE } from '../services/time';
 
 export const tasksRouter = Router();
 
@@ -20,15 +21,58 @@ async function loadTask(db: Queryable, user: User, taskId: string) {
   return { task, access };
 }
 
-const createTaskSchema = z.object({
-  title: z.string().trim().min(1).max(200),
-  module: z.string().trim().max(120).optional(),
-  description: z.string().trim().max(5000).optional(),
-  assignedTo: z.string().uuid(),
-  priority: z.enum(TASK_PRIORITIES).default('medium'),
-  dueDate: isoDate,
-  dueTime: time.optional(),
-});
+const START_AFTER_DUE = 'The start date cannot be after the due date.';
+
+const createTaskSchema = z
+  .object({
+    title: z.string().trim().min(1).max(200),
+    module: z.string().trim().max(120).optional(),
+    description: z.string().trim().max(5000).optional(),
+    assignedTo: z.string().uuid(),
+    priority: z.enum(TASK_PRIORITIES).default('medium'),
+    /** Left out = today. A task cannot start after it is due, so a past due date pulls the start back to it. */
+    startDate: isoDate.optional(),
+    dueDate: isoDate,
+    dueTime: time.optional(),
+  })
+  .refine(v => !v.startDate || v.startDate <= v.dueDate, { message: START_AFTER_DUE, path: ['startDate'] });
+
+/** Moves a task to new dates, and tells the person it is assigned to. Used by both ways of changing dates. */
+async function applySchedule(
+  tx: Queryable,
+  actor: User,
+  task: any,
+  next: { startDate: string; dueDate: string; dueTime?: string }
+) {
+  const dueTime = next.dueTime ?? task.due_time;
+  if (next.startDate === task.start_date && next.dueDate === task.due_date && dueTime === task.due_time) return;
+
+  await tx.query('UPDATE tasks SET start_date = $2, due_date = $3, due_time = $4 WHERE id = $1', [
+    task.id,
+    next.startDate,
+    next.dueDate,
+    dueTime,
+  ]);
+  await logActivity(tx, actor, {
+    groupId: task.group_id,
+    type: 'task_deadline_changed',
+    targetId: task.id,
+    targetTitle: task.title,
+    description: `changed the schedule of "${task.title}" to ${next.startDate} → ${next.dueDate}`,
+    descriptionKm: `បានកែកាលវិភាគកិច្ចការ "${task.title}" ទៅ ${next.startDate} → ${next.dueDate}`,
+    metadata: { oldValue: task.due_date, newValue: next.dueDate },
+  });
+  if (task.assigned_to && task.assigned_to !== actor.id) {
+    await notify(tx, {
+      userId: task.assigned_to,
+      type: 'task_rescheduled',
+      groupId: task.group_id,
+      targetId: task.id,
+      actorName: actor.name,
+      params: { title: task.title, startDate: next.startDate, dueDate: next.dueDate },
+    });
+  }
+}
 
 tasksRouter.post('/groups/:groupId/tasks', async (req, res) => {
   const user = req.user!;
@@ -46,8 +90,9 @@ tasksRouter.post('/groups/:groupId/tasks', async (req, res) => {
     if (!assignee[0]) throw badRequest('The assignee must be a member of this group.');
 
     const { rows } = await tx.query(
-      `INSERT INTO tasks (group_id, title, module, description, assigned_to, assigned_by, priority, due_date, due_time)
-       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9) RETURNING id`,
+      `INSERT INTO tasks (group_id, title, module, description, assigned_to, assigned_by, priority, due_date, due_time, start_date)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8::date, $9, LEAST(COALESCE($10::date, (now() AT TIME ZONE $11)::date), $8::date))
+       RETURNING id`,
       [
         access.groupId,
         input.title,
@@ -58,6 +103,8 @@ tasksRouter.post('/groups/:groupId/tasks', async (req, res) => {
         input.priority,
         input.dueDate,
         input.dueTime || '23:59',
+        input.startDate ?? null,
+        TIME_ZONE,
       ]
     );
     const name = assignee[0].name;
@@ -149,23 +196,26 @@ tasksRouter.patch('/tasks/:taskId/deadline', async (req, res) => {
   assert(access.canLead, 'Only team leads can change task deadlines.');
   const input = deadlineSchema.parse(req.body);
 
-  await db.transaction(async tx => {
-    await tx.query('UPDATE tasks SET due_date = $2, due_time = COALESCE($3, due_time) WHERE id = $1', [
-      task.id,
-      input.dueDate,
-      input.dueTime ?? null,
-    ]);
-    await logActivity(tx, user, {
-      groupId: task.group_id,
-      type: 'task_deadline_changed',
-      targetId: task.id,
-      targetTitle: task.title,
-      description: `changed task deadline from ${task.due_date} to ${input.dueDate}`,
-      descriptionKm: `បានប្តូរកាលបរិច្ឆេទកំណត់នៃកិច្ចការពី ${task.due_date} ទៅ ${input.dueDate}`,
-      metadata: { oldValue: task.due_date, newValue: input.dueDate },
-    });
-  });
+  // A due date before the start pulls the start back, so the two never cross
+  const startDate = task.start_date <= input.dueDate ? task.start_date : input.dueDate;
+  await db.transaction(tx => applySchedule(tx, user, task, { startDate, dueDate: input.dueDate, dueTime: input.dueTime }));
 
+  res.status(204).end();
+});
+
+const scheduleSchema = z
+  .object({ startDate: isoDate, dueDate: isoDate, dueTime: time.optional() })
+  .refine(v => v.startDate <= v.dueDate, { message: START_AFTER_DUE, path: ['startDate'] });
+
+/** Move a task on the timeline: change its start and due dates together. */
+tasksRouter.patch('/tasks/:taskId/schedule', async (req, res) => {
+  const user = req.user!;
+  const db = await getDb();
+  const { task, access } = await loadTask(db, user, req.params.taskId);
+  assert(access.canLead, 'Only team leads can change the schedule.');
+  const input = scheduleSchema.parse(req.body);
+
+  await db.transaction(tx => applySchedule(tx, user, task, input));
   res.status(204).end();
 });
 

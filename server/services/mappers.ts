@@ -47,6 +47,7 @@ export const toTask = (r: any): Task => ({
   assignedBy: r.assigned_by ?? '',
   priority: r.priority,
   status: r.status,
+  startDate: r.start_date,
   dueDate: r.due_date,
   dueTime: opt(r.due_time),
   createdAt: iso(r.created_at)!,

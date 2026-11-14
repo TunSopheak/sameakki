@@ -223,4 +223,14 @@ export const migrations: { id: string; sql: string }[] = [
     id: '013_token_version',
     sql: `ALTER TABLE users ADD COLUMN token_version INTEGER NOT NULL DEFAULT 0`,
   },
+  {
+    // Gantt chart: a task now runs from start_date to due_date. Older tasks start the day they were created.
+    id: '014_task_start_date',
+    sql: `
+      ALTER TABLE tasks ADD COLUMN start_date DATE;
+      UPDATE tasks SET start_date = LEAST((created_at AT TIME ZONE 'Asia/Phnom_Penh')::date, due_date);
+      ALTER TABLE tasks ALTER COLUMN start_date SET NOT NULL;
+      ALTER TABLE tasks ADD CONSTRAINT tasks_start_not_after_due CHECK (start_date <= due_date);
+    `,
+  },
 ];

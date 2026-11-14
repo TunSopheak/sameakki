@@ -231,3 +231,26 @@ button:not(:disabled):active {
     scroll-behavior: auto !important;
   }
 }
+
+/* Printing the timeline: only the paper version is shown, on A4 landscape */
+@page timeline {
+  size: A4 landscape;
+  margin: 10mm;
+}
+.timeline-print-root {
+  page: timeline;
+}
+@media print {
+  html.printing-timeline body > *:not(.timeline-print-root) {
+    display: none !important;
+  }
+  html.printing-timeline,
+  html.printing-timeline body {
+    background: #ffffff !important;
+  }
+  .timeline-print-root,
+  .timeline-print-root * {
+    print-color-adjust: exact;
+    -webkit-print-color-adjust: exact;
+  }
+}

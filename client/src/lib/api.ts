@@ -101,10 +101,11 @@ export const api = {
 
   createTask: (
     groupId: string,
-    data: { title: string; module: string; description: string; assignedTo: string; priority: TaskPriority; dueDate: string; dueTime?: string }
+    data: { title: string; module: string; description: string; assignedTo: string; priority: TaskPriority; startDate?: string; dueDate: string; dueTime?: string }
   ) => post<{ id: string }>(`/groups/${groupId}/tasks`, data),
   updateTaskStatus: (taskId: string, status: Exclude<TaskStatus, 'approved'>, memberNotes?: string) =>
     patch(`/tasks/${taskId}/status`, { status, memberNotes }),
+  scheduleTask: (taskId: string, startDate: string, dueDate: string) => patch(`/tasks/${taskId}/schedule`, { startDate, dueDate }),
   updateTaskDeadline: (taskId: string, dueDate: string, dueTime?: string) =>
     patch(`/tasks/${taskId}/deadline`, { dueDate, dueTime }),
   approveTask: (taskId: string, feedback?: string) => post(`/tasks/${taskId}/approve`, { feedback }),
