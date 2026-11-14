@@ -37,7 +37,7 @@ export const LandingPage: React.FC = () => {
 
       <footer className="space-y-6 px-4 pb-10 text-center text-xs text-neutral-500">
         <CreatorCard />
-        <p>{APP_NAME} · {copy.footer.rights}</p>
+        <p>© {new Date().getFullYear()} {APP_NAME} · {copy.footer.rights}</p>
       </footer>
     </div>
   );
