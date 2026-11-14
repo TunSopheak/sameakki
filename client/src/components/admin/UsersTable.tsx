@@ -1,10 +1,11 @@
 import React, { useMemo, useState } from 'react';
+import { CalendarClock, KeyRound, Users } from 'lucide-react';
 import type { AdminUserRow, Role } from '@shared/types';
 import { formatDateTime } from '../../lib/dates';
 import { useTableView } from '../../lib/useTableView';
 import { useApp } from '../../context/AppContext';
 import { Avatar } from '../Avatar';
-import { FilterSelect, Pager, RowAction, SearchBox, SortHeader } from '../TableParts';
+import { FilterSelect, IconAction, Pager, RowAction, SearchBox, SortHeader } from '../TableParts';
 
 const ONLINE_MINUTES = 10;
 const ACTIVE_DAYS = 7;
@@ -61,16 +62,22 @@ export const UsersTable: React.FC<UsersTableProps> = ({ users, onDelete, onChang
     initialSort: { key: 'created', dir: 'asc' },
   });
 
+  // Line 1: when the plan ends. Line 2 (leaders only): how many members each of their groups may have.
   const planLabel = (user: AdminUserRow) => {
     if (user.role === 'super_admin') return '—';
-    const limit = user.maxMembers ? `≤ ${user.maxMembers}` : t.adminUnlimited;
-    if (!user.expiresAt) return `${t.adminNeverExpires} · ${limit}`;
-    const expired = new Date(user.expiresAt).getTime() < Date.now();
+    const expired = !!user.expiresAt && new Date(user.expiresAt).getTime() < Date.now();
     return (
-      <span className={expired ? 'font-semibold text-brand' : undefined}>
-        {expired ? `${t.adminExpired} ` : ''}
-        {user.expiresAt.slice(0, 10)} · {limit}
-      </span>
+      <div className="space-y-0.5">
+        <p className={expired ? 'font-semibold text-brand' : undefined}>
+          {user.expiresAt ? `${expired ? `${t.adminExpired} · ` : ''}${user.expiresAt.slice(0, 10)}` : t.adminNeverExpires}
+        </p>
+        {user.role === 'team_lead' && (
+          <p className="flex items-center gap-1 text-neutral-500" title={`${t.adminMaxMembers}: ${user.maxMembers ?? t.adminUnlimited}`}>
+            <Users className="size-3" />
+            {user.maxMembers ?? '∞'}
+          </p>
+        )}
+      </div>
     );
   };
 
@@ -123,7 +130,7 @@ export const UsersTable: React.FC<UsersTableProps> = ({ users, onDelete, onChang
               <SortHeader label={t.adminJoined} column="created" sort={view.sort} onSort={view.toggleSort} />
               <SortHeader label={t.adminLastActive} column="seen" sort={view.sort} onSort={view.toggleSort} />
               <th className="px-4 py-2.5 font-semibold">{t.adminPlan}</th>
-              <th className="px-4 py-2.5 text-right font-semibold">{t.adminActions}</th>
+              <th className="sticky right-0 bg-neutral-50 px-4 py-2.5 text-right font-semibold">{t.adminActions}</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-neutral-100">
@@ -159,37 +166,20 @@ export const UsersTable: React.FC<UsersTableProps> = ({ users, onDelete, onChang
                   <td className="px-4 py-3 text-neutral-700">{user.groupCount}</td>
                   <td className="px-4 py-3 text-neutral-500">{formatDateTime(user.createdAt)}</td>
                   <td className="px-4 py-3">
-                    <span className="inline-flex items-center gap-1.5 text-neutral-700">
-                      {isOnline && <span className="size-2 rounded-full bg-emerald-500" />}
+                    <span className="inline-flex items-center gap-1.5 whitespace-nowrap text-neutral-700">
+                      {isOnline && <span className="size-2 shrink-0 rounded-full bg-emerald-500" />}
                       {lastSeen(user)}
                     </span>
                   </td>
                   <td className="px-4 py-3 text-neutral-700">{planLabel(user)}</td>
-                  <td className="px-4 py-3 text-right">
-                    {canEdit && (
-                      <button
-                        onClick={() => onEditPlan(user)}
-                        className="mr-3 cursor-pointer text-xs font-semibold text-black hover:underline"
-                      >
-                        {t.adminEditPlan}
-                      </button>
-                    )}
-                    {canEdit && user.registered && (
-                      <button
-                        onClick={() => onResetPassword(user)}
-                        className="mr-3 cursor-pointer text-xs font-semibold text-black hover:underline"
-                      >
-                        {t.resetPasswordAction}
-                      </button>
-                    )}
-                    {user.role !== 'super_admin' && (
-                      <RowAction
-                        active={user.isActive}
-                        onClick={() => onDelete(user, !user.isActive)}
-                        deleteLabel={t.adminDelete}
-                        restoreLabel={t.adminRestore}
-                      />
-                    )}
+                  <td className="sticky right-0 bg-white px-4 py-3">
+                    <div className="flex items-center justify-end gap-0.5">
+                      {canEdit && <IconAction icon={CalendarClock} label={t.adminEditPlan} onClick={() => onEditPlan(user)} />}
+                      {canEdit && user.registered && <IconAction icon={KeyRound} label={t.resetPasswordAction} onClick={() => onResetPassword(user)} />}
+                      {user.role !== 'super_admin' && (
+                        <RowAction active={user.isActive} onClick={() => onDelete(user, !user.isActive)} deleteLabel={t.adminDelete} restoreLabel={t.adminRestore} />
+                      )}
+                    </div>
                   </td>
                 </tr>
               );

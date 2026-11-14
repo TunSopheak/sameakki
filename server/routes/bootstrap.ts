@@ -32,7 +32,7 @@ bootstrapRouter.get('/bootstrap', async (req, res) => {
   // Even the Super Admin gets only their own groups, plus any a leader has opened for support
   const { rows: groupRows } = isSuperAdmin(user)
     ? await db.query(
-        `SELECT g.* FROM groups g
+        `SELECT g.*, EXISTS (SELECT 1 FROM users l WHERE l.id = g.leader_id AND l.role <> 'super_admin' AND l.expires_at IS NOT NULL AND l.expires_at < now()) AS leader_plan_ended FROM groups g
           WHERE g.is_active = 1
             AND ((g.support_access_until IS NOT NULL AND g.support_access_until > now())
                  OR EXISTS (SELECT 1 FROM group_members m WHERE m.group_id = g.id AND m.user_id = $1))
@@ -40,7 +40,7 @@ bootstrapRouter.get('/bootstrap', async (req, res) => {
         [user.id]
       )
     : await db.query(
-        `SELECT g.* FROM groups g
+        `SELECT g.*, EXISTS (SELECT 1 FROM users l WHERE l.id = g.leader_id AND l.role <> 'super_admin' AND l.expires_at IS NOT NULL AND l.expires_at < now()) AS leader_plan_ended FROM groups g
            JOIN group_members m ON m.group_id = g.id AND m.user_id = $1
           WHERE g.is_active = 1
           ORDER BY g.created_at DESC`,

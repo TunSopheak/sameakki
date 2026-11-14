@@ -7,7 +7,7 @@ import { clearAuthCookie, requireAuth, setAuthCookie } from '../middleware/auth'
 import { badRequest, unauthorized } from '../middleware/errors';
 import { toUser, USER_COLUMNS } from '../services/mappers';
 import { hashPassword } from '../services/password';
-import { assertNotExpired } from '../services/plan';
+import { assertNotLocked, planState } from '../services/plan';
 
 export const authRouter = Router();
 
@@ -36,10 +36,11 @@ authRouter.post('/login', authLimiter, async (req, res) => {
   const row = rows[0];
   const ok = row?.password_hash ? await bcrypt.compare(input.password, row.password_hash) : false;
   if (!ok) throw unauthorized('Incorrect email/username or password.');
-  assertNotExpired(row);
+  assertNotLocked(row);
 
   setAuthCookie(res, row.id, row.token_version);
-  res.json({ user: toUser(row) });
+  const plan = planState(row);
+  res.json({ user: { ...toUser(row), plan: { status: plan.status === 'read_only' ? 'read_only' : 'active', expiresAt: plan.expiresAt, locksAt: plan.locksAt } } });
 });
 
 authRouter.post('/logout', (_req, res) => {

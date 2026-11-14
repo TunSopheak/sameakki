@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
-import { ChevronDown, Download, FileSpreadsheet, Printer } from 'lucide-react';
+import { ChevronDown, Download, FileSpreadsheet, FileText, Printer } from 'lucide-react';
 import type { Task, User } from '@shared/types';
 import { useApp } from '../../context/AppContext';
 import { todayLocal } from '../../lib/dates';
@@ -51,23 +51,31 @@ export const ExportMenu: React.FC<ExportMenuProps> = ({ groupName, tasks, users,
     downloadBlob(new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' }), exportFileName(groupName, 'xlsx', todayLocal()));
   };
 
-  const item ='flex w-full cursor-pointer items-center gap-2 rounded-lg px-3 py-2 text-left text-xs font-medium transition-colors hover:bg-neutral-100';
+  const item = 'flex w-full cursor-pointer items-center gap-2 rounded-lg px-3 py-3 text-left text-sm sm:py-2 sm:text-xs font-medium transition-colors hover:bg-neutral-100';
 
   return (
     <div ref={ref} className="relative">
       <button
         onClick={() => setOpen(v => !v)}
         disabled={tasks.length === 0}
+        aria-label={t.exportLabel}
+        title={t.exportLabel}
         aria-haspopup="menu"
         aria-expanded={open}
         className="inline-flex cursor-pointer items-center gap-1.5 rounded-lg border border-neutral-200 bg-white px-3 py-1.5 text-xs font-semibold transition-colors hover:bg-neutral-100 disabled:cursor-not-allowed disabled:opacity-50"
       >
         <Download className="size-3.5" />
-        {t.exportLabel}
-        <ChevronDown className={`size-3.5 transition-transform ${open ? 'rotate-180' : ''}`} />
+        <span className="hidden sm:inline">{t.exportLabel}</span>
+        <ChevronDown className={`hidden size-3.5 transition-transform sm:block ${open ? 'rotate-180' : ''}`} />
       </button>
       {open && (
-        <div role="menu" className="absolute right-0 top-full z-30 mt-1.5 w-64 rounded-xl border border-neutral-200 bg-white p-1.5 shadow-lg">
+        <>
+          {/* On a phone the menu is a sheet above the tab bar, so it never covers the chart it exports */}
+          <button type="button" aria-label={t.close} onClick={() => setOpen(false)} className="fixed inset-0 z-40 cursor-default bg-black/40 sm:hidden" />
+        <div
+          role="menu"
+          className="fixed inset-x-3 bottom-[calc(4.5rem+env(safe-area-inset-bottom))] z-50 rounded-xl border border-neutral-200 bg-white p-1.5 shadow-xl sm:absolute sm:inset-x-auto sm:bottom-auto sm:right-0 sm:top-full sm:z-30 sm:mt-1.5 sm:w-64 sm:shadow-lg"
+        >
           <button role="menuitem" onClick={exportPdf} className={item}>
             <Printer className="size-4 text-brand" />
             {t.exportPdf}
@@ -77,11 +85,12 @@ export const ExportMenu: React.FC<ExportMenuProps> = ({ groupName, tasks, users,
             {t.exportXlsx}
           </button>
           <button role="menuitem" onClick={exportCsv} className={item}>
-            <FileSpreadsheet className="size-4 text-brand" />
+            <FileText className="size-4 text-brand" />
             {t.exportCsv}
           </button>
           <p className="px-3 pb-1.5 pt-1 text-[11px] leading-relaxed text-neutral-500">{t.exportHint}</p>
         </div>
+        </>
       )}
       {printing && createPortal(<PrintableTimeline groupName={groupName} tasks={tasks} users={users} teamDeadline={teamDeadline} />, document.body)}
     </div>

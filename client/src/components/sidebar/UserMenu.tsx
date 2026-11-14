@@ -7,8 +7,6 @@ import { Avatar } from '../Avatar';
 import { AvatarPickerModal } from '../AvatarPickerModal';
 import { ProfileModal } from '../ProfileModal';
 
-const ROLE_LABEL = { super_admin: 'Admin', team_lead: 'Lead', member: 'Member', viewer: 'Viewer' } as const;
-
 export const UserMenu: React.FC<{ isCollapsed: boolean }> = ({ isCollapsed }) => {
   const { currentUser, logout, language, t } = useApp();
   const [open, setOpen] = useState(false);
@@ -17,6 +15,7 @@ export const UserMenu: React.FC<{ isCollapsed: boolean }> = ({ isCollapsed }) =>
   const ref = useRef<HTMLDivElement>(null);
   useDismiss(ref, open, () => setOpen(false));
 
+  const roleLabel = { super_admin: t.roleShortAdmin, team_lead: t.roleShortLead, member: t.roleShortMember, viewer: t.roleShortViewer };
   const displayName = language === 'km' && currentUser.nameKm ? currentUser.nameKm : currentUser.name;
 
   return (
@@ -37,7 +36,7 @@ export const UserMenu: React.FC<{ isCollapsed: boolean }> = ({ isCollapsed }) =>
             <span className="min-w-0 flex-1">
               <span className="block truncate text-sm font-semibold text-black">{displayName}</span>
               <span className="mt-0.5 inline-block rounded-md bg-brand-soft px-1.5 py-px text-[11px] font-semibold uppercase tracking-wide text-brand">
-                {ROLE_LABEL[currentUser.role]}
+                {roleLabel[currentUser.role]}
               </span>
             </span>
             <ChevronsUpDown className="size-4 shrink-0 text-neutral-400" />
@@ -88,7 +87,7 @@ export const UserMenu: React.FC<{ isCollapsed: boolean }> = ({ isCollapsed }) =>
             className="flex w-full items-center gap-2 rounded-lg px-2.5 py-2 text-sm font-medium text-black transition-colors hover:bg-neutral-100"
           >
             <Info className="size-4 text-neutral-500" />
-            {t.aboutApp}
+            {t.authAbout}
           </button>
           <button
             type="button"

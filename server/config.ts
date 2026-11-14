@@ -18,6 +18,8 @@ export const config = {
   databaseSsl: env.DATABASE_SSL ? env.DATABASE_SSL !== 'false' : isProduction,
   jwtSecret,
   cookieSecure: env.COOKIE_SECURE ? env.COOKIE_SECURE !== 'false' : isProduction,
+  /** Days after the plan ends when an account can still look at its data (and export it) but not change anything. */
+  expiredGraceDays: Number(env.EXPIRED_GRACE_DAYS) || 30,
   jwtExpiresInDays: Number(env.JWT_EXPIRES_IN_DAYS) || 7,
   corsOrigins: (env.CORS_ORIGINS || '').split(',').map(s => s.trim()).filter(Boolean),
   clientDistDir: path.resolve(env.CLIENT_DIST_DIR || './dist/client'),

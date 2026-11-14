@@ -1,5 +1,6 @@
 import React from 'react';
 import { ArrowDown, ArrowUp, ChevronLeft, ChevronRight, RotateCcw, Search, Trash2 } from 'lucide-react';
+import { useApp } from '../context/AppContext';
 import type { SortDir } from '../lib/useTableView';
 
 interface SortHeaderProps {
@@ -69,32 +70,35 @@ interface PagerProps {
   onPage: (page: number) => void;
 }
 
-export const Pager: React.FC<PagerProps> = ({ page, pageCount, total, onPage }) => (
-  <div className="flex items-center justify-between border-t border-neutral-100 px-4 py-2.5 text-xs text-neutral-500">
-    <span>{total}</span>
-    <div className="flex items-center gap-1">
-      <button
-        onClick={() => onPage(page - 1)}
-        disabled={page === 0}
-        aria-label="Previous page"
-        className="rounded-lg p-1.5 hover:bg-neutral-100 disabled:opacity-40"
-      >
-        <ChevronLeft className="size-4" />
-      </button>
-      <span className="min-w-12 text-center font-medium text-neutral-700">
-        {page + 1} / {pageCount}
-      </span>
-      <button
-        onClick={() => onPage(page + 1)}
-        disabled={page >= pageCount - 1}
-        aria-label="Next page"
-        className="rounded-lg p-1.5 hover:bg-neutral-100 disabled:opacity-40"
-      >
-        <ChevronRight className="size-4" />
-      </button>
+export const Pager: React.FC<PagerProps> = ({ page, pageCount, total, onPage }) => {
+  const { t } = useApp();
+  return (
+    <div className="flex items-center justify-between border-t border-neutral-100 px-4 py-2.5 text-xs text-neutral-500">
+      <span>{total}</span>
+      <div className="flex items-center gap-1">
+        <button
+          onClick={() => onPage(page - 1)}
+          disabled={page === 0}
+          aria-label={t.pagePrevious}
+          className="rounded-lg p-1.5 hover:bg-neutral-100 disabled:opacity-40"
+        >
+          <ChevronLeft className="size-4" />
+        </button>
+        <span className="min-w-12 text-center font-medium text-neutral-700">
+          {page + 1} / {pageCount}
+        </span>
+        <button
+          onClick={() => onPage(page + 1)}
+          disabled={page >= pageCount - 1}
+          aria-label={t.pageNext}
+          className="rounded-lg p-1.5 hover:bg-neutral-100 disabled:opacity-40"
+        >
+          <ChevronRight className="size-4" />
+        </button>
+      </div>
     </div>
-  </div>
-);
+  );
+};
 
 interface RowActionProps {
   active: boolean;
@@ -103,14 +107,29 @@ interface RowActionProps {
   restoreLabel: string;
 }
 
-export const RowAction: React.FC<RowActionProps> = ({ active, onClick, deleteLabel, restoreLabel }) => (
+interface IconActionProps {
+  icon: React.ElementType;
+  label: string;
+  onClick: () => void;
+  /** `brand` colours the icon red, for restoring something that was deleted. */
+  tone?: 'default' | 'brand';
+}
+
+/** A table-row action shown as an icon alone, so it fits on a phone. The label is the tooltip and the screen-reader name. */
+export const IconAction: React.FC<IconActionProps> = ({ icon: Icon, label, onClick, tone = 'default' }) => (
   <button
+    type="button"
     onClick={onClick}
-    className={`inline-flex items-center gap-1 rounded-lg px-2 py-1 text-xs font-semibold transition-colors ${
-      active ? 'text-neutral-500 hover:bg-brand-soft hover:text-brand' : 'text-brand hover:bg-brand-soft'
+    aria-label={label}
+    title={label}
+    className={`inline-flex size-8 cursor-pointer items-center justify-center rounded-lg transition-colors hover:bg-brand-soft hover:text-brand ${
+      tone === 'brand' ? 'text-brand' : 'text-neutral-500'
     }`}
   >
-    {active ? <Trash2 className="size-3.5" /> : <RotateCcw className="size-3.5" />}
-    {active ? deleteLabel : restoreLabel}
+    <Icon className="size-4" />
   </button>
+);
+
+export const RowAction: React.FC<RowActionProps> = ({ active, onClick, deleteLabel, restoreLabel }) => (
+  <IconAction icon={active ? Trash2 : RotateCcw} label={active ? deleteLabel : restoreLabel} onClick={onClick} tone={active ? 'default' : 'brand'} />
 );

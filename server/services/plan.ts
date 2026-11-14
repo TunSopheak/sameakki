@@ -1,12 +1,29 @@
+import type { PlanInfo } from '../../shared/types';
+import { config } from '../config';
 import type { Queryable } from '../db';
 import { badRequest, unauthorized } from '../middleware/errors';
 
-export const EXPIRED_MESSAGE = 'Your account has expired. Please contact the admin on Telegram to renew it.';
+const DAY = 24 * 60 * 60 * 1000;
 
-/** Throws when a non-admin account is past its expiry date. */
-export function assertNotExpired(row: { role: string; expires_at?: Date | string | null }) {
-  if (row.role === 'super_admin' || !row.expires_at) return;
-  if (new Date(row.expires_at).getTime() < Date.now()) throw unauthorized(EXPIRED_MESSAGE);
+export const LOCKED_MESSAGE = `Your account has expired and the ${config.expiredGraceDays}-day view-only period has ended. Please contact the admin on Telegram to renew it.`;
+export const READ_ONLY_MESSAGE = 'Your account has expired, so it is view-only. Please contact the admin on Telegram to renew it.';
+
+/**
+ * Where an account stands: `active`; `read_only` for the grace days after the plan ends (can look and export,
+ * cannot change anything); `locked` after that. The Super Admin and accounts without an end date never expire.
+ */
+export function planState(row: { role: string; expires_at?: Date | string | null }): Omit<PlanInfo, 'status'> & { status: 'active' | 'read_only' | 'locked' } {
+  if (row.role === 'super_admin' || !row.expires_at) return { status: 'active' };
+  const ends = new Date(row.expires_at).getTime();
+  const locksAt = new Date(ends + config.expiredGraceDays * DAY);
+  const info = { expiresAt: new Date(ends).toISOString(), locksAt: locksAt.toISOString() };
+  if (Date.now() <= ends) return { status: 'active', ...info };
+  return { status: Date.now() <= locksAt.getTime() ? 'read_only' : 'locked', ...info };
+}
+
+/** Throws once the view-only period is over too. */
+export function assertNotLocked(row: { role: string; expires_at?: Date | string | null }) {
+  if (planState(row).status === 'locked') throw unauthorized(LOCKED_MESSAGE);
 }
 
 /**

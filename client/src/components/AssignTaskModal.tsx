@@ -10,7 +10,7 @@ interface AssignTaskModalProps {
 }
 
 export const AssignTaskModal: React.FC<AssignTaskModalProps> = ({ isOpen, onClose }) => {
-  const { assignTask, activeGroupMembers, t, language } = useApp();
+  const { assignTask, activeGroupMembers, t } = useApp();
 
   const [title, setTitle] = useState('');
   const [module, setModule] = useState('General');
@@ -70,8 +70,8 @@ export const AssignTaskModal: React.FC<AssignTaskModalProps> = ({ isOpen, onClos
             </div>
             <div>
               <h2 className="text-base font-bold text-black">{t.assignNewTask}</h2>
-              <p className="text-xs text-neutral-500">
-                {language === 'km' ? 'កំណត់កិច្ចការ និងកាលបរិច្ឆេទដល់សមាជិកក្រុម' : 'Define deliverable and deadline for a member'}
+              <p className="hidden text-xs text-neutral-500 sm:block">
+                {t.assignTaskHint}
               </p>
             </div>
           </div>
@@ -107,7 +107,7 @@ export const AssignTaskModal: React.FC<AssignTaskModalProps> = ({ isOpen, onClos
               required
               value={module}
               onChange={e => setModule(e.target.value)}
-              placeholder="e.g. Website"
+              placeholder={t.placeholderModuleExample}
               className="w-full px-3 py-2 text-sm bg-white border border-neutral-200 rounded-lg focus:outline-none focus:ring-1 focus:ring-brand/40"
             />
           </div>
@@ -196,7 +196,7 @@ export const AssignTaskModal: React.FC<AssignTaskModalProps> = ({ isOpen, onClos
               rows={3}
               value={description}
               onChange={e => setDescription(e.target.value)}
-              placeholder="Details (optional)"
+              placeholder={t.placeholderDetails}
               className="w-full px-3 py-2 text-sm bg-white border border-neutral-200 rounded-lg focus:outline-none focus:ring-1 focus:ring-brand/40"
             />
           </div>

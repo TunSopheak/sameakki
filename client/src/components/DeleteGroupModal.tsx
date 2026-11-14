@@ -8,7 +8,7 @@ interface DeleteGroupModalProps {
 }
 
 export const DeleteGroupModal: React.FC<DeleteGroupModalProps> = ({ groupId, onClose }) => {
-  const { groups, deleteGroup, t, language } = useApp();
+  const { groups, deleteGroup, t } = useApp();
 
   if (!groupId) return null;
   const targetGroup = groups.find(g => g.id === groupId);
@@ -41,14 +41,14 @@ export const DeleteGroupModal: React.FC<DeleteGroupModalProps> = ({ groupId, onC
             <AlertTriangle className="w-5 h-5 text-black shrink-0 mt-0.5" />
             <div className="text-xs text-neutral-800 leading-relaxed">
               <span className="font-bold block mb-1">
-                {language === 'km' ? 'ការព្រមាន៖ សកម្មភាពនេះមិនអាចត្រឡប់ក្រោយបានទេ' : 'Warning: This action is permanent!'}
+                {t.deleteGroupWarning}
               </span>
               <span>{t.deleteGroupConfirm}</span>
             </div>
           </div>
 
           <div className="p-3 bg-neutral-50 rounded-lg border border-neutral-200 text-xs">
-            <span className="text-neutral-500 block mb-0.5">{language === 'km' ? 'ក្រុមដែលត្រូវលុប៖' : 'Target Group:'}</span>
+            <span className="text-neutral-500 block mb-0.5">{t.groupToDelete}</span>
             <span className="font-bold text-black text-sm">{targetGroup.name}</span>
             <span className="text-neutral-500 ml-2">({targetGroup.code})</span>
           </div>
@@ -64,7 +64,7 @@ export const DeleteGroupModal: React.FC<DeleteGroupModalProps> = ({ groupId, onC
               onClick={handleDelete}
               className="px-4 py-2 text-xs font-bold text-white bg-brand hover:bg-brand-dark rounded-lg shadow-xs cursor-pointer"
             >
-              {language === 'km' ? 'យល់ព្រមលុបក្រុម' : 'Delete Group'}
+              {t.confirmDeleteGroup}
             </button>
           </div>
         </div>

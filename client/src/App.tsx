@@ -23,12 +23,13 @@ import { AssignmentReportModal } from './components/AssignmentReportModal';
 import { AuthScreen } from './components/AuthScreen';
 import { Notice } from './components/Notice';
 import { DemoBanner } from './components/DemoBanner';
+import { PlanBanner } from './components/PlanBanner';
 import { ForcePasswordChange } from './components/ForcePasswordChange';
 import { hasLoggedInBefore, navigate, rememberLogin, useRoute } from './lib/route';
 import { LandingPage } from './components/landing/LandingPage';
 
 const MainApp: React.FC = () => {
-  const { currentUser, language } = useApp();
+  const { currentUser, t } = useApp();
 
   const [activeTab, setActiveTab] = useState<Tab>('dashboard');
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
@@ -71,6 +72,7 @@ const MainApp: React.FC = () => {
         }`}
       >
         <DemoBanner />
+        <PlanBanner />
         <Header activeTab={activeTab} onNavigate={handleTabChange} />
 
         <main className="flex-1 pb-8 lg:pb-16">
@@ -123,9 +125,7 @@ const MainApp: React.FC = () => {
               <span className="font-bold text-black">LeaderSync</span>
               <span>·</span>
               <span>
-                {language === 'km'
-                  ? 'ប្រព័ន្ធគ្រប់គ្រងក្រុម និងកិច្ចការរបស់និស្សិត'
-                  : 'Student & Team Leadership Workspace'}
+                {t.footerTagline}
               </span>
             </div>
             <div className="flex items-center gap-4">

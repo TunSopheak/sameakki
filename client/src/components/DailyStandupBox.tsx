@@ -8,7 +8,7 @@ export const DailyStandupBox: React.FC = () => {
     addSimpleDailyLog,
     canContribute,
     activeGroup,
-    language,
+    t,
   } = useApp();
 
   const [text, setText] = useState('');
@@ -48,16 +48,16 @@ export const DailyStandupBox: React.FC = () => {
         <div className="flex items-center gap-2">
           <div className="w-2 h-2 rounded-full bg-white" />
           <h2 className="text-sm font-bold tracking-tight">
-            {language === 'km' ? 'កត់ត្រាកិច្ចការប្រចាំថ្ងៃ' : 'Post Daily ToDo & Progress'}
+            {t.standupTitle}
           </h2>
           <span className="text-[11px] text-neutral-400 font-normal hidden sm:inline">
-            · {language === 'km' ? 'សាមញ្ញ និងងាយស្រួល' : 'Simple & direct'}
+            · {t.standupTagline}
           </span>
         </div>
 
         <div className="flex items-center gap-2 text-xs">
           <span className="text-neutral-400 text-xs hidden md:inline">
-            {language === 'km' ? 'ក្នុងនាម៖' : 'As:'} <strong className="text-white">{currentUser.name}</strong>
+            {t.postedAs} <strong className="text-white">{currentUser.name}</strong>
           </span>
         </div>
       </div>
@@ -67,9 +67,7 @@ export const DailyStandupBox: React.FC = () => {
           <div className="mb-4 p-3 bg-neutral-100 border border-neutral-200 rounded-lg flex items-center gap-2 text-black text-xs">
             <CheckCircle2 className="w-4 h-4 text-black shrink-0" />
             <span>
-              {language === 'km'
-                ? 'បានបញ្ចូល ToDo ថ្ងៃនេះដោយជោគជ័យ! ប្រធានក្រុម និងសមាជិកដទៃអាចមើលឃើញភ្លាមៗ។'
-                : 'Your daily ToDo is posted! Team leader and peers can see your progress.'}
+              {t.standupPosted}
             </span>
           </div>
         )}
@@ -82,25 +80,21 @@ export const DailyStandupBox: React.FC = () => {
               value={text}
               onChange={e => setText(e.target.value)}
               onKeyDown={handleKeyDown}
-              placeholder={`Project name
-- First task
-- Second task - 80%`}
+              placeholder={t.standupPlaceholder}
               className="w-full px-3.5 py-3 text-sm text-black bg-white border border-neutral-200 rounded-lg focus:outline-none focus:ring-1 focus:ring-brand/40 focus:border-brand transition-colors placeholder:text-neutral-400 leading-relaxed"
             />
           </div>
 
           <div className="flex flex-wrap items-center justify-between gap-3 text-xs">
-            <div className="text-neutral-600 flex items-center gap-1.5">
+            <div className="hidden items-center gap-1.5 text-neutral-600 sm:flex">
               <span className="text-[11px]">
-                {language === 'km'
-                  ? '💡 ព័ត៌មានជំនួយ៖ ជួរទី១ គឺឈ្មោះផ្នែក/គម្រោង បន្ទាប់មកដាក់សញ្ញា (-) សម្រាប់កិច្ចការនីមួយៗ'
-                  : '💡 Tip: Line 1 is Module name, then use (-) for each task. Add % like - 80%'}
+                {t.standupTip}
               </span>
             </div>
 
             <div className="flex items-center gap-2">
               <span className="text-[11px] text-neutral-400 hidden sm:inline">
-                Ctrl + Enter {language === 'km' ? 'ដើម្បីផ្ញើលឿន' : 'to submit'}
+                Ctrl + Enter {t.ctrlEnterHint}
               </span>
               <button
                 type="submit"
@@ -108,7 +102,7 @@ export const DailyStandupBox: React.FC = () => {
                 className="disabled:opacity-60 inline-flex items-center gap-1.5 px-4 py-2 bg-brand hover:bg-brand-dark text-white font-semibold text-xs rounded-lg shadow-xs transition-colors cursor-pointer"
               >
                 <Send className="w-3.5 h-3.5" />
-                <span>{language === 'km' ? 'ផ្សព្វផ្សាយ ToDo ថ្ងៃនេះ' : 'Post Daily ToDo'}</span>
+                <span>{t.standupSubmit}</span>
               </button>
             </div>
           </div>

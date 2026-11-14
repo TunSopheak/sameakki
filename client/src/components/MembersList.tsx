@@ -33,7 +33,6 @@ export const MembersList: React.FC<MembersListProps> = () => {
     activeGroupTasks,
     activeGroupDailyLogs,
     t,
-    language,
     isDemo,
     showError,
   } = useApp();
@@ -105,10 +104,10 @@ export const MembersList: React.FC<MembersListProps> = () => {
               {t.manageMembers}
             </h2>
             <span className="text-xs bg-neutral-100 text-black px-2 py-0.5 rounded-lg font-semibold border border-neutral-200">
-              {activeGroupMembers.length} {language === 'km' ? 'នាក់' : 'members'}
+              {activeGroupMembers.length} {t.membersUnit}
             </span>
           </div>
-          <p className="text-xs text-neutral-500 mt-0.5">
+          <p className="mt-0.5 hidden text-xs text-neutral-500 sm:block">
             {canManageGroup ? t.onlySuperAdminNotice : t.memberViewDesc}
           </p>
         </div>
@@ -116,12 +115,10 @@ export const MembersList: React.FC<MembersListProps> = () => {
       </div>
 
       {isSuperAdmin && (
-        <div className="bg-neutral-50 border-b border-neutral-200 px-4 sm:px-6 py-2.5 text-xs text-neutral-700 flex items-center gap-2">
+        <div className="hidden items-center gap-2 border-b border-neutral-200 bg-neutral-50 px-4 py-2.5 text-xs text-neutral-700 sm:flex sm:px-6">
           <ShieldCheck className="w-4 h-4 text-black shrink-0" />
           <span>
-            {language === 'km'
-              ? 'ក្នុងនាមជា Super Admin អ្នកអាចកំណត់តួនាទី ឱ្យសមាជិក បន្ថែមសមាជិកថ្មីតាម Email និងដកសមាជិកចេញបានតាមតម្រូវការ។'
-              : 'As Super Admin, you can assign roles, add new members via Email, and remove members as needed.'}
+            {t.membersAdminNote}
           </span>
         </div>
       )}
@@ -136,38 +133,23 @@ export const MembersList: React.FC<MembersListProps> = () => {
                 : 'bg-neutral-100 text-neutral-800 hover:bg-neutral-200'
             }`}
           >
-            {language === 'km' ? 'ទាំងអស់' : 'All'}
+            {t.adminAllStatus}
           </button>
-          <button
-            onClick={() => setRoleFilter('super_admin')}
-            className={`px-2.5 py-1 rounded-lg text-xs font-semibold cursor-pointer transition-colors ${
-              roleFilter === 'super_admin'
-                ? 'bg-brand text-white'
-                : 'bg-neutral-100 text-neutral-800 hover:bg-neutral-200'
-            }`}
-          >
-            Admin
-          </button>
-          <button
-            onClick={() => setRoleFilter('team_lead')}
-            className={`px-2.5 py-1 rounded-lg text-xs font-semibold cursor-pointer transition-colors ${
-              roleFilter === 'team_lead'
-                ? 'bg-brand text-white'
-                : 'bg-neutral-100 text-neutral-800 hover:bg-neutral-200'
-            }`}
-          >
-            Lead
-          </button>
-          <button
-            onClick={() => setRoleFilter('member')}
-            className={`px-2.5 py-1 rounded-lg text-xs font-semibold cursor-pointer transition-colors ${
-              roleFilter === 'member'
-                ? 'bg-brand text-white'
-                : 'bg-neutral-100 text-neutral-800 hover:bg-neutral-200'
-            }`}
-          >
-            Member
-          </button>
+          {([
+            ['super_admin', t.roleShortAdmin],
+            ['team_lead', t.roleShortLead],
+            ['member', t.roleShortMember],
+          ] as const).map(([role, label]) => (
+            <button
+              key={role}
+              onClick={() => setRoleFilter(role)}
+              className={`px-2.5 py-1 rounded-lg text-xs font-semibold cursor-pointer transition-colors ${
+                roleFilter === role ? 'bg-brand text-white' : 'bg-neutral-100 text-neutral-800 hover:bg-neutral-200'
+              }`}
+            >
+              {label}
+            </button>
+          ))}
         </div>
 
         <SearchBox value={view.query} onChange={view.setQuery} placeholder={t.searchMembers} />
@@ -189,7 +171,7 @@ export const MembersList: React.FC<MembersListProps> = () => {
                     {member.name}
                     {isCurrentUser && (
                       <span className="ml-1.5 rounded-md bg-brand px-1.5 py-px text-xs font-medium text-white">
-                        {language === 'km' ? 'អ្នក' : 'You'}
+                        {t.youLabel}
                       </span>
                     )}
                   </p>
@@ -237,10 +219,10 @@ export const MembersList: React.FC<MembersListProps> = () => {
                   </span>
                 )}
                 <span className="rounded-lg bg-neutral-100 px-2 py-1 font-medium text-neutral-600">
-                  {submitted ? (language === 'km' ? 'បានបញ្ចូល' : 'Submitted') : language === 'km' ? 'មិនទាន់' : 'Pending'}
+                  {submitted ? (t.postedLabel) : t.notYet}
                 </span>
                 <span className="rounded-lg bg-neutral-100 px-2 py-1 font-medium text-neutral-600">
-                  {language === 'km' ? 'កិច្ចការ' : 'Tasks'} {approved}/{assigned.length}
+                  {t.navTasks} {approved}/{assigned.length}
                 </span>
               </div>
             </li>
@@ -248,7 +230,7 @@ export const MembersList: React.FC<MembersListProps> = () => {
         })}
         {filteredMembers.length === 0 && (
           <li className="p-6 text-center text-sm text-neutral-500">
-            {language === 'km' ? 'រកមិនឃើញសមាជិក' : 'No members found.'}
+            {t.noMembersFound}
           </li>
         )}
       </ul>
@@ -261,18 +243,16 @@ export const MembersList: React.FC<MembersListProps> = () => {
               <SortHeader label={t.memberEmail} column="email" sort={view.sort} onSort={view.toggleSort} className="py-3 px-4" />
               <SortHeader label={t.memberRole} column="role" sort={view.sort} onSort={view.toggleSort} className="py-3 px-4" />
               <SortHeader label={t.memberSpecialty} column="specialty" sort={view.sort} onSort={view.toggleSort} className="py-3 px-4" />
-              <th className="py-3 px-4 text-center">{language === 'km' ? 'ToDo ថ្ងៃនេះ' : 'Today Standup'}</th>
-              <th className="py-3 px-4 text-center">{language === 'km' ? 'កិច្ចការ' : 'Tasks'}</th>
-              {canManageGroup && <th className="py-3 px-6 text-right">{language === 'km' ? 'សកម្មភាព' : 'Actions'}</th>}
+              <th className="py-3 px-4 text-center">{t.todayStandupShort}</th>
+              <th className="py-3 px-4 text-center">{t.navTasks}</th>
+              {canManageGroup && <th className="py-3 px-6 text-right">{t.adminActions}</th>}
             </tr>
           </thead>
           <tbody className="divide-y divide-neutral-100 text-xs">
             {filteredMembers.length === 0 ? (
               <tr>
                 <td colSpan={7} className="py-8 text-center text-xs text-neutral-500">
-                  {language === 'km'
-                    ? 'រកមិនឃើញសមាជិកដែលត្រូវនឹងលក្ខខណ្ឌស្វែងរកឡើយ'
-                    : 'No members match the search criteria.'}
+                  {t.noMembersMatch}
                 </td>
               </tr>
             ) : (
@@ -306,7 +286,7 @@ export const MembersList: React.FC<MembersListProps> = () => {
                             </span>
                             {isCurrentUser && (
                               <span className="text-[11px] bg-brand text-white font-medium px-1.5 py-0.2 rounded-lg">
-                                {language === 'km' ? 'អ្នក' : 'You'}
+                                {t.youLabel}
                               </span>
                             )}
                           </div>
@@ -356,12 +336,12 @@ export const MembersList: React.FC<MembersListProps> = () => {
                       {hasSubmittedToday ? (
                         <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-black bg-neutral-100 border border-neutral-200 px-2 py-0.5 rounded-lg">
                           <CheckCircle2 className="w-3 h-3 text-black" />
-                          <span>{language === 'km' ? 'បានបញ្ចូល' : 'Submitted'}</span>
+                          <span>{t.postedLabel}</span>
                         </span>
                       ) : (
                         <span className="inline-flex items-center gap-1 text-[11px] font-medium text-neutral-500 bg-neutral-100 px-2 py-0.5 rounded-lg">
                           <Clock className="w-3 h-3 text-neutral-400" />
-                          <span>{language === 'km' ? 'មិនទាន់' : 'Pending'}</span>
+                          <span>{t.notYet}</span>
                         </span>
                       )}
                     </td>
@@ -401,7 +381,7 @@ export const MembersList: React.FC<MembersListProps> = () => {
                           </>
                         ) : (
                           <span className="text-neutral-400 text-[11px] italic">
-                            {language === 'km' ? 'អ្នក' : 'You'}
+                            {t.youLabel}
                           </span>
                         )}
                       </td>

@@ -33,6 +33,7 @@ export const toGroup = (r: any, memberIds: string[]): Group => ({
   deadline: opt(r.deadline),
   status: r.status,
   category: r.category,
+  planEnded: r.leader_plan_ended === true ? true : undefined,
   supportAccessUntil:
     r.support_access_until && new Date(r.support_access_until) > new Date() ? iso(r.support_access_until) : undefined,
 });

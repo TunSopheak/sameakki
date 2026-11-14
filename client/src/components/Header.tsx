@@ -63,7 +63,7 @@ export const Header: React.FC<HeaderProps> = ({ activeTab, onNavigate }) => {
           <button
             onClick={() => setLangOpen(open => !open)}
             className="flex h-10 items-center gap-1.5 rounded-xl border border-neutral-200 bg-white px-2.5 text-xs font-semibold text-black transition-colors hover:bg-neutral-100"
-            title="Change language"
+            title={t.changeLanguage}
           >
             <Flag code={language} className="h-4" />
             <span className="hidden font-bold sm:inline">{language === 'km' ? 'ខ្មែរ' : 'EN'}</span>

@@ -44,7 +44,7 @@ export const GroupSwitcher: React.FC<GroupSwitcherProps> = ({ isCollapsed, onOpe
               </span>
               {activeGroup && (
                 <span className="block truncate text-xs text-neutral-500">
-                  {activeGroupMembers.length} {language === 'km' ? 'នាក់' : 'members'}
+                  {activeGroupMembers.length} {t.membersUnit}
                 </span>
               )}
             </span>

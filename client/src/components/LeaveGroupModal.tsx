@@ -8,7 +8,7 @@ interface LeaveGroupModalProps {
 }
 
 export const LeaveGroupModal: React.FC<LeaveGroupModalProps> = ({ groupId, onClose }) => {
-  const { groups, currentUser, leaveGroup, t, language } = useApp();
+  const { groups, currentUser, leaveGroup, t } = useApp();
 
   if (!groupId) return null;
   const targetGroup = groups.find(g => g.id === groupId);
@@ -41,14 +41,14 @@ export const LeaveGroupModal: React.FC<LeaveGroupModalProps> = ({ groupId, onClo
             <AlertCircle className="w-5 h-5 text-black shrink-0 mt-0.5" />
             <div className="text-xs text-neutral-800 leading-relaxed">
               <span className="font-bold block mb-1">
-                {language === 'km' ? 'បញ្ជាក់ការចាកចេញពីក្រុម' : 'Confirm leaving team'}
+                {t.leaveTitle}
               </span>
               <span>{t.leaveGroupConfirm}</span>
             </div>
           </div>
 
           <div className="p-3 bg-neutral-50 rounded-lg border border-neutral-200 text-xs">
-            <span className="text-neutral-500 block mb-0.5">{language === 'km' ? 'ក្រុមបច្ចុប្បន្ន៖' : 'Active Group:'}</span>
+            <span className="text-neutral-500 block mb-0.5">{t.currentGroup}</span>
             <span className="font-bold text-black text-sm">{targetGroup.name}</span>
             <span className="text-neutral-500 ml-2">({targetGroup.code})</span>
           </div>
@@ -64,7 +64,7 @@ export const LeaveGroupModal: React.FC<LeaveGroupModalProps> = ({ groupId, onClo
               onClick={handleLeave}
               className="px-4 py-2 text-xs font-bold text-white bg-brand hover:bg-brand-dark rounded-lg shadow-xs cursor-pointer"
             >
-              {language === 'km' ? 'ចាកចេញពីក្រុម' : 'Confirm Leave'}
+              {t.leaveConfirm}
             </button>
           </div>
         </div>

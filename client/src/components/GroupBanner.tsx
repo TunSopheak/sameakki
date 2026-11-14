@@ -249,7 +249,7 @@ export const GroupBanner: React.FC<GroupBannerProps> = ({
                 <span className="font-bold text-black font-mono-numbers">
                   {activeGroupMembers.length}
                 </span>
-                <span>{language === 'km' ? 'សមាជិក' : 'Members'}</span>
+                <span>{t.navMembers}</span>
               </div>
               <span className="text-neutral-300">|</span>
               <div className="flex items-center gap-1 text-neutral-700">
@@ -257,7 +257,7 @@ export const GroupBanner: React.FC<GroupBannerProps> = ({
                 <span className="font-bold text-black font-mono-numbers">
                   {approvedTasks}/{totalTasks}
                 </span>
-                <span>{language === 'km' ? 'សម្រេច' : 'Done'}</span>
+                <span>{t.doneLabel}</span>
                 <span className="font-bold font-mono-numbers text-black">
                   ({progressPercent}%)
                 </span>
@@ -268,7 +268,7 @@ export const GroupBanner: React.FC<GroupBannerProps> = ({
                   <div className="flex items-center gap-1 text-neutral-900 font-medium">
                     <Clock className="w-4 h-4 text-neutral-500" />
                     <span className="font-mono-numbers font-bold">{reviewTasks}</span>
-                    <span>{language === 'km' ? 'រង់ចាំពិនិត្យ' : 'Pending'}</span>
+                    <span>{t.pendingLabel}</span>
                   </div>
                 </>
               )}

@@ -32,7 +32,6 @@ export const OverviewDashboard: React.FC<OverviewDashboardProps> = ({
     currentUser,
     isTeamLead,
     t,
-    language,
   } = useApp();
 
   const todayStr = todayLocal();
@@ -62,7 +61,7 @@ export const OverviewDashboard: React.FC<OverviewDashboardProps> = ({
         <div className="lift bg-white p-3.5 sm:p-5 rounded-xl border border-neutral-200 shadow-xs flex flex-col justify-between">
           <div className="flex items-center justify-between">
             <span className="text-[11px] sm:text-xs font-semibold text-neutral-500 uppercase tracking-wider">
-              {language === 'km' ? 'វឌ្ឍនភាពសម្រេច' : 'Project Completion'}
+              {t.completion}
             </span>
             <CheckCircle2 className="w-4 h-4 text-black" />
           </div>
@@ -72,7 +71,7 @@ export const OverviewDashboard: React.FC<OverviewDashboardProps> = ({
                 <AnimatedNumber value={progressPercent} suffix="%" />
               </span>
               <span className="text-xs text-neutral-500">
-                ({approvedTasks}/{totalTasks} {language === 'km' ? 'កិច្ចការ' : 'tasks'})
+                ({approvedTasks}/{totalTasks} {t.colTasks})
               </span>
             </div>
             <div className="w-full bg-neutral-100 h-2 rounded-full overflow-hidden mt-3">
@@ -87,7 +86,7 @@ export const OverviewDashboard: React.FC<OverviewDashboardProps> = ({
         <div className="lift bg-white p-3.5 sm:p-5 rounded-xl border border-neutral-200 shadow-xs flex flex-col justify-between">
           <div className="flex items-center justify-between">
             <span className="text-[11px] sm:text-xs font-semibold text-neutral-500 uppercase tracking-wider">
-              {language === 'km' ? 'របាយការណ៍ ToDo ថ្ងៃនេះ' : "Today's Standup"}
+              {t.todayStandupReport}
             </span>
             <Clock className="w-4 h-4 text-black" />
           </div>
@@ -102,8 +101,8 @@ export const OverviewDashboard: React.FC<OverviewDashboardProps> = ({
             </div>
             <p className="text-xs text-neutral-600 mt-2 truncate">
               {hasUserSubmittedToday
-                ? (language === 'km' ? '✓ អ្នកបានបញ្ចូលរួចរាល់ហើយ' : '✓ You have posted today')
-                : (language === 'km' ? '⚠ អ្នកមិនទាន់បានបញ្ចូលថ្ងៃនេះទេ' : '⚠ You have not posted yet')}
+                ? (t.standupPostedYes)
+                : (t.standupPostedNo)}
             </p>
           </div>
         </div>
@@ -111,7 +110,7 @@ export const OverviewDashboard: React.FC<OverviewDashboardProps> = ({
         <div className="lift bg-white p-3.5 sm:p-5 rounded-xl border border-neutral-200 shadow-xs flex flex-col justify-between">
           <div className="flex items-center justify-between">
             <span className="text-[11px] sm:text-xs font-semibold text-neutral-500 uppercase tracking-wider">
-              {language === 'km' ? 'រង់ចាំប្រធានត្រួតពិនិត្យ' : 'Pending Verification'}
+              {t.pendingVerification}
             </span>
             <Award className="w-4 h-4 text-black" />
           </div>
@@ -121,13 +120,13 @@ export const OverviewDashboard: React.FC<OverviewDashboardProps> = ({
                 {reviewTasks}
               </span>
               <span className="text-xs text-neutral-500">
-                {language === 'km' ? 'កិច្ចការរួចរាល់' : 'submitted tasks'}
+                {t.submittedTasksLabel}
               </span>
             </div>
             <p className="text-xs text-neutral-600 mt-2">
               {isTeamLead
-                ? (language === 'km' ? 'ចុចផ្ទាំងកិច្ចការដើម្បីអនុម័ត' : 'Click tasks to verify & sign-off')
-                : (language === 'km' ? 'កំពុងរង់ចាំ Leader ពិនិត្យ' : 'Awaiting leader approval')}
+                ? (t.clickToApprove)
+                : (t.awaitingApproval)}
             </p>
           </div>
         </div>
@@ -135,7 +134,7 @@ export const OverviewDashboard: React.FC<OverviewDashboardProps> = ({
         <div className="lift bg-white p-3.5 sm:p-5 rounded-xl border border-neutral-200 shadow-xs flex flex-col justify-between">
           <div className="flex items-center justify-between">
             <span className="text-[11px] sm:text-xs font-semibold text-neutral-500 uppercase tracking-wider">
-              {language === 'km' ? 'សមាជិកក្នុងក្រុម' : 'Team Members'}
+              {t.tabMembers}
             </span>
             <Users className="w-4 h-4 text-black" />
           </div>
@@ -145,7 +144,7 @@ export const OverviewDashboard: React.FC<OverviewDashboardProps> = ({
                 {totalMemberCount}
               </span>
               <span className="text-xs text-neutral-500">
-                {language === 'km' ? 'នាក់កំពុងសកម្ម' : 'active collaborators'}
+                {t.activeMembers}
               </span>
             </div>
             <div className="flex items-center -space-x-1.5 mt-2">
@@ -171,16 +170,16 @@ export const OverviewDashboard: React.FC<OverviewDashboardProps> = ({
                   <Sparkles className="w-4 h-4 text-black" />
                   <span>{t.recentDailyUpdates}</span>
                 </h3>
-                <p className="text-xs text-neutral-500">
+                <p className="hidden text-xs text-neutral-500 sm:block">
                   {t.peerVisibilityNotice}
                 </p>
               </div>
 
               <button
                 onClick={() => onGoToTab('daily')}
-                className="text-xs font-semibold text-black hover:underline flex items-center gap-1 cursor-pointer"
+                className="shrink-0 whitespace-nowrap text-xs font-semibold text-black hover:underline flex items-center gap-1 cursor-pointer"
               >
-                <span>{language === 'km' ? 'មើលទាំងអស់' : 'View all'}</span>
+                <span>{t.viewAll}</span>
                 <ArrowRight className="w-3.5 h-3.5" />
               </button>
             </div>
@@ -189,9 +188,7 @@ export const OverviewDashboard: React.FC<OverviewDashboardProps> = ({
               <div className="p-8 text-center bg-neutral-50 rounded-xl border border-dashed border-neutral-200">
                 <Clock className="w-8 h-8 text-neutral-400 mx-auto mb-2" />
                 <p className="text-xs font-medium text-neutral-700">
-                  {language === 'km'
-                    ? 'មិនទាន់មានសមាជិកបញ្ចូល ToDo ប្រចាំថ្ងៃនៅថ្ងៃនេះនៅឡើយទេ'
-                    : 'No members have posted their daily ToDo today yet.'}
+                  {t.overviewNoPosts}
                 </p>
                 <button
                   onClick={() => onGoToTab('daily')}
@@ -240,21 +237,21 @@ export const OverviewDashboard: React.FC<OverviewDashboardProps> = ({
             <div className="flex items-center justify-between mb-4">
               <h3 className="text-base font-bold text-black tracking-tight flex items-center gap-1.5">
                 <Calendar className="w-4 h-4 text-black" />
-                <span>{language === 'km' ? 'កិច្ចការបន្ទាន់ & Deadline' : 'Upcoming Tasks'}</span>
+                <span>{t.upcomingTasks}</span>
               </h3>
 
               <button
                 onClick={() => onGoToTab('tasks')}
-                className="text-xs font-semibold text-black hover:underline flex items-center gap-1 cursor-pointer"
+                className="shrink-0 whitespace-nowrap text-xs font-semibold text-black hover:underline flex items-center gap-1 cursor-pointer"
               >
-                <span>{language === 'km' ? 'មើលទាំងអស់' : 'View all'}</span>
+                <span>{t.viewAll}</span>
                 <ArrowRight className="w-3.5 h-3.5" />
               </button>
             </div>
 
             {urgentTasks.length === 0 ? (
               <div className="p-6 text-center text-xs text-neutral-500 bg-neutral-50 rounded-lg">
-                {language === 'km' ? 'ការងារទាំងអស់ត្រូវបានបញ្ចប់!' : 'All tasks completed!'}
+                {t.allTasksDone}
               </div>
             ) : (
               <div className="space-y-3">

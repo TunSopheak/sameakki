@@ -345,18 +345,42 @@ test('the Super Admin cannot read group content unless the leader allows it', as
   assert.equal((await admin.get(url)).status, 404);
 });
 
-test('plan expiry blocks leaders and the members they added, and renewing restores both', async () => {
+test('an expired plan is view-only for 30 days, then locked, and renewing restores both leaders and members', async () => {
   const admin = sessions.admin;
-  const past = day(-3);
-  assert.equal((await admin.post(`/api/admin/users/${ids.lead}/plan`, { expiresAt: past })).status, 204);
+  assert.equal((await admin.post(`/api/admin/users/${ids.lead}/plan`, { expiresAt: day(-3) })).status, 204);
 
+  // Within the 30 days: can log in and look, cannot change anything
+  for (const who of ['lead', 'm1']) {
+    const me = await sessions[who].get('/api/auth/me');
+    assert.equal(me.status, 200, `${who} can still look`);
+    assert.equal(me.body.user.plan.status, 'read_only');
+    assert.ok(me.body.user.plan.locksAt);
+    assert.equal((await sessions[who].get('/api/bootstrap')).status, 200);
+  }
+  const create = await sessions.lead.post(`/api/groups/${ids.g1}/tasks`, { title: 'Late', assignedTo: ids.m1, dueDate: day(10) });
+  assert.equal(create.status, 403);
+  assert.match(create.body.error, /view-only/);
+  assert.equal((await sessions.m1.post(`/api/groups/${ids.g1}/daily-logs`, { rawContent: 'x' })).status, 403);
+  assert.equal((await sessions.lead.post('/api/notifications/read-all', {})).status < 400, true, 'notifications can still be marked read');
+  const login = await newClient().post('/api/auth/login', { email: 'm1@test.local', password: temp.m1 });
+  assert.equal(login.status, 200, 'logging in still works while view-only');
+  assert.equal(login.body.user.plan.status, 'read_only');
+
+  // A member whose own account never expires is still held by the leader's plan: the group is view-only
+  await query('UPDATE users SET expires_at = NULL WHERE id = $1', [ids.m1]);
+  assert.equal((await sessions.m1.get('/api/auth/me')).body.user.plan.status, 'active');
+  const frozen = await sessions.m1.post(`/api/groups/${ids.g1}/daily-logs`, { rawContent: 'x\n- y' });
+  assert.equal(frozen.status, 403, 'the group is frozen for its members');
+  assert.equal((await sessions.m1.get('/api/bootstrap')).body.groups.find((g: Json) => g.id === ids.g1).planEnded, true);
+
+  // After the 30 days: locked
+  assert.equal((await admin.post(`/api/admin/users/${ids.lead}/plan`, { expiresAt: day(-40) })).status, 204);
   for (const who of ['lead', 'm1']) {
     const me = await sessions[who].get('/api/auth/me');
     assert.equal(me.status, 401, `${who} is blocked on an existing session`);
     assert.match(me.body.error, /expired/);
   }
-  const blocked = await newClient().post('/api/auth/login', { email: 'm1@test.local', password: temp.m1 });
-  assert.equal(blocked.status, 401);
+  assert.equal((await newClient().post('/api/auth/login', { email: 'm1@test.local', password: temp.m1 })).status, 401);
   assert.equal((await newClient().post('/api/auth/login', { email: 'lead', password: '1' })).status, 401);
   assert.equal((await sessions.admin.get('/api/auth/me')).status, 200, 'the Super Admin never expires');
 
@@ -364,6 +388,7 @@ test('plan expiry blocks leaders and the members they added, and renewing restor
   assert.equal((await admin.post(`/api/admin/users/${ids.lead}/plan`, { expiresAt: future })).status, 204);
   assert.equal((await sessions.lead.get('/api/auth/me')).status, 200);
   assert.equal((await sessions.m1.get('/api/auth/me')).status, 200, 'renewing reaches the members the leader added');
+  assert.equal((await sessions.m1.post(`/api/groups/${ids.g1}/daily-logs`, { rawContent: 'Back\n- again' })).status < 400, true, 'renewing unfreezes the group');
 
   // A date 5 days away makes the leader see a reminder, once
   await admin.post(`/api/admin/users/${ids.lead}/plan`, { expiresAt: day(5) });

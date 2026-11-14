@@ -38,7 +38,6 @@ export const TaskBoard: React.FC<TaskBoardProps> = ({
     approveTask,
     deleteTask,
     t,
-    language,
   } = useApp();
 
   const [searchQuery, setSearchQuery] = useState('');
@@ -165,7 +164,7 @@ export const TaskBoard: React.FC<TaskBoardProps> = ({
                 className="bg-transparent text-xs text-black focus:outline-none cursor-pointer"
               >
                 <option value="all">
-                  {language === 'km' ? 'គ្រប់ផ្នែក' : 'All Categories'}
+                  {t.filterAllCategories}
                 </option>
                 {categories.map(cat => (
                   <option key={cat} value={cat}>
@@ -183,7 +182,7 @@ export const TaskBoard: React.FC<TaskBoardProps> = ({
                 className="bg-transparent text-xs text-black focus:outline-none cursor-pointer"
               >
                 <option value="all">
-                  {language === 'km' ? 'សមាជិកទាំងអស់' : 'All Assignees'}
+                  {t.filterAllAssignees}
                 </option>
                 {activeGroupMembers.map(u => (
                   <option key={u.id} value={u.id}>
@@ -275,7 +274,7 @@ export const TaskBoard: React.FC<TaskBoardProps> = ({
               ]}
             />
             <span className="text-[11px] text-neutral-500">
-              {filteredTasks.length} {language === 'km' ? 'កិច្ចការត្រូវបានបង្ហាញ' : 'tasks match'}
+              {filteredTasks.length} {t.tasksShown}
             </span>
 
             {isAnyFilterActive && (
@@ -284,7 +283,7 @@ export const TaskBoard: React.FC<TaskBoardProps> = ({
                 className="text-[11px] text-neutral-600 hover:text-black hover:underline flex items-center gap-1 font-semibold cursor-pointer"
               >
                 <X className="w-3 h-3" />
-                <span>{language === 'km' ? 'សម្អាតតម្រង' : 'Clear filters'}</span>
+                <span>{t.filterClear}</span>
               </button>
             )}
           </div>
@@ -294,7 +293,7 @@ export const TaskBoard: React.FC<TaskBoardProps> = ({
           <div className="flex flex-wrap items-center gap-1 pt-1">
             <span className="text-[11px] text-neutral-400 mr-1 flex items-center gap-1 font-medium">
               <Layers className="w-3 h-3" />
-              <span>{language === 'km' ? 'ផ្នែក៖' : 'Category:'}</span>
+              <span>{t.categoryLabel}</span>
             </span>
             <button
               onClick={() => setCategoryFilter('all')}
@@ -304,7 +303,7 @@ export const TaskBoard: React.FC<TaskBoardProps> = ({
                   : 'bg-white text-neutral-700 border-neutral-200 hover:bg-neutral-50'
               }`}
             >
-              {language === 'km' ? 'ទាំងអស់' : 'All'}
+              {t.adminAllStatus}
             </button>
             {categories.map(cat => (
               <button
@@ -328,7 +327,7 @@ export const TaskBoard: React.FC<TaskBoardProps> = ({
           <Clock className="w-10 h-10 text-neutral-300 mx-auto mb-2" />
           <p className="text-sm font-medium text-black">
             {isAnyFilterActive
-              ? (language === 'km' ? 'រកមិនឃើញកិច្ចការដែលត្រូវនឹងលក្ខខណ្ឌស្វែងរកឡើយ' : 'No tasks match the active search or filters')
+              ? (t.noTasksMatch)
               : t.noTasksFound}
           </p>
           {isAnyFilterActive ? (
@@ -337,7 +336,7 @@ export const TaskBoard: React.FC<TaskBoardProps> = ({
               className="mt-3 inline-flex items-center gap-1.5 px-3 py-1.5 bg-neutral-100 hover:bg-neutral-200 text-black rounded-lg text-xs font-semibold cursor-pointer border border-neutral-200"
             >
               <X className="w-3.5 h-3.5" />
-              <span>{language === 'km' ? 'បង្ហាញកិច្ចការទាំងអស់ឡើងវិញ' : 'Reset all filters'}</span>
+              <span>{t.filterReset}</span>
             </button>
           ) : isTeamLead ? (
             <button
@@ -374,7 +373,7 @@ export const TaskBoard: React.FC<TaskBoardProps> = ({
                     <button
                       onClick={() => setCategoryFilter(task.module)}
                       className="text-xs font-semibold text-black bg-neutral-100 hover:bg-neutral-200 border border-neutral-200 px-2 py-0.5 rounded-lg cursor-pointer transition-colors"
-                      title="Filter by this category"
+                      title={t.titleFilterCategory}
                     >
                       {task.module}
                     </button>
@@ -389,7 +388,7 @@ export const TaskBoard: React.FC<TaskBoardProps> = ({
                       {isTeamLead && (
                         <button
                           onClick={() => {
-                            if (confirm(language === 'km' ? 'លុបកិច្ចការនេះ?' : 'Delete this task?')) {
+                            if (confirm(t.deleteTaskConfirm)) {
                               deleteTask(task.id);
                             }
                           }}
@@ -421,7 +420,7 @@ export const TaskBoard: React.FC<TaskBoardProps> = ({
                 {task.memberNotes && (
                   <div className="p-2.5 bg-neutral-50 border border-neutral-200 rounded-lg text-xs text-black">
                     <span className="font-bold block mb-0.5">
-                      {language === 'km' ? 'កំណត់សម្គាល់ពីសមាជិក៖' : 'Member notes:'}
+                      {t.memberNotesLabel}
                     </span>
                     <span>{task.memberNotes}</span>
                   </div>
@@ -431,7 +430,7 @@ export const TaskBoard: React.FC<TaskBoardProps> = ({
                   <div className="p-2.5 bg-neutral-50 border border-neutral-200 rounded-lg text-xs text-black">
                     <div className="flex items-center gap-1 font-bold mb-0.5">
                       <Award className="w-3.5 h-3.5 text-black" />
-                      <span>{t.leaderFeedbackText}{language === 'km' ? '៖' : ':'}</span>
+                      <span>{t.leaderFeedbackText}{t.colon}</span>
                     </div>
                     <span>{task.leaderFeedback}</span>
                   </div>
@@ -442,7 +441,7 @@ export const TaskBoard: React.FC<TaskBoardProps> = ({
                     <div
                       onClick={() => setAssigneeFilter(assignee.id)}
                       className="flex items-center gap-2 cursor-pointer group"
-                      title="Filter by this member"
+                      title={t.titleFilterMember}
                     >
                       <Avatar name={assignee.name} avatar={assignee.avatar} className="size-6" />
                       <div className="truncate">
@@ -542,7 +541,7 @@ export const TaskBoard: React.FC<TaskBoardProps> = ({
                           onClick={() => updateTaskStatus(task.id, 'in_progress')}
                           className="inline-flex items-center gap-1 px-3 py-1.5 text-xs font-semibold text-black bg-white hover:bg-neutral-100 border border-neutral-200 rounded-lg transition-colors cursor-pointer"
                         >
-                          <span>{language === 'km' ? 'ចាប់ផ្តើមធ្វើ' : 'Start'}</span>
+                          <span>{t.startTask}</span>
                         </button>
                       )}
                       {canWorkOnTask && task.status !== 'approved' && task.status !== 'ready_for_review' && (
@@ -570,7 +569,7 @@ export const TaskBoard: React.FC<TaskBoardProps> = ({
                   {completingTaskId === task.id && canWorkOnTask && (
                     <div className="p-3 bg-neutral-50 border border-neutral-200 rounded-lg space-y-2 mt-2">
                       <div className="flex items-center justify-between text-xs font-semibold text-black">
-                        <span>{language === 'km' ? 'បញ្ជាក់ការសម្រេចការងារ និងផ្ញើជូនប្រធានត្រួតពិនិត្យ' : 'Submit task completion for Leader review'}</span>
+                        <span>{t.submitTaskDone}</span>
                         <button
                           onClick={() => setCompletingTaskId(null)}
                           className="text-neutral-500 hover:text-black"
@@ -582,7 +581,7 @@ export const TaskBoard: React.FC<TaskBoardProps> = ({
                         rows={2}
                         value={completionNote}
                         onChange={e => setCompletionNote(e.target.value)}
-                        placeholder="Add a note (optional)"
+                        placeholder={t.placeholderNote}
                         className="w-full p-2 text-xs bg-white border border-neutral-200 rounded-lg focus:outline-none focus:ring-1 focus:ring-brand/40"
                       />
                       <button
@@ -597,7 +596,7 @@ export const TaskBoard: React.FC<TaskBoardProps> = ({
                   {approvingTaskId === task.id && isTeamLead && (
                     <div className="p-3 bg-neutral-50 border border-neutral-200 rounded-lg space-y-2 mt-2">
                       <div className="flex items-center justify-between text-xs font-semibold text-black">
-                        <span>{language === 'km' ? 'អនុម័ត និងបញ្ជាក់ទទួលស្គាល់ការងារជោគជ័យ' : 'Leader Sign-off'}</span>
+                        <span>{t.approveTaskDone}</span>
                         <button
                           onClick={() => setApprovingTaskId(null)}
                           className="text-neutral-500 hover:text-black"
@@ -609,7 +608,7 @@ export const TaskBoard: React.FC<TaskBoardProps> = ({
                         type="text"
                         value={leaderFeedback}
                         onChange={e => setLeaderFeedback(e.target.value)}
-                        placeholder="Write feedback (optional)"
+                        placeholder={t.placeholderFeedback}
                         className="w-full p-2 text-xs bg-white border border-neutral-200 rounded-lg focus:outline-none focus:ring-1 focus:ring-brand/40"
                       />
                       <button

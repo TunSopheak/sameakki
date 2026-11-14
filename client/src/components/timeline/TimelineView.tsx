@@ -73,6 +73,8 @@ export const TimelineView: React.FC<{ onOpenAssignTask: () => void }> = ({ onOpe
         />
         <button
           onClick={() => setFocusToken(n => n + 1)}
+          aria-label={t.ganttToday}
+          title={t.ganttToday}
           className="inline-flex cursor-pointer items-center gap-1.5 rounded-lg border border-neutral-200 bg-white px-3 py-1.5 text-xs font-semibold transition-colors hover:bg-neutral-100"
         >
           <CalendarCheck className="size-3.5" />
@@ -113,7 +115,7 @@ export const TimelineView: React.FC<{ onOpenAssignTask: () => void }> = ({ onOpe
           <span className="size-3 rounded-sm outline outline-2 outline-brand" />
           {t.ganttOverdue}
         </span>
-        <span className="text-neutral-500">{isTeamLead ? t.ganttHintEdit : t.ganttHintView}</span>
+        <span className="hidden text-neutral-500 sm:inline">{isTeamLead ? t.ganttHintEdit : t.ganttHintView}</span>
       </div>
 
       {selected && (

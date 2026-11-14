@@ -98,15 +98,17 @@ export const AdminOverview: React.FC = () => {
       <div className="flex items-center justify-between gap-3">
         <div>
           <h2 className="text-lg font-bold text-black">{t.tabAdmin}</h2>
-          <p className="text-xs text-neutral-500">{t.adminHint}</p>
+          <p className="hidden text-xs text-neutral-500 sm:block">{t.adminHint}</p>
         </div>
         <div className="flex items-center gap-2">
         <button
           onClick={() => setLandingOpen(true)}
+          aria-label={t.adminLandingSettings}
+          title={t.adminLandingSettings}
           className="inline-flex items-center gap-1.5 rounded-lg border border-neutral-200 bg-white px-3 py-2 text-xs font-semibold hover:bg-neutral-100"
         >
           <Settings2 className="size-3.5" />
-          {t.adminLandingSettings}
+          <span className="hidden sm:inline">{t.adminLandingSettings}</span>
         </button>
         <button
           onClick={() => setAccountModal('new')}
@@ -117,11 +119,13 @@ export const AdminOverview: React.FC = () => {
         </button>
         <button
           onClick={load}
+          aria-label={t.adminRefresh}
+          title={t.adminRefresh}
           disabled={loading}
           className="inline-flex items-center gap-1.5 rounded-lg border border-neutral-200 bg-white px-3 py-2 text-xs font-semibold hover:bg-neutral-100 disabled:opacity-60"
         >
           <RefreshCw className={`size-3.5 ${loading ? 'animate-spin' : ''}`} />
-          {t.adminRefresh}
+          <span className="hidden sm:inline">{t.adminRefresh}</span>
         </button>
         </div>
       </div>

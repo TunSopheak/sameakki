@@ -18,6 +18,10 @@ interface AppContextType {
   /** Open the read-only sample workspace (no account needed). */
   enterDemo: () => void;
   isDemo: boolean;
+  /** The plan has ended: everything can be looked at and exported, nothing can be changed. */
+  isReadOnly: boolean;
+  /** The active group's leader has no plan any more, so the group can only be looked at. */
+  groupFrozen: boolean;
   logout: () => Promise<void>;
   refresh: () => Promise<void>;
 
@@ -220,13 +224,18 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   }, [activeGroup, users, tasks, dailyLogs, activityEvents, resolvedGroupId]);
 
   const isSuperAdmin = currentUser.role === 'super_admin';
-  const canCreateGroup = isSuperAdmin || currentUser.role === 'team_lead';
-  const canManageGroup = isSuperAdmin || (!!activeGroup && activeGroup.leaderId === currentUser.id);
+  // After the plan ends the server refuses every change, so the screen stops offering them too
+  const isReadOnly = currentUser.plan?.status === 'read_only';
+  // A group whose leader's plan has ended is view-only for its members too
+  const groupFrozen = !!activeGroup?.planEnded && !isSuperAdmin;
+  const noEdits = isReadOnly || groupFrozen;
+  const canCreateGroup = !isReadOnly && (isSuperAdmin || currentUser.role === 'team_lead');
+  const canManageGroup = !noEdits && (isSuperAdmin || (!!activeGroup && activeGroup.leaderId === currentUser.id));
   const isMemberOfActive = !!activeGroup?.memberIds.includes(currentUser.id);
   const isTeamLead =
-    isSuperAdmin ||
-    (isMemberOfActive && (currentUser.role === 'team_lead' || activeGroup?.leaderId === currentUser.id));
-  const canContribute = isSuperAdmin || (isMemberOfActive && currentUser.role !== 'viewer');
+    !noEdits &&
+    (isSuperAdmin || (isMemberOfActive && (currentUser.role === 'team_lead' || activeGroup?.leaderId === currentUser.id)));
+  const canContribute = !noEdits && (isSuperAdmin || (isMemberOfActive && currentUser.role !== 'viewer'));
 
   // Call the API, show any error, then reload the data
   const run = useCallback(
@@ -275,6 +284,8 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       setStatus('ready');
     },
     isDemo,
+    isReadOnly,
+    groupFrozen,
     async logout() {
       if (demoRef.current) {
         demoRef.current = false;

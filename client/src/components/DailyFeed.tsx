@@ -29,7 +29,6 @@ export const DailyFeed: React.FC = () => {
     deleteDailyLog,
     addReactionToDailyLog,
     t,
-    language,
   } = useApp();
 
   const [searchQuery, setSearchQuery] = useState('');
@@ -89,7 +88,7 @@ export const DailyFeed: React.FC = () => {
                 : 'bg-neutral-100 text-neutral-800 hover:bg-neutral-200'
             }`}
           >
-            {language === 'km' ? 'កំពុងធ្វើ' : 'In Progress'}
+            {t.taskStatusInProgress}
           </button>
           <button
             onClick={() => setFilterMode('completed')}
@@ -99,7 +98,7 @@ export const DailyFeed: React.FC = () => {
                 : 'bg-neutral-100 text-neutral-800 hover:bg-neutral-200'
             }`}
           >
-            {language === 'km' ? 'បានសម្រេច (រង់ចាំពិនិត្យ)' : 'Done (Pending Leader)'}
+            {t.logDonePending}
           </button>
           <button
             onClick={() => setFilterMode('approved')}
@@ -109,7 +108,7 @@ export const DailyFeed: React.FC = () => {
                 : 'bg-neutral-100 text-neutral-800 hover:bg-neutral-200'
             }`}
           >
-            {language === 'km' ? 'បានអនុម័ត' : 'Approved'}
+            {t.reportColApproved}
           </button>
         </div>
 
@@ -121,9 +120,7 @@ export const DailyFeed: React.FC = () => {
           <Clock className="w-10 h-10 text-neutral-300 mx-auto mb-2" />
           <p className="text-sm font-medium text-black">{t.noDailyLogsFound}</p>
           <p className="text-xs text-neutral-500 mt-1 max-w-sm mx-auto">
-            {language === 'km'
-              ? 'សូមប្រើប្រាស់ប្រអប់ខាងលើដើម្បីបញ្ចូល ToDo ប្រចាំថ្ងៃរបស់អ្នក'
-              : 'Use the simple textbox above to post your daily tasks.'}
+            {t.dailyFeedEmptyHint}
           </p>
         </div>
       ) : (
@@ -182,18 +179,18 @@ export const DailyFeed: React.FC = () => {
                     {log.status === 'approved' && (
                       <span className="inline-flex items-center gap-1 text-xs font-semibold text-white bg-brand px-2.5 py-0.5 rounded-lg">
                         <CheckCircle2 className="w-3.5 h-3.5 text-white" />
-                        <span>{language === 'km' ? 'បានអនុម័តជោគជ័យ' : 'Approved & Verified'}</span>
+                        <span>{t.logApprovedVerified}</span>
                       </span>
                     )}
                     {log.status === 'completed' && (
                       <span className="inline-flex items-center gap-1 text-xs font-semibold text-black bg-neutral-200 px-2.5 py-0.5 rounded-lg border border-neutral-200">
                         <Clock className="w-3.5 h-3.5 text-black" />
-                        <span>{language === 'km' ? 'បានសម្រេច (រង់ចាំ Leader ពិនិត្យ)' : 'Done (Pending Review)'}</span>
+                        <span>{t.logDonePendingLong}</span>
                       </span>
                     )}
                     {log.status === 'in_progress' && (
                       <span className="inline-flex items-center gap-1 text-xs font-medium text-neutral-800 bg-neutral-100 border border-neutral-200 px-2.5 py-0.5 rounded-lg">
-                        <span>{language === 'km' ? 'កំពុងដំណើរការ' : 'In Progress'}</span>
+                        <span>{t.logInProgress}</span>
                         <span className="font-mono font-bold">({calcPercent}%)</span>
                       </span>
                     )}
@@ -201,7 +198,7 @@ export const DailyFeed: React.FC = () => {
                     {(isAuthor || isTeamLead) && (
                       <button
                         onClick={() => {
-                          if (confirm(language === 'km' ? 'លុបរបាយការណ៍ប្រចាំថ្ងៃនេះ?' : 'Delete this daily update?')) {
+                          if (confirm(t.deleteLogConfirm)) {
                             deleteDailyLog(log.id);
                           }
                         }}
@@ -267,7 +264,7 @@ export const DailyFeed: React.FC = () => {
                     <Award className="w-4 h-4 text-black shrink-0 mt-0.5" />
                     <div className="flex-1">
                       <div className="font-bold text-black mb-0.5">
-                        {language === 'km' ? 'មតិបញ្ជាក់ពីប្រធានក្រុម៖' : 'Leader Feedback:'}
+                        {t.leaderFeedbackLabel}
                       </div>
                       <p className="font-medium text-neutral-700">"{log.leaderNote}"</p>
                     </div>
@@ -279,7 +276,7 @@ export const DailyFeed: React.FC = () => {
                     {activeLeaderNoteId === log.id ? (
                       <div className="p-3 bg-neutral-50 border border-neutral-200 rounded-lg space-y-2">
                         <div className="flex items-center justify-between text-xs font-semibold text-black">
-                          <span>{language === 'km' ? 'បញ្ជាក់ការអនុម័ត និងផ្តល់មតិកែលម្អ' : 'Sign off & Provide Feedback'}</span>
+                          <span>{t.approveWithFeedback}</span>
                           <button
                             onClick={() => setActiveLeaderNoteId(null)}
                             className="text-neutral-500 hover:text-black text-xs"
@@ -294,7 +291,7 @@ export const DailyFeed: React.FC = () => {
                             onChange={e =>
                               setLeaderFeedbackText(prev => ({ ...prev, [log.id]: e.target.value }))
                             }
-                            placeholder={language === 'km' ? 'សរសេរមតិយោបល់...' : 'Write a comment...'}
+                            placeholder={t.writeAComment}
                             className="flex-1 px-3 py-1.5 text-xs bg-white border border-neutral-200 rounded-lg focus:outline-none focus:ring-1 focus:ring-brand/40"
                           />
                           <button
@@ -303,7 +300,7 @@ export const DailyFeed: React.FC = () => {
                             className="px-3.5 py-1.5 bg-brand hover:bg-brand-dark text-white text-xs font-semibold rounded-lg flex items-center gap-1 cursor-pointer"
                           >
                             <Check className="w-3.5 h-3.5" />
-                            <span>{language === 'km' ? 'អនុម័ត' : 'Approve'}</span>
+                            <span>{t.approveButton}</span>
                           </button>
                         </div>
                       </div>

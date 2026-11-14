@@ -8,7 +8,7 @@ interface CreateGroupModalProps {
 }
 
 export const CreateGroupModal: React.FC<CreateGroupModalProps> = ({ isOpen, onClose }) => {
-  const { createGroup, t, language } = useApp();
+  const { createGroup, t } = useApp();
 
   const [name, setName] = useState('');
   const [nameKm, setNameKm] = useState('');
@@ -65,8 +65,8 @@ export const CreateGroupModal: React.FC<CreateGroupModalProps> = ({ isOpen, onCl
             </div>
             <div>
               <h2 className="text-base font-bold text-black">{t.createGroup}</h2>
-              <p className="text-xs text-neutral-500">
-                {language === 'km' ? 'បង្កើតក្រុមថ្មីដាច់ដោយឡែក និងគ្រប់គ្រងសមាជិក' : 'Create separate team workspace with independent members'}
+              <p className="hidden text-xs text-neutral-500 sm:block">
+                {t.createGroupHint}
               </p>
             </div>
           </div>
@@ -81,21 +81,21 @@ export const CreateGroupModal: React.FC<CreateGroupModalProps> = ({ isOpen, onCl
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
             <label className="block text-xs font-bold text-black mb-1">
-              {language === 'km' ? 'ឈ្មោះក្រុម (ជាភាសាអង់គ្លេស/ទូទៅ)' : 'Group / Team Name'} *
+              {t.groupNameEn} *
             </label>
             <input
               type="text"
               required
               value={name}
               onChange={e => setName(e.target.value)}
-              placeholder="Group name"
+              placeholder={t.groupNameEn}
               className="w-full px-3 py-2 text-sm bg-white border border-neutral-200 rounded-lg focus:outline-none focus:ring-1 focus:ring-brand/40"
             />
           </div>
 
           <div>
             <label className="block text-xs font-bold text-black mb-1">
-              {language === 'km' ? 'ឈ្មោះជាភាសាខ្មែរ (ស្រេចចិត្ត)' : 'Khmer Group Name (Optional)'}
+              {t.groupNameKm}
             </label>
             <input
               type="text"
@@ -115,14 +115,14 @@ export const CreateGroupModal: React.FC<CreateGroupModalProps> = ({ isOpen, onCl
                 type="text"
                 value={code}
                 onChange={e => setCode(e.target.value)}
-                placeholder="Leave blank to auto-generate"
+                placeholder={t.placeholderAutoCode}
                 className="w-full px-3 py-2 text-sm bg-white border border-neutral-200 rounded-lg focus:outline-none focus:ring-1 focus:ring-brand/40 font-mono uppercase placeholder:normal-case"
               />
             </div>
 
             <div>
               <label className="block text-xs font-bold text-black mb-1">
-                {language === 'km' ? 'ប្រភេទក្រុម' : 'Category'}
+                {t.groupCategory}
               </label>
               <select
                 value={category}
@@ -139,14 +139,14 @@ export const CreateGroupModal: React.FC<CreateGroupModalProps> = ({ isOpen, onCl
 
           <div>
             <label className="block text-xs font-bold text-black mb-1">
-              {language === 'km' ? 'មុខវិជ្ជា ឬគម្រោង' : 'Course / Project Name'} *
+              {t.courseOrProjectName} *
             </label>
             <input
               type="text"
               required
               value={courseOrProject}
               onChange={e => setCourseOrProject(e.target.value)}
-              placeholder="Course or project name"
+              placeholder={t.courseOrProjectName}
               className="w-full px-3 py-2 text-sm bg-white border border-neutral-200 rounded-lg focus:outline-none focus:ring-1 focus:ring-brand/40"
             />
           </div>
@@ -165,13 +165,13 @@ export const CreateGroupModal: React.FC<CreateGroupModalProps> = ({ isOpen, onCl
 
           <div>
             <label className="block text-xs font-bold text-black mb-1">
-              {language === 'km' ? 'ការពិពណ៌នាអំពីក្រុម' : 'Description / Goal'}
+              {t.groupDescription}
             </label>
             <textarea
               rows={2}
               value={description}
               onChange={e => setDescription(e.target.value)}
-              placeholder="What is this group for? (optional)"
+              placeholder={t.placeholderGroupPurpose}
               className="w-full px-3 py-2 text-sm bg-white border border-neutral-200 rounded-lg focus:outline-none focus:ring-1 focus:ring-brand/40"
             />
           </div>

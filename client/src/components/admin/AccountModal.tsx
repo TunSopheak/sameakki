@@ -36,15 +36,18 @@ export const AccountModal: React.FC<AccountModalProps> = ({ user, onClose, onSav
   const update = (field: keyof typeof form) => (e: React.ChangeEvent<HTMLInputElement>) =>
     setForm(prev => ({ ...prev, [field]: e.target.value }));
 
+  const isLeader = !user || user.role === 'team_lead';
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (submitting) return;
     setError('');
     setSubmitting(true);
     try {
+      // The member limit belongs to leaders; for anyone else only the end date is changed
       const plan = {
         expiresAt: form.expiresAt || null,
-        maxMembers: form.maxMembers ? Number(form.maxMembers) : null,
+        ...(isLeader ? { maxMembers: form.maxMembers ? Number(form.maxMembers) : null } : {}),
       };
       if (user) {
         await api.setUserPlan(user.id, plan);
@@ -127,12 +130,15 @@ export const AccountModal: React.FC<AccountModalProps> = ({ user, onClose, onSav
               <input type="date" value={form.expiresAt} onChange={update('expiresAt')} className={fieldClass} />
               <span className="mt-1 block text-[11px] text-neutral-500">{t.accExpiresHint}</span>
             </label>
+            {isLeader && (
             <label className="block">
               <span className="mb-1 block text-xs font-bold text-black">{t.adminMaxMembers}</span>
               <input type="number" min={1} value={form.maxMembers} onChange={update('maxMembers')} placeholder="10" className={fieldClass} />
               <span className="mt-1 block text-[11px] text-neutral-500">{t.accMaxHint}</span>
             </label>
+            )}
           </div>
+          {editing && <p className="text-[11px] text-neutral-500">{isLeader ? t.planAppliesToTeam : t.planMemberHint}</p>}
 
           <div className="flex items-center justify-end gap-2 pt-3">
             <button type="button" onClick={onClose} className="cursor-pointer rounded-lg px-4 py-2 text-xs font-medium text-neutral-600 hover:bg-neutral-100">

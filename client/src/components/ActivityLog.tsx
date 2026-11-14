@@ -17,6 +17,8 @@ import {
   Layers
 } from 'lucide-react';
 
+const PAGE_SIZE = 8;
+
 interface ActivityLogProps {
   maxItems?: number;
   showFilters?: boolean;
@@ -35,6 +37,8 @@ export const ActivityLog: React.FC<ActivityLogProps> = ({
   } = useApp();
 
   const [searchQuery, setSearchQuery] = useState('');
+  // Long histories are shown in pages, so a phone does not have to scroll through everything
+  const [limit, setLimit] = useState(maxItems ?? PAGE_SIZE);
 
   const [filterType, setFilterType] = useState<'all' | 'tasks' | 'members' | 'deadlines' | 'standups'>('all');
 
@@ -43,78 +47,66 @@ export const ActivityLog: React.FC<ActivityLogProps> = ({
       case 'task_completed':
         return {
           icon: <CheckSquare className="w-3.5 h-3.5 text-black" />,
-          label: language === 'km' ? 'កិច្ចការសម្រេច' : 'Task Completed',
-          tag: 'TASK DONE',
+          label: t.logTaskCompleted,
         };
       case 'task_approved':
         return {
           icon: <Award className="w-3.5 h-3.5 text-white" />,
-          label: language === 'km' ? 'បានអនុម័ត' : 'Task Approved',
-          tag: 'APPROVED',
+          label: t.logTaskApproved,
           isBlack: true,
         };
       case 'task_assigned':
         return {
           icon: <CheckCircle2 className="w-3.5 h-3.5 text-black" />,
-          label: language === 'km' ? 'ចាត់តាំងការងារ' : 'Task Assigned',
-          tag: 'ASSIGNED',
+          label: t.logTaskAssigned,
         };
       case 'task_deadline_changed':
       case 'group_deadline_changed':
         return {
           icon: <Calendar className="w-3.5 h-3.5 text-black" />,
-          label: language === 'km' ? 'ប្តូរ Deadline' : 'Deadline Change',
-          tag: 'DEADLINE',
+          label: t.logDeadlineChange,
         };
       case 'member_added':
         return {
           icon: <UserPlus className="w-3.5 h-3.5 text-black" />,
-          label: language === 'km' ? 'បន្ថែមសមាជិក' : 'Member Added',
-          tag: 'MEMBER +',
+          label: t.logMemberAdded,
         };
       case 'member_removed':
         return {
           icon: <UserMinus className="w-3.5 h-3.5 text-black" />,
-          label: language === 'km' ? 'ដកសមាជិក' : 'Member Removed',
-          tag: 'MEMBER -',
+          label: t.logMemberRemoved,
         };
       case 'member_role_changed':
         return {
           icon: <Shield className="w-3.5 h-3.5 text-black" />,
-          label: language === 'km' ? 'ប្តូរសិទ្ធិ' : 'Role Updated',
-          tag: 'ROLE',
+          label: t.logRoleUpdated,
         };
       case 'daily_todo_posted':
         return {
           icon: <Sparkles className="w-3.5 h-3.5 text-black" />,
-          label: language === 'km' ? 'ToDo ថ្មី' : 'Daily ToDo',
-          tag: 'STANDUP',
+          label: t.logDailyTodo,
         };
       case 'daily_todo_completed':
         return {
           icon: <CheckCircle2 className="w-3.5 h-3.5 text-black" />,
-          label: language === 'km' ? 'ToDo សម្រេច' : 'Standup Done',
-          tag: 'STANDUP DONE',
+          label: t.logStandupDone,
         };
       case 'daily_todo_approved':
         return {
           icon: <Award className="w-3.5 h-3.5 text-white" />,
-          label: language === 'km' ? 'អនុម័ត ToDo' : 'Standup Approved',
-          tag: 'VERIFIED',
+          label: t.logStandupApproved,
           isBlack: true,
         };
       case 'support_access_changed':
         return {
           icon: <Shield className="w-3.5 h-3.5 text-black" />,
-          label: language === 'km' ? 'ជំនួយពី Admin' : 'Admin support',
-          tag: 'SUPPORT',
+          label: t.supportTitle,
         };
       case 'group_created':
       default:
         return {
           icon: <Layers className="w-3.5 h-3.5 text-black" />,
-          label: language === 'km' ? 'ក្រុមថ្មី' : 'Group Created',
-          tag: 'GROUP',
+          label: t.logGroupCreated,
         };
     }
   };
@@ -143,7 +135,7 @@ export const ActivityLog: React.FC<ActivityLogProps> = ({
     return true;
   });
 
-  const displayedEvents = maxItems ? filteredEvents.slice(0, maxItems) : filteredEvents;
+  const displayedEvents = filteredEvents.slice(0, limit);
 
   return (
     <div className="bg-white rounded-xl border border-neutral-200 p-5 shadow-xs">
@@ -155,16 +147,14 @@ export const ActivityLog: React.FC<ActivityLogProps> = ({
           <div>
             <div className="flex items-center gap-2">
               <h3 className="text-base font-bold text-black tracking-tight">
-                {language === 'km' ? 'កំណត់ត្រាសកម្មភាពក្រុម' : 'Group Activity Log'}
+                {t.activityTitle}
               </h3>
               <span className="text-[11px] px-1.5 py-0.2 rounded-lg bg-neutral-100 text-neutral-800 border border-neutral-200 font-bold">
                 {activeGroupActivityEvents.length}
               </span>
             </div>
-            <p className="text-xs text-neutral-500">
-              {language === 'km'
-                ? 'តាមដានព្រឹត្តិការណ៍សំខាន់ៗ៖ ការសម្រេចកិច្ចការ, ការបន្ថែមសមាជិក, ការប្តូរ Deadline'
-                : 'Tracks major events: task completions, member additions, and deadline updates'}
+            <p className="hidden text-xs text-neutral-500 sm:block">
+              {t.activitySubtitle}
             </p>
           </div>
         </div>
@@ -172,13 +162,13 @@ export const ActivityLog: React.FC<ActivityLogProps> = ({
         {isSuperAdmin && activeGroupActivityEvents.length > 0 && (
           <button
             onClick={() => {
-              if (confirm(language === 'km' ? 'សម្អាតប្រវត្តិសកម្មភាពរបស់ក្រុមនេះ?' : 'Clear activity history for this group?')) {
+              if (confirm(t.clearActivityConfirm)) {
                 clearActivityLogs();
               }
             }}
             className="text-[11px] text-neutral-500 hover:text-black hover:underline cursor-pointer self-start sm:self-auto"
           >
-            {language === 'km' ? 'សម្អាតប្រវត្តិ' : 'Clear log history'}
+            {t.activityClear}
           </button>
         )}
       </div>
@@ -194,7 +184,7 @@ export const ActivityLog: React.FC<ActivityLogProps> = ({
                   : 'bg-neutral-100 text-neutral-700 hover:bg-neutral-200'
               }`}
             >
-              {language === 'km' ? 'ទាំងអស់' : 'All'}
+              {t.adminAllStatus}
             </button>
             <button
               onClick={() => setFilterType('tasks')}
@@ -204,7 +194,7 @@ export const ActivityLog: React.FC<ActivityLogProps> = ({
                   : 'bg-neutral-100 text-neutral-700 hover:bg-neutral-200'
               }`}
             >
-              {language === 'km' ? 'កិច្ចការ' : 'Tasks'}
+              {t.navTasks}
             </button>
             <button
               onClick={() => setFilterType('deadlines')}
@@ -214,7 +204,7 @@ export const ActivityLog: React.FC<ActivityLogProps> = ({
                   : 'bg-neutral-100 text-neutral-700 hover:bg-neutral-200'
               }`}
             >
-              {language === 'km' ? 'Deadlines' : 'Deadlines'}
+              {t.deadlinesFilter}
             </button>
             <button
               onClick={() => setFilterType('members')}
@@ -224,7 +214,7 @@ export const ActivityLog: React.FC<ActivityLogProps> = ({
                   : 'bg-neutral-100 text-neutral-700 hover:bg-neutral-200'
               }`}
             >
-              {language === 'km' ? 'សមាជិក' : 'Members'}
+              {t.navMembers}
             </button>
             <button
               onClick={() => setFilterType('standups')}
@@ -234,7 +224,7 @@ export const ActivityLog: React.FC<ActivityLogProps> = ({
                   : 'bg-neutral-100 text-neutral-700 hover:bg-neutral-200'
               }`}
             >
-              {language === 'km' ? 'Daily ToDo' : 'Standups'}
+              {t.standupsFilter}
             </button>
           </div>
 
@@ -247,10 +237,10 @@ export const ActivityLog: React.FC<ActivityLogProps> = ({
           <div className="py-8 text-center text-xs text-neutral-500 bg-neutral-50 rounded-lg border border-neutral-200">
             <Clock className="w-6 h-6 text-neutral-400 mx-auto mb-1.5" />
             <span className="font-semibold block text-neutral-700">
-              {language === 'km' ? 'មិនទាន់មានកំណត់ត្រាសកម្មភាពនៅឡើយទេ' : 'No activity recorded yet'}
+              {t.activityEmpty}
             </span>
             <span className="text-[11px] text-neutral-500">
-              {language === 'km' ? 'សកម្មភាពដូចជាការបញ្ចប់ការងារ ការបន្ថែមសមាជិក ឬការប្តូរ Deadline នឹងបង្ហាញនៅទីនេះ' : 'Major events like task completions and deadline changes will show here'}
+              {t.activityEmptyHint}
             </span>
           </div>
         ) : (
@@ -286,26 +276,25 @@ export const ActivityLog: React.FC<ActivityLogProps> = ({
                       </span>
                     </div>
 
-                    {event.targetTitle && (
-                      <div className="flex items-center gap-2 pt-0.5">
-                        <span className="text-[11px] px-1.5 py-0.2 rounded-lg bg-white text-black font-semibold border border-neutral-200">
-                          {badge.tag}
-                        </span>
-                        <span className="font-semibold text-black truncate max-w-md">
-                          "{event.targetTitle}"
-                        </span>
-                        {event.metadata?.newValue && (
-                          <span className="text-[11px] text-neutral-600 bg-neutral-200 px-1.5 py-0.2 rounded-lg">
-                            → {event.metadata.newValue}
-                          </span>
-                        )}
-                      </div>
-                    )}
+                    <div className="flex items-center gap-2 pt-0.5">
+                      <span className="rounded-lg border border-neutral-200 bg-white px-1.5 py-0.5 text-[11px] font-semibold text-black">{badge.label}</span>
+                      {event.metadata?.newValue && (
+                        <span className="rounded-lg bg-neutral-200 px-1.5 py-0.5 text-[11px] text-neutral-600">→ {event.metadata.newValue}</span>
+                      )}
+                    </div>
                   </div>
                 </div>
               );
             })}
           </div>
+        )}
+        {!maxItems && filteredEvents.length > limit && (
+          <button
+            onClick={() => setLimit(n => n + PAGE_SIZE)}
+            className="mt-4 w-full cursor-pointer rounded-lg border border-neutral-200 py-2 text-xs font-semibold text-black transition-colors hover:bg-neutral-100"
+          >
+            {t.showMore}
+          </button>
         )}
       </div>
     </div>

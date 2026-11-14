@@ -58,7 +58,7 @@ export const GroupsTable: React.FC<GroupsTableProps> = ({ groups, onDelete }) =>
               <SortHeader label={t.adminMembers} column="members" sort={view.sort} onSort={view.toggleSort} />
               <SortHeader label={t.adminTasks} column="tasks" sort={view.sort} onSort={view.toggleSort} />
               <SortHeader label={t.adminJoined} column="created" sort={view.sort} onSort={view.toggleSort} />
-              <th className="px-4 py-2.5 text-right font-semibold">{t.adminActions}</th>
+              <th className="sticky right-0 bg-neutral-50 px-4 py-2.5 text-right font-semibold">{t.adminActions}</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-neutral-100">
@@ -81,7 +81,7 @@ export const GroupsTable: React.FC<GroupsTableProps> = ({ groups, onDelete }) =>
                 <td className="px-4 py-3 text-neutral-700">{group.memberCount}</td>
                 <td className="px-4 py-3 text-neutral-700">{group.taskCount}</td>
                 <td className="px-4 py-3 text-neutral-500">{formatDateTime(group.createdAt)}</td>
-                <td className="px-4 py-3 text-right">
+                <td className="sticky right-0 bg-white px-4 py-3 text-right">
                   <RowAction
                     active={group.isActive}
                     onClick={() => onDelete(group, !group.isActive)}

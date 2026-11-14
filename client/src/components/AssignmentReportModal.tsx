@@ -28,7 +28,7 @@ export const AssignmentReportModal: React.FC<AssignmentReportModalProps> = ({ is
   const approvedTasks = activeGroupTasks.filter(task => task.status === 'approved').length;
   const progressPercent = totalTasks > 0 ? Math.round((approvedTasks / totalTasks) * 100) : 0;
 
-  const colon = km ? '៖' : ':';
+  const colon = t.colon;
   const reference = `LS/${activeGroup.code}/${todayLocal().replaceAll('-', '')}`;
   const roleLabel: Record<Role, string> = { super_admin: t.superAdminBadge, team_lead: t.teamLeadBadge, member: t.memberBadge, viewer: t.viewerBadge };
   const taskStatus: Record<Task['status'], string> = {
@@ -51,10 +51,12 @@ export const AssignmentReportModal: React.FC<AssignmentReportModalProps> = ({ is
           <div className="flex items-center gap-3">
             <button
               onClick={() => printPage()}
+              aria-label={t.printReport}
+              title={t.printReport}
               className="inline-flex cursor-pointer items-center gap-1.5 rounded-lg bg-brand px-3.5 py-2 text-xs font-semibold text-white shadow-xs transition-colors hover:bg-brand-dark"
             >
               <Printer className="size-4" />
-              <span>{t.printReport}</span>
+              <span className="hidden sm:inline">{t.printReport}</span>
             </button>
             <button
               onClick={onClose}

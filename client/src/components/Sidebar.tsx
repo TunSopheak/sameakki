@@ -1,5 +1,6 @@
 import React from 'react';
 import { PanelLeft, PanelLeftClose, X } from 'lucide-react';
+import { useApp } from '../context/AppContext';
 import { Brand } from './Brand';
 import { GroupSwitcher } from './sidebar/GroupSwitcher';
 import { SidebarNav, type Tab } from './sidebar/SidebarNav';
@@ -31,6 +32,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
   onOpenCreateGroup,
   onOpenJoinGroup,
 }) => {
+  const { t } = useApp();
   const select = (tab: Tab) => {
     setActiveTab(tab);
     setIsMobileOpen(false);
@@ -62,7 +64,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
           >
             {isCollapsed ? <PanelLeft className="size-4" /> : <PanelLeftClose className="size-4" />}
           </button>
-          <button type="button" onClick={() => setIsMobileOpen(false)} aria-label="Close menu" className={`lg:hidden ${iconButton}`}>
+          <button type="button" onClick={() => setIsMobileOpen(false)} aria-label={t.close} className={`lg:hidden ${iconButton}`}>
             <X className="size-4" />
           </button>
         </header>

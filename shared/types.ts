@@ -17,6 +17,13 @@ export type GroupStatus = (typeof GROUP_STATUSES)[number];
 
 export type DailyLogStatus = 'in_progress' | 'completed' | 'approved';
 
+/** Where a paid account stands. After the end date there are some view-only days, then the account is locked. */
+export interface PlanInfo {
+  status: 'active' | 'read_only';
+  expiresAt?: string;
+  locksAt?: string;
+}
+
 export interface User {
   id: string;
   name: string;
@@ -28,6 +35,8 @@ export interface User {
   department?: string;
   /** Only set on the signed-in user: someone else chose this password, so it must be changed first. */
   mustChangePassword?: boolean;
+  /** Only set on the signed-in user. */
+  plan?: PlanInfo;
 }
 
 export interface DailyTodoItem {
@@ -111,6 +120,8 @@ export interface Group {
   deadline?: string; // YYYY-MM-DD
   status: GroupStatus;
   category: GroupCategory;
+  /** The leader's plan has ended, so the group is view-only for everyone except the Super Admin. */
+  planEnded?: boolean;
   /** While in the future, the Super Admin can open this group to help. Only the leader sets it. */
   supportAccessUntil?: string;
 }
