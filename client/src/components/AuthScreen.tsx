@@ -40,7 +40,7 @@ export const AuthScreen: React.FC = () => {
         </div>
 
         <a
-          href="/about"
+          href="/"
           onClick={e => {
             e.preventDefault();
             navigate('/about');
