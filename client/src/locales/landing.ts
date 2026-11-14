@@ -47,6 +47,7 @@ export interface LandingCopy {
   faq: { title: string; items: { q: string; a: string }[] };
   final: { title: string; text: string };
   footer: { rights: string; back: string };
+  creator: { label: string };
 }
 
 export const landing: Record<'km' | 'en', LandingCopy> = {
@@ -193,6 +194,7 @@ export const landing: Record<'km' | 'en', LandingCopy> = {
       text: 'សាកល្បងមើលដោយមិនបាច់ចុះឈ្មោះ ហើយបើពេញចិត្ត ទាក់ទងមកយើងតាម Telegram។',
     },
     footer: { rights: 'រក្សាសិទ្ធិគ្រប់យ៉ាង', back: 'ត្រឡប់ទៅទំព័រដើម' },
+    creator: { label: 'បង្កើតដោយ' },
   },
 
   en: {
@@ -338,5 +340,6 @@ export const landing: Record<'km' | 'en', LandingCopy> = {
       text: 'Try it with no sign-up, and if you like it, message us on Telegram.',
     },
     footer: { rights: 'All rights reserved', back: 'Back to home' },
+    creator: { label: 'Built by' },
   },
 };

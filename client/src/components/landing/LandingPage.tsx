@@ -1,5 +1,6 @@
 import React from 'react';
 import { useLandingSettings } from '../../lib/landingSettings';
+import { CreatorCard } from './CreatorCard';
 import { FaqSection } from './FaqSection';
 import { FeaturesSection } from './FeaturesSection';
 import { FinalCta } from './FinalCta';
@@ -32,7 +33,10 @@ export const LandingPage: React.FC = () => {
         <FinalCta />
       </main>
 
-      <footer className="px-4 pb-10 text-center text-xs text-neutral-500">LeaderSync · {copy.footer.rights}</footer>
+      <footer className="space-y-6 px-4 pb-10 text-center text-xs text-neutral-500">
+        <CreatorCard />
+        <p>LeaderSync · {copy.footer.rights}</p>
+      </footer>
     </div>
   );
 };
