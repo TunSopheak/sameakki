@@ -267,7 +267,7 @@ export const DailyFeed: React.FC = () => {
                     <Award className="w-4 h-4 text-black shrink-0 mt-0.5" />
                     <div className="flex-1">
                       <div className="font-bold text-black mb-0.5">
-                        {language === 'km' ? 'មតិបញ្ជាក់ពីប្រធានក្រុម:' : 'Leader Feedback:'}
+                        {language === 'km' ? 'មតិបញ្ជាក់ពីប្រធានក្រុម៖' : 'Leader Feedback:'}
                       </div>
                       <p className="font-medium text-neutral-700">"{log.leaderNote}"</p>
                     </div>

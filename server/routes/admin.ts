@@ -7,6 +7,9 @@ import { assert, isSuperAdmin, requireSuperAdmin } from '../services/access';
 import { USER_COLUMNS } from '../services/mappers';
 import { generatePassword, hashPassword } from '../services/password';
 import { endOfDay } from '../services/plan';
+import { isoDate } from '../services/validation';
+import { notify } from '../services/notifications';
+import { getLandingSettings, landingSettingsSchema, saveLandingSettings } from '../services/siteSettings';
 
 export const adminRouter = Router();
 
@@ -23,7 +26,7 @@ adminRouter.get('/admin/overview', async (req, res) => {
          FROM users u ORDER BY u.created_at`
     ),
     db.query(
-      `SELECT g.id, g.name, g.name_km, g.code, g.status, g.category, g.created_at, g.is_active, leader.name AS leader_name,
+      `SELECT g.id, g.name, g.name_km, g.code, g.status, g.category, g.created_at, g.is_active, g.support_access_until, leader.name AS leader_name,
               (SELECT count(*)::int FROM group_members m WHERE m.group_id = g.id) AS member_count,
               (SELECT count(*)::int FROM tasks t WHERE t.group_id = g.id AND t.is_active = 1) AS task_count
          FROM groups g LEFT JOIN users leader ON leader.id = g.leader_id
@@ -60,6 +63,10 @@ adminRouter.get('/admin/overview', async (req, res) => {
       memberCount: r.member_count,
       taskCount: r.task_count,
       isActive: r.is_active === 1,
+      supportAccessUntil:
+        r.support_access_until && new Date(r.support_access_until) > new Date()
+          ? new Date(r.support_access_until).toISOString()
+          : undefined,
     })),
   };
   res.json(overview);
@@ -96,7 +103,6 @@ adminRouter.post('/admin/groups/:groupId/active', async (req, res) => {
   res.status(204).end();
 });
 
-const isoDate = z.string().regex(/^\d{4}-\d{2}-\d{2}$/, 'must be a date (YYYY-MM-DD)');
 const planFields = {
   /** Last day the account works. null = never expires. */
   expiresAt: isoDate.nullable().optional(),
@@ -195,9 +201,21 @@ adminRouter.post('/users/:userId/reset-password', async (req, res) => {
   assert(isSuperAdmin(me) || target.created_by === me.id, 'You can only reset the password of accounts you created.');
 
   const password = generatePassword();
-  await db.query('UPDATE users SET password_hash = $2, must_change_password = true WHERE id = $1', [
+  // token_version ends any session opened with the old password, such as one held by someone who stole it
+  await db.query('UPDATE users SET password_hash = $2, must_change_password = true, token_version = token_version + 1 WHERE id = $1', [
     target.id,
     await hashPassword(password),
   ]);
+  // The owner is told who reset it, so a reset can never happen unseen
+  await notify(db, { userId: target.id, type: 'password_reset', actorName: me.name });
   res.json({ password });
+});
+
+/** The Super Admin edits what the public landing page shows (price, free-month line, sponsors). */
+adminRouter.put('/admin/landing', async (req, res) => {
+  requireSuperAdmin(req.user!);
+  const input = landingSettingsSchema.parse(req.body);
+  const db = await getDb();
+  await saveLandingSettings(db, input);
+  res.json(await getLandingSettings(db));
 });

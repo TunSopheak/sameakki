@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useState } from 'react';
-import { Plus, RefreshCw, ShieldCheck, UserCheck, UserPlus, Users } from 'lucide-react';
+import { Plus, RefreshCw, Settings2, ShieldCheck, UserCheck, UserPlus, Users } from 'lucide-react';
 import { ROLES, type AdminOverview as Overview, type AdminGroupRow, type AdminUserRow, type Role } from '@shared/types';
 import { api } from '../lib/api';
 import { useApp } from '../context/AppContext';
@@ -7,6 +7,7 @@ import { AnimatedNumber } from './AnimatedNumber';
 import { GroupsTable } from './admin/GroupsTable';
 import { UsersTable } from './admin/UsersTable';
 import { AccountModal } from './admin/AccountModal';
+import { LandingSettingsModal } from './admin/LandingSettingsModal';
 import { TempPasswordModal } from './TempPasswordModal';
 
 const ONLINE_MINUTES = 10;
@@ -21,6 +22,7 @@ export const AdminOverview: React.FC = () => {
   const [loading, setLoading] = useState(false);
   // 'new' = create a Team Leader; a user = edit that leader's plan
   const [accountModal, setAccountModal] = useState<'new' | AdminUserRow | null>(null);
+  const [landingOpen, setLandingOpen] = useState(false);
   const [tempPassword, setTempPassword] = useState<{ name: string; email: string; password: string } | null>(null);
 
   const load = useCallback(async () => {
@@ -100,6 +102,13 @@ export const AdminOverview: React.FC = () => {
         </div>
         <div className="flex items-center gap-2">
         <button
+          onClick={() => setLandingOpen(true)}
+          className="inline-flex items-center gap-1.5 rounded-lg border border-neutral-200 bg-white px-3 py-2 text-xs font-semibold hover:bg-neutral-100"
+        >
+          <Settings2 className="size-3.5" />
+          {t.adminLandingSettings}
+        </button>
+        <button
           onClick={() => setAccountModal('new')}
           className="inline-flex items-center gap-1.5 rounded-lg bg-brand px-3 py-2 text-xs font-semibold text-white hover:bg-brand-dark"
         >
@@ -147,6 +156,8 @@ export const AdminOverview: React.FC = () => {
 
       <UsersTable users={data.users} onDelete={deleteUser} onChangeRole={changeRole} onEditPlan={setAccountModal} onResetPassword={resetPassword} />
       <GroupsTable groups={data.groups} onDelete={deleteGroup} />
+
+      {landingOpen && <LandingSettingsModal onClose={() => setLandingOpen(false)} />}
 
       {tempPassword && <TempPasswordModal {...tempPassword} onClose={() => setTempPassword(null)} />}
 

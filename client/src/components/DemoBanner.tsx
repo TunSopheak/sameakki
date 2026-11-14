@@ -20,7 +20,11 @@ export const DemoBanner: React.FC = () => {
         <Send className="size-3.5" />
         {t.contactTelegram}
       </a>
-      <button onClick={() => logout()} className="cursor-pointer rounded-lg border border-brand px-3 py-1.5 font-semibold hover:bg-white">
+      <button
+        onClick={() => {
+          window.location.hash = '';
+          void logout();
+        }} className="cursor-pointer rounded-lg border border-brand px-3 py-1.5 font-semibold hover:bg-white">
         {t.exitDemo}
       </button>
     </div>

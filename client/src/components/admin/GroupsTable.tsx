@@ -3,6 +3,7 @@ import type { AdminGroupRow } from '@shared/types';
 import { formatDateTime } from '../../lib/dates';
 import { useTableView } from '../../lib/useTableView';
 import { useApp } from '../../context/AppContext';
+import { ShieldCheck } from 'lucide-react';
 import { FilterSelect, Pager, RowAction, SearchBox, SortHeader } from '../TableParts';
 
 interface GroupsTableProps {
@@ -63,7 +64,18 @@ export const GroupsTable: React.FC<GroupsTableProps> = ({ groups, onDelete }) =>
           <tbody className="divide-y divide-neutral-100">
             {view.pageRows.map(group => (
               <tr key={group.id} className={`hover:bg-neutral-50 ${group.isActive ? '' : 'opacity-60'}`}>
-                <td className="px-4 py-3 font-semibold text-black">{language === 'km' && group.nameKm ? group.nameKm : group.name}</td>
+                <td className="px-4 py-3 font-semibold text-black">
+                  {language === 'km' && group.nameKm ? group.nameKm : group.name}
+                  {group.supportAccessUntil && (
+                    <span
+                      title={t.supportOpenBadge}
+                      className="ml-2 inline-flex items-center gap-1 rounded-full bg-brand-soft px-2 py-0.5 text-[11px] font-semibold text-brand"
+                    >
+                      <ShieldCheck className="size-3" />
+                      {t.supportOpenBadge}
+                    </span>
+                  )}
+                </td>
                 <td className="px-4 py-3 font-mono text-neutral-700">{group.code}</td>
                 <td className="px-4 py-3 text-neutral-700">{group.leaderName ?? '-'}</td>
                 <td className="px-4 py-3 text-neutral-700">{group.memberCount}</td>

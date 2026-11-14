@@ -1,17 +1,15 @@
 import React, { useState } from 'react';
 import { useApp } from '../context/AppContext';
 import { telegramLink } from '../lib/contact';
-import { useTheme } from '../lib/theme';
 import { Brand } from './Brand';
-import { Flag } from './Flag';
-import { Compass, Loader2, LogIn, Moon, Send, Sun } from 'lucide-react';
+import { PreferenceToggles } from './PreferenceToggles';
+import { ArrowLeft, Compass, Loader2, LogIn, Send } from 'lucide-react';
 
 const inputClass =
   'w-full px-3 py-2 text-sm text-black bg-white border border-neutral-200 rounded-lg focus:outline-none focus:ring-1 focus:ring-brand/40 focus:border-brand';
 
 export const AuthScreen: React.FC = () => {
-  const { login, enterDemo, t, language, setLanguage } = useApp();
-  const { theme, toggle } = useTheme();
+  const { login, enterDemo, t, language } = useApp();
   const [form, setForm] = useState({ email: '', password: '' });
   const [error, setError] = useState('');
   const [submitting, setSubmitting] = useState(false);
@@ -37,24 +35,20 @@ export const AuthScreen: React.FC = () => {
       <div className="w-full max-w-md">
         <div className="flex items-center justify-between mb-6">
           <Brand />
-          <div className="flex shrink-0 items-center gap-2">
-            <button
-              onClick={toggle}
-              className="inline-flex size-9 items-center justify-center rounded-lg border border-neutral-200 bg-white text-neutral-600 hover:bg-neutral-100 cursor-pointer"
-              title={theme === 'dark' ? 'Light mode' : 'Dark mode'}
-              aria-label={theme === 'dark' ? 'Light mode' : 'Dark mode'}
-            >
-              {theme === 'dark' ? <Sun className="size-4" /> : <Moon className="size-4" />}
-            </button>
-            <button
-              onClick={() => setLanguage(language === 'km' ? 'en' : 'km')}
-              className="inline-flex items-center gap-1.5 text-xs font-bold px-3 py-2 rounded-lg border border-neutral-200 bg-white text-black hover:bg-neutral-100 cursor-pointer"
-            >
-              <Flag code={language === 'km' ? 'en' : 'km'} className="h-3.5" />
-              {language === 'km' ? 'EN' : 'ខ្មែរ'}
-            </button>
-          </div>
+          <PreferenceToggles />
         </div>
+
+        <a
+          href="#"
+          onClick={e => {
+            e.preventDefault();
+            window.location.hash = '';
+          }}
+          className="mb-3 inline-flex items-center gap-1.5 text-xs font-semibold text-neutral-600 hover:text-black"
+        >
+          <ArrowLeft className="size-3.5" />
+          {language === 'km' ? 'ត្រឡប់ទៅទំព័រដើម' : 'Back to home'}
+        </a>
 
         <div className="animate-rise bg-white rounded-xl border border-neutral-200 shadow-xs p-6">
           <h1 className="text-lg font-bold text-black">{t.authWelcome}</h1>

@@ -61,7 +61,7 @@ export async function groupLeadIds(db: Queryable, groupId: string, exceptUserId:
  * scheduler is needed. Each one has a dedupe key, so running this again adds nothing new.
  */
 export async function syncReminders(db: Queryable, userId: string) {
-  // Tasks due today or tomorrow, and tasks already late, that are still open
+  // Open tasks due today or tomorrow, or late by up to a week. Older ones would flood the bell the first time.
   await db.query(
     `INSERT INTO notifications (user_id, type, group_id, target_id, params, dedupe_key)
      SELECT t.assigned_to,
@@ -75,6 +75,7 @@ export async function syncReminders(db: Queryable, userId: string) {
       CROSS JOIN (SELECT (now() AT TIME ZONE $2)::date AS today) d
       WHERE t.assigned_to = $1 AND t.is_active = 1 AND t.status IN ('todo', 'in_progress')
         AND t.due_date <= d.today + 1
+        AND t.due_date >= d.today - 7
      ON CONFLICT DO NOTHING`,
     [userId, TIME_ZONE]
   );

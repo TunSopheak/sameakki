@@ -294,7 +294,7 @@ export const TaskBoard: React.FC<TaskBoardProps> = ({
           <div className="flex flex-wrap items-center gap-1 pt-1">
             <span className="text-[11px] text-neutral-400 mr-1 flex items-center gap-1 font-medium">
               <Layers className="w-3 h-3" />
-              <span>{language === 'km' ? 'ផ្នែក:' : 'Category:'}</span>
+              <span>{language === 'km' ? 'ផ្នែក៖' : 'Category:'}</span>
             </span>
             <button
               onClick={() => setCategoryFilter('all')}
@@ -431,7 +431,7 @@ export const TaskBoard: React.FC<TaskBoardProps> = ({
                   <div className="p-2.5 bg-neutral-50 border border-neutral-200 rounded-lg text-xs text-black">
                     <div className="flex items-center gap-1 font-bold mb-0.5">
                       <Award className="w-3.5 h-3.5 text-black" />
-                      <span>{t.leaderFeedbackText}:</span>
+                      <span>{t.leaderFeedbackText}{language === 'km' ? '៖' : ':'}</span>
                     </div>
                     <span>{task.leaderFeedback}</span>
                   </div>

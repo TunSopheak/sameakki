@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { AppProvider, useApp } from './context/AppContext';
 import { Sidebar } from './components/Sidebar';
 import { Header } from './components/Header';
@@ -24,6 +24,7 @@ import { AuthScreen } from './components/AuthScreen';
 import { Notice } from './components/Notice';
 import { DemoBanner } from './components/DemoBanner';
 import { ForcePasswordChange } from './components/ForcePasswordChange';
+import { LandingPage } from './components/landing/LandingPage';
 
 const MainApp: React.FC = () => {
   const { currentUser, language } = useApp();
@@ -124,7 +125,7 @@ const MainApp: React.FC = () => {
               <span>·</span>
               <span>
                 {language === 'km'
-                  ? 'ប្រព័ន្ធគ្រប់គ្រងក្រុម និងកិច្ចការងារនិស្សិត'
+                  ? 'ប្រព័ន្ធគ្រប់គ្រងក្រុម និងកិច្ចការរបស់និស្សិត'
                   : 'Student & Team Leadership Workspace'}
               </span>
             </div>
@@ -183,6 +184,14 @@ const MainApp: React.FC = () => {
 const SessionGate: React.FC = () => {
   const { status, t } = useApp();
 
+  // The sign-in form lives at "#login"; anything else shows the landing page. The back button works.
+  const [showLogin, setShowLogin] = useState(() => window.location.hash === '#login');
+  useEffect(() => {
+    const onHash = () => setShowLogin(window.location.hash === '#login');
+    window.addEventListener('hashchange', onHash);
+    return () => window.removeEventListener('hashchange', onHash);
+  }, []);
+
   if (status === 'loading') {
     return (
       <div className="fade-late min-h-screen flex flex-col items-center justify-center bg-neutral-50 text-neutral-600 text-sm gap-3">
@@ -195,7 +204,7 @@ const SessionGate: React.FC = () => {
   if (status === 'signed_out') {
     return (
       <>
-        <AuthScreen />
+        {showLogin ? <AuthScreen /> : <LandingPage />}
         <Notice />
       </>
     );

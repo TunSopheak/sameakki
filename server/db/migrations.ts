@@ -202,4 +202,25 @@ export const migrations: { id: string; sql: string }[] = [
       CREATE INDEX comments_target_idx ON comments (target_type, target_id, created_at);
     `,
   },
+  {
+    // The Super Admin cannot open a group's content unless its leader allows it, until this time
+    id: '011_support_access',
+    sql: `ALTER TABLE groups ADD COLUMN support_access_until TIMESTAMPTZ`,
+  },
+  {
+    // Settings the Super Admin edits in the app, such as what the landing page shows
+    id: '012_site_settings',
+    sql: `
+      CREATE TABLE site_settings (
+        key        TEXT PRIMARY KEY,
+        value      JSONB NOT NULL,
+        updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
+      );
+    `,
+  },
+  {
+    // Raised whenever a password changes, so a sign-in made with the old password stops working
+    id: '013_token_version',
+    sql: `ALTER TABLE users ADD COLUMN token_version INTEGER NOT NULL DEFAULT 0`,
+  },
 ];

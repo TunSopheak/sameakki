@@ -18,6 +18,7 @@ import { dailyLogsRouter } from './routes/dailyLogs';
 import { adminRouter } from './routes/admin';
 import { notificationsRouter } from './routes/notifications';
 import { commentsRouter } from './routes/comments';
+import { publicRouter } from './routes/public';
 
 export function createApp() {
   const app = express();
@@ -60,6 +61,7 @@ export function createApp() {
   });
 
   app.use('/api/auth', authRouter);
+  app.use('/api/public', publicRouter);
   const api = express.Router();
   api.use(requireAuth);
   api.use(bootstrapRouter, groupsRouter, usersRouter, tasksRouter, dailyLogsRouter, adminRouter, notificationsRouter, commentsRouter);

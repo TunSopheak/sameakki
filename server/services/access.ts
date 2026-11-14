@@ -18,6 +18,7 @@ export interface GroupAccess {
 export async function getGroupAccess(db: Queryable, user: User, groupId: string): Promise<GroupAccess> {
   const { rows } = await db.query(
     `SELECT g.id, g.leader_id,
+            (g.support_access_until IS NOT NULL AND g.support_access_until > now()) AS support_open,
             EXISTS (SELECT 1 FROM group_members m WHERE m.group_id = g.id AND m.user_id = $2) AS is_member
        FROM groups g WHERE g.id = $1 AND g.is_active = 1`,
     [groupId, user.id]
@@ -26,7 +27,8 @@ export async function getGroupAccess(db: Queryable, user: User, groupId: string)
   if (!row) throw notFound('Group not found.');
 
   const isMember: boolean = row.is_member;
-  if (!isMember && !isSuperAdmin(user)) throw notFound('Group not found.');
+  // The Super Admin sees a group's content only as a member, or while its leader allows support access
+  if (!isMember && !(isSuperAdmin(user) && row.support_open)) throw notFound('Group not found.');
 
   const canLead =
     isSuperAdmin(user) || (isMember && (user.role === 'team_lead' || row.leader_id === user.id));

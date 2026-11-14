@@ -9,13 +9,17 @@ export function assertNotExpired(row: { role: string; expires_at?: Date | string
   if (new Date(row.expires_at).getTime() < Date.now()) throw unauthorized(EXPIRED_MESSAGE);
 }
 
-/** Throws when adding one more person would pass the group leader's member limit. */
+/**
+ * Throws when adding one more person would pass the group leader's member limit. It locks the group's row
+ * until the transaction ends, so two people joining at the same moment cannot both take the last place.
+ */
 export async function assertCapacity(db: Queryable, groupId: string) {
   const { rows } = await db.query(
     `SELECT u.max_members,
             (SELECT count(*)::int FROM group_members m WHERE m.group_id = g.id) AS member_count
        FROM groups g LEFT JOIN users u ON u.id = g.leader_id
-      WHERE g.id = $1`,
+      WHERE g.id = $1
+      FOR UPDATE OF g`,
     [groupId]
   );
   const row = rows[0];

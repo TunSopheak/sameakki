@@ -8,6 +8,7 @@ import {
   ClipboardList,
   Clock,
   Eye,
+  KeyRound,
   MessageSquare,
   Send,
   Smile,
@@ -33,6 +34,7 @@ const ICONS: Record<NotificationType, React.ComponentType<{ className?: string }
   daily_reaction: Smile,
   plan_expiring: CalendarClock,
   comment_added: MessageSquare,
+  password_reset: KeyRound,
 };
 
 interface NotificationBellProps {

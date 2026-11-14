@@ -7,6 +7,7 @@ import { assert, getGroupAccess } from '../services/access';
 import { logActivity } from '../services/activity';
 import { notify } from '../services/notifications';
 import { notFound } from '../middleware/errors';
+import { isoDate } from '../services/validation';
 
 export const dailyLogsRouter = Router();
 
@@ -23,7 +24,7 @@ async function loadLog(db: Queryable, user: User, logId: string) {
 
 const createSchema = z.object({
   rawContent: z.string().trim().min(1).max(10000),
-  date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).optional(),
+  date: isoDate.optional(),
 });
 
 dailyLogsRouter.post('/groups/:groupId/daily-logs', async (req, res) => {

@@ -19,8 +19,6 @@ export const config = {
   jwtSecret,
   cookieSecure: env.COOKIE_SECURE ? env.COOKIE_SECURE !== 'false' : isProduction,
   jwtExpiresInDays: Number(env.JWT_EXPIRES_IN_DAYS) || 7,
-  /** false = invite-only. */
-  allowRegistration: env.ALLOW_REGISTRATION !== 'false',
   corsOrigins: (env.CORS_ORIGINS || '').split(',').map(s => s.trim()).filter(Boolean),
   clientDistDir: path.resolve(env.CLIENT_DIST_DIR || './dist/client'),
 };

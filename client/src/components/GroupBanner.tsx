@@ -1,3 +1,4 @@
+import { SupportAccessControl } from './SupportAccessControl';
 import React, { useState } from 'react';
 import { useApp } from '../context/AppContext';
 import { daysUntil } from '../lib/dates';
@@ -40,6 +41,7 @@ export const GroupBanner: React.FC<GroupBannerProps> = ({
     isSuperAdmin,
     canCreateGroup,
     canManageGroup,
+    isDemo,
     updateGroupDeadline,
     t,
     language,
@@ -273,6 +275,8 @@ export const GroupBanner: React.FC<GroupBannerProps> = ({
             </div>
 
             <div className="flex flex-wrap items-center gap-2">
+              {activeGroup.leaderId === currentUser.id && !isSuperAdmin && !isDemo && <SupportAccessControl />}
+
               {canManageGroup && (
                 <button
                   onClick={onOpenAddMember}

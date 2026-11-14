@@ -97,21 +97,21 @@ export const AssignmentReportModal: React.FC<AssignmentReportModalProps> = ({
 
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 p-4 bg-neutral-50 rounded-lg border border-neutral-200 text-xs">
             <div>
-              <span className="text-neutral-500 block">{language === 'km' ? 'ប្រធានក្រុម / Leader:' : 'Group Leader:'}</span>
+              <span className="text-neutral-500 block">{language === 'km' ? 'ប្រធានក្រុម / Leader៖' : 'Group Leader:'}</span>
               <span className="font-bold text-black text-sm mt-0.5 block">
                 {leader?.name} {leader?.nameKm && `(${leader.nameKm})`}
               </span>
               <span className="text-neutral-500 text-[11px]">{leader?.email}</span>
             </div>
             <div>
-              <span className="text-neutral-500 block">{language === 'km' ? 'កាលបរិច្ឆេទបង្កើត & Deadline:' : 'Timeline & Deadline:'}</span>
+              <span className="text-neutral-500 block">{language === 'km' ? 'កាលបរិច្ឆេទបង្កើត & Deadline៖' : 'Timeline & Deadline:'}</span>
               <span className="font-semibold text-black mt-0.5 block">
                 {activeGroup.createdAt} → {activeGroup.deadline || 'Ongoing'}
               </span>
               <span className="text-neutral-500 text-[11px]">Category: {activeGroup.category}</span>
             </div>
             <div>
-              <span className="text-neutral-500 block">{language === 'km' ? 'ស្ថិតិសរុប:' : 'Aggregate Metrics:'}</span>
+              <span className="text-neutral-500 block">{language === 'km' ? 'ស្ថិតិសរុប៖' : 'Aggregate Metrics:'}</span>
               <span className="font-semibold text-black mt-0.5 block">
                 {activeGroupMembers.length} Members · {totalTasks} Tasks
               </span>

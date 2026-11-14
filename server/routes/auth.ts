@@ -30,7 +30,7 @@ authRouter.post('/login', authLimiter, async (req, res) => {
   const input = loginSchema.parse(req.body);
   const db = await getDb();
   const { rows } = await db.query(
-    `SELECT ${USER_COLUMNS}, password_hash, expires_at FROM users WHERE (lower(email) = $1 OR lower(username) = $1) AND is_active = 1`,
+    `SELECT ${USER_COLUMNS}, password_hash, expires_at, token_version FROM users WHERE (lower(email) = $1 OR lower(username) = $1) AND is_active = 1`,
     [input.email]
   );
   const row = rows[0];
@@ -38,7 +38,7 @@ authRouter.post('/login', authLimiter, async (req, res) => {
   if (!ok) throw unauthorized('Incorrect email/username or password.');
   assertNotExpired(row);
 
-  setAuthCookie(res, row.id);
+  setAuthCookie(res, row.id, row.token_version);
   res.json({ user: toUser(row) });
 });
 
@@ -63,9 +63,11 @@ authRouter.post('/change-password', requireAuth, authLimiter, async (req, res) =
   const ok = rows[0]?.password_hash && (await bcrypt.compare(input.currentPassword, rows[0].password_hash));
   if (!ok) throw badRequest('Current password is incorrect.');
   if (input.newPassword === input.currentPassword) throw badRequest('Choose a different password from the current one.');
-  await db.query('UPDATE users SET password_hash = $2, must_change_password = false WHERE id = $1', [
-    req.user!.id,
-    await hashPassword(input.newPassword),
-  ]);
+  // Every other session ends; this browser gets a fresh one so the person is not signed out
+  const { rows: updated } = await db.query(
+    'UPDATE users SET password_hash = $2, must_change_password = false, token_version = token_version + 1 WHERE id = $1 RETURNING token_version',
+    [req.user!.id, await hashPassword(input.newPassword)]
+  );
+  setAuthCookie(res, req.user!.id, updated[0].token_version);
   res.status(204).end();
 });

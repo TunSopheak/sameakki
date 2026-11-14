@@ -26,8 +26,9 @@ const cookieOptions = {
   path: '/',
 };
 
-export function setAuthCookie(res: Response, userId: string) {
-  const token = jwt.sign({ sub: userId }, config.jwtSecret, {
+/** `version` is the user's token_version. A password change raises it, which ends every older session. */
+export function setAuthCookie(res: Response, userId: string, version: number) {
+  const token = jwt.sign({ sub: userId, v: version }, config.jwtSecret, {
     expiresIn: `${config.jwtExpiresInDays}d`,
   });
   res.cookie(AUTH_COOKIE, token, {
@@ -48,16 +49,19 @@ export const requireAuth: RequestHandler = async (req, _res, next) => {
   if (!token) return next(unauthorized());
 
   let userId: string;
+  let version: number;
   try {
     const payload = jwt.verify(token, config.jwtSecret) as jwt.JwtPayload;
     userId = String(payload.sub);
+    version = Number(payload.v ?? 0); // sessions made before this existed count as version 0
   } catch {
     return next(unauthorized('Your session has expired. Please sign in again.'));
   }
 
   const db = await getDb();
-  const { rows } = await db.query(`SELECT ${USER_COLUMNS}, expires_at, must_change_password FROM users WHERE id = $1 AND is_active = 1`, [userId]);
+  const { rows } = await db.query(`SELECT ${USER_COLUMNS}, expires_at, must_change_password, token_version FROM users WHERE id = $1 AND is_active = 1`, [userId]);
   if (!rows[0]) return next(unauthorized());
+  if (rows[0].token_version !== version) return next(unauthorized('Your session has expired. Please sign in again.'));
   try {
     assertNotExpired(rows[0]);
   } catch (err) {

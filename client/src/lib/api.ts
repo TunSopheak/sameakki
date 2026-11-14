@@ -1,3 +1,4 @@
+import type { LandingSettings } from '@shared/landing';
 import type { AdminOverview, BootstrapData, Comment, CommentKind, NotificationsResponse, Role, TaskPriority, TaskStatus, User, GroupCategory } from '@shared/types';
 
 export class ApiError extends Error {
@@ -31,6 +32,7 @@ async function request<T = void>(method: string, path: string, body?: unknown): 
 const get = <T>(path: string) => request<T>('GET', path);
 const post = <T = void>(path: string, body: unknown = {}) => request<T>('POST', path, body);
 const patch = (path: string, body: unknown) => request('PATCH', path, body);
+const put = <T = void>(path: string, body: unknown) => request<T>('PUT', path, body);
 const del = (path: string) => request('DELETE', path);
 
 const commentPath = (kind: CommentKind, id: string) => (kind === 'task' ? `/tasks/${id}` : `/daily-logs/${id}`);
@@ -44,6 +46,9 @@ export const api = {
     post('/auth/change-password', { currentPassword, newPassword }),
 
   bootstrap: () => get<BootstrapData>('/bootstrap'),
+
+  landingSettings: () => get<LandingSettings>('/public/landing'),
+  saveLandingSettings: (data: LandingSettings) => put<LandingSettings>('/admin/landing', data),
 
   comments: (kind: CommentKind, id: string) => get<Comment[]>(`${commentPath(kind, id)}/comments`),
   addComment: (kind: CommentKind, id: string, body: string) => post<Comment>(`${commentPath(kind, id)}/comments`, { body }),
@@ -74,6 +79,7 @@ export const api = {
       `/groups/${groupId}/member-candidates?q=${encodeURIComponent(q)}`
     ),
   removeMember: (groupId: string, userId: string) => del(`/groups/${groupId}/members/${userId}`),
+  setSupportAccess: (groupId: string, hours: number) => post(`/groups/${groupId}/support-access`, { hours }),
   clearActivity: (groupId: string) => del(`/groups/${groupId}/activity`),
   adminOverview: () => get<AdminOverview>('/admin/overview'),
   setUserActive: (userId: string, active: boolean) => post(`/admin/users/${userId}/active`, { active }),

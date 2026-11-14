@@ -59,7 +59,7 @@ export function describeNotification(n: AppNotification, language: Language): No
       return {
         tab: 'daily',
         text: km
-          ? `${who} បាន ${p.emoji ?? ''} លើរបាយការណ៍របស់អ្នក «${title}»`
+          ? `${who} បានបញ្ចេញប្រតិកម្ម ${p.emoji ?? ''} លើរបាយការណ៍របស់អ្នក «${title}»`
           : `${who} reacted ${p.emoji ?? ''} to your update "${title}"`,
       };
     case 'comment_added':
@@ -68,10 +68,16 @@ export function describeNotification(n: AppNotification, language: Language): No
         note: p.snippet,
         text: km ? `${who} បានបញ្ចេញមតិលើ «${title}»` : `${who} commented on "${title}"`,
       };
+    case 'password_reset':
+      return {
+        text: km
+          ? `${who} បានកំណត់ពាក្យសម្ងាត់គណនីរបស់អ្នកឡើងវិញ។ បើអ្នកមិនបានស្នើសុំ សូមទាក់ទងប្រធានក្រុមរបស់អ្នក។`
+          : `${who} reset your account password. If you did not ask for this, contact your team leader.`,
+      };
     case 'plan_expiring':
       return {
         text: km
-          ? `កញ្ចប់របស់អ្នកនឹងផុតកំណត់នៅថ្ងៃ ${p.expiresAt}។ សូមទាក់ទង Admin ដើម្បីបន្ត`
+          ? `កញ្ចប់របស់អ្នកនឹងផុតកំណត់នៅថ្ងៃ ${p.expiresAt}។ សូមទាក់ទង Admin ដើម្បីបន្ត។`
           : `Your plan ends on ${p.expiresAt}. Contact the Admin to renew.`,
       };
   }

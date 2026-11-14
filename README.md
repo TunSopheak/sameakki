@@ -27,17 +27,19 @@ Tables are created automatically when the server starts. Without `DATABASE_URL`,
 | `DATABASE_URL` | PostgreSQL connection string. Required in production. |
 | `DATABASE_SSL` | `false` for a local PostgreSQL. On by default in production. |
 | `JWT_SECRET` | Required in production, 32+ random characters. |
-| `ALLOW_REGISTRATION` | `false` = invite-only. |
 | `NODE_ENV` | `production` when deployed. |
 
 Never commit `.env`.
 
 ## How people join
 
-- The first account to register becomes the only Super Admin.
-- **Invite:** the Super Admin adds an email in a group. That person registers with the same email.
-- **Group code:** anyone signed in can use **Join a Group** with the code shown on the group page.
-- Set `ALLOW_REGISTRATION=false` so only invited emails can register.
+There is no public sign-up. Every account is created by someone who already has one.
+
+- **Super Admin:** create it once with `npm run admin:reset -- <username> <password>` (on a deployed server: `npm run admin:reset:prod -- <username> <password>`).
+- **Team Leaders:** the Super Admin creates them in the Admin tab, with an optional expiry date and member limit. Leave the password empty to have one generated and shown once.
+- **Members:** a Team Leader adds them to a group (a new account, or one the leader already created). They must change a generated or reset password the first time they sign in.
+- **Group code:** anyone who already has an account can use **Join a Group** with the code shown on the group page.
+- **Privacy:** the Super Admin cannot open a group's tasks, updates or comments unless that group's leader allows it for a limited time.
 
 ## Deploy
 

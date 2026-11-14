@@ -103,6 +103,12 @@ export const ActivityLog: React.FC<ActivityLogProps> = ({
           tag: 'VERIFIED',
           isBlack: true,
         };
+      case 'support_access_changed':
+        return {
+          icon: <Shield className="w-3.5 h-3.5 text-black" />,
+          label: language === 'km' ? 'ជំនួយពី Admin' : 'Admin support',
+          tag: 'SUPPORT',
+        };
       case 'group_created':
       default:
         return {

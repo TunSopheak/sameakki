@@ -109,6 +109,8 @@ export interface Group {
   deadline?: string; // YYYY-MM-DD
   status: GroupStatus;
   category: GroupCategory;
+  /** While in the future, the Super Admin can open this group to help. Only the leader sets it. */
+  supportAccessUntil?: string;
 }
 
 export type ActivityEventType =
@@ -123,7 +125,8 @@ export type ActivityEventType =
   | 'daily_todo_completed'
   | 'daily_todo_approved'
   | 'group_created'
-  | 'group_deadline_changed';
+  | 'group_deadline_changed'
+  | 'support_access_changed';
 
 export interface ActivityEvent {
   id: string;
@@ -155,6 +158,7 @@ export const NOTIFICATION_TYPES = [
   'daily_reaction',
   'plan_expiring',
   'comment_added',
+  'password_reset',
 ] as const;
 export type NotificationType = (typeof NOTIFICATION_TYPES)[number];
 
@@ -210,6 +214,8 @@ export interface AdminGroupRow {
   memberCount: number;
   taskCount: number;
   isActive: boolean;
+  /** While in the future, the leader has allowed the Super Admin to open this group. */
+  supportAccessUntil?: string;
 }
 
 /** Response of GET /api/admin/overview (Super Admin only). */

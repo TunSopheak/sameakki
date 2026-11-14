@@ -10,6 +10,7 @@ import { badRequest, conflict, notFound } from '../middleware/errors';
 import { USER_COLUMNS } from '../services/mappers';
 import { generatePassword, hashPassword } from '../services/password';
 import { assertCapacity } from '../services/plan';
+import { isoDate } from '../services/validation';
 
 export const groupsRouter = Router();
 
@@ -26,7 +27,6 @@ const joinLimiter = rateLimit({
   message: { error: 'Too many attempts. Please wait a few minutes and try again.' },
 });
 
-const isoDate = z.string().regex(/^\d{4}-\d{2}-\d{2}$/, 'must be a date (YYYY-MM-DD)');
 const optionalText = (max: number) => z.string().trim().max(max).optional();
 
 const createGroupSchema = z.object({
@@ -309,6 +309,34 @@ groupsRouter.post('/groups/:groupId/members', async (req, res) => {
 });
 
 /** Super Admin removes a member, or a member leaves. */
+const supportSchema = z.object({ hours: z.number().int().min(0).max(168) });
+
+/** The group's leader lets the Super Admin open the group for a while (hours > 0), or takes it back (0). */
+groupsRouter.post('/groups/:groupId/support-access', async (req, res) => {
+  const user = req.user!;
+  const db = await getDb();
+  const access = await getGroupAccess(db, user, req.params.groupId);
+  assert(access.leaderId === user.id, 'Only the group leader can allow Admin support access.');
+  const { hours } = supportSchema.parse(req.body);
+
+  await db.transaction(async tx => {
+    await tx.query(
+      `UPDATE groups SET support_access_until = CASE WHEN $2::int > 0 THEN now() + make_interval(hours => $2::int) ELSE NULL END
+        WHERE id = $1`,
+      [access.groupId, hours]
+    );
+    await logActivity(tx, user, {
+      groupId: access.groupId,
+      type: 'support_access_changed',
+      targetTitle: '',
+      description: hours > 0 ? `allowed Admin support access for ${hours} hours` : 'turned off Admin support access',
+      descriptionKm: hours > 0 ? `បានអនុញ្ញាតឱ្យ Admin ជួយក្រុមរយៈពេល ${hours} ម៉ោង` : 'បានបិទការអនុញ្ញាតឱ្យ Admin ជួយក្រុម',
+      metadata: { newValue: String(hours) },
+    });
+  });
+  res.status(204).end();
+});
+
 groupsRouter.delete('/groups/:groupId/members/:userId', async (req, res) => {
   const user = req.user!;
   const db = await getDb();

@@ -1,0 +1,154 @@
+/*
+ * Motion for the landing page. Elements start hidden and "arrive" when data-in="true" is set
+ * (see useInView). Everything is switched off at the bottom for people who ask for less motion.
+ */
+
+html.landing-page {
+  scroll-behavior: smooth;
+}
+
+/* Fade and rise */
+.lp-reveal {
+  opacity: 0;
+  transform: translateY(26px) scale(0.985);
+  transition:
+    opacity 0.8s cubic-bezier(0.2, 0.7, 0.2, 1) var(--d, 0ms),
+    transform 0.8s cubic-bezier(0.2, 0.7, 0.2, 1) var(--d, 0ms);
+}
+.lp-reveal[data-in='true'] {
+  opacity: 1;
+  transform: none;
+}
+
+/* Spring in, for small things such as number badges and the notification */
+.lp-pop {
+  opacity: 0;
+  transform: scale(0.6);
+  transition:
+    opacity 0.5s ease var(--d, 0ms),
+    transform 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) var(--d, 0ms);
+}
+.lp-pop[data-in='true'] {
+  opacity: 1;
+  transform: none;
+}
+
+/* Cards that rise when the pointer is over them. Put it on the inner element, not on a .lp-reveal one. */
+.lp-lift {
+  transition:
+    transform 0.25s ease,
+    box-shadow 0.25s ease,
+    border-color 0.25s ease;
+}
+.lp-lift:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 18px 40px -18px rgb(26 20 16 / 0.35);
+}
+
+/* A light sweep across a button on hover. The button needs "relative overflow-hidden". */
+.lp-shine::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  transform: translateX(-130%) skewX(-20deg);
+  background: linear-gradient(90deg, transparent, rgb(255 255 255 / 0.28), transparent);
+  transition: transform 0.75s ease;
+  pointer-events: none;
+}
+.lp-shine:hover::after {
+  transform: translateX(130%) skewX(-20deg);
+}
+
+/* Soft colour behind the hero and the closing block */
+.lp-blob {
+  position: absolute;
+  border-radius: 9999px;
+  filter: blur(64px);
+  animation: lp-blob 14s ease-in-out infinite;
+}
+.lp-blob--slow {
+  animation-duration: 20s;
+  animation-direction: reverse;
+}
+@keyframes lp-blob {
+  0%,
+  100% {
+    transform: translate3d(0, 0, 0) scale(1);
+  }
+  50% {
+    transform: translate3d(28px, -20px, 0) scale(1.1);
+  }
+}
+
+.lp-float {
+  animation: lp-float 5s ease-in-out infinite;
+}
+@keyframes lp-float {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-8px);
+  }
+}
+
+/* The recommended plan breathes a little */
+.lp-glow {
+  animation: lp-glow 4s ease-in-out infinite;
+}
+@keyframes lp-glow {
+  0%,
+  100% {
+    box-shadow: 0 20px 50px -22px color-mix(in srgb, var(--color-brand) 40%, transparent);
+  }
+  50% {
+    box-shadow: 0 26px 64px -18px color-mix(in srgb, var(--color-brand) 65%, transparent);
+  }
+}
+
+/* The sample board follows the pointer a little. --rx and --ry are set by useTilt. */
+.lp-tilt {
+  transform: perspective(1000px) rotateX(var(--rx, 0deg)) rotateY(var(--ry, 0deg));
+  transition: transform 0.25s ease-out;
+}
+
+/* Open and close without a jump: the row animates between 0 and its natural height */
+.lp-accordion {
+  display: grid;
+  grid-template-rows: 0fr;
+  transition: grid-template-rows 0.35s ease;
+}
+.lp-accordion[data-open='true'] {
+  grid-template-rows: 1fr;
+}
+.lp-accordion > div {
+  overflow: hidden;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html.landing-page {
+    scroll-behavior: auto;
+  }
+  .lp-reveal,
+  .lp-pop {
+    opacity: 1;
+    transform: none;
+    transition: none;
+  }
+  .lp-blob,
+  .lp-float,
+  .lp-glow {
+    animation: none;
+  }
+  .lp-lift,
+  .lp-lift:hover,
+  .lp-tilt,
+  .lp-accordion,
+  .lp-shine::after {
+    transition: none;
+  }
+  .lp-lift:hover {
+    transform: none;
+  }
+}

@@ -33,6 +33,8 @@ export const toGroup = (r: any, memberIds: string[]): Group => ({
   deadline: opt(r.deadline),
   status: r.status,
   category: r.category,
+  supportAccessUntil:
+    r.support_access_until && new Date(r.support_access_until) > new Date() ? iso(r.support_access_until) : undefined,
 });
 
 export const toTask = (r: any): Task => ({

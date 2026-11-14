@@ -7,11 +7,10 @@ import { assert, getGroupAccess } from '../services/access';
 import { logActivity } from '../services/activity';
 import { groupLeadIds, notify } from '../services/notifications';
 import { badRequest, notFound } from '../middleware/errors';
+import { isoDate, isoTime as time } from '../services/validation';
 
 export const tasksRouter = Router();
 
-const isoDate = z.string().regex(/^\d{4}-\d{2}-\d{2}$/, 'must be a date (YYYY-MM-DD)');
-const time = z.string().regex(/^\d{2}:\d{2}$/, 'must be a time (HH:mm)');
 
 async function loadTask(db: Queryable, user: User, taskId: string) {
   const { rows } = await db.query('SELECT * FROM tasks WHERE id = $1 AND is_active = 1', [taskId]);
@@ -68,7 +67,7 @@ tasksRouter.post('/groups/:groupId/tasks', async (req, res) => {
       targetId: rows[0].id,
       targetTitle: input.title,
       description: `assigned task "${input.title}" to ${name} (Due: ${input.dueDate})`,
-      descriptionKm: `បានចាត់តាំងកិច្ចការ "${input.title}" ជូន ${name} (Deadline: ${input.dueDate})`,
+      descriptionKm: `បានចាត់តាំងកិច្ចការ "${input.title}" ជូន ${name} (Deadline៖ ${input.dueDate})`,
       metadata: { newValue: input.dueDate },
     });
     if (input.assignedTo !== user.id) {
