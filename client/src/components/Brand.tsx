@@ -7,7 +7,6 @@ interface BrandProps {
   iconOnly?: boolean;
 }
 
-/** Logo with the app name and a tagline (`short` uses a shorter one, `iconOnly` hides the text). */
 export const Brand: React.FC<BrandProps> = ({ short = false, iconOnly = false }) => {
   const { t } = useApp();
   return (

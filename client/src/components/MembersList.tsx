@@ -1,9 +1,9 @@
 import React, { useState } from 'react';
 import { useApp } from '../context/AppContext';
 import { todayLocal } from '../lib/dates';
-import { Role } from '../types';
+import type { Role, User } from '../types';
 import { Avatar } from './Avatar';
-import { Pager, SearchBox, SortHeader } from './TableParts';
+import { IconAction, Pager, SearchBox, SortHeader } from './TableParts';
 import { TempPasswordModal } from './TempPasswordModal';
 import { api } from '../lib/api';
 import { useTableView } from '../lib/useTableView';
@@ -40,6 +40,22 @@ export const MembersList: React.FC<MembersListProps> = () => {
   };
   const canReset = (role: Role, isSelf: boolean) => canManageGroup && !isDemo && !isSelf && role !== 'super_admin';
 
+  const memberActions = (member: User, isCurrentUser: boolean) => (
+    <>
+      {canReset(member.role, isCurrentUser) && <IconAction icon={Icons.password} label={t.resetPasswordAction} onClick={() => resetPassword(member)} />}
+      {canManageGroup && !isCurrentUser && (
+        <IconAction
+          icon={Icons.remove}
+          label={t.removeMember}
+          onClick={() => {
+            if (confirm(t.removeMemberConfirm)) removeMemberFromGroup(member.id);
+          }}
+        />
+      )}
+    </>
+  );
+
+
   const [roleFilter, setRoleFilter] = useState<'all' | Role>('all');
   const todayStr = todayLocal();
 
@@ -68,19 +84,19 @@ export const MembersList: React.FC<MembersListProps> = () => {
       case 'team_lead':
         return {
           label: t.teamLeadBadge,
-          color: 'bg-neutral-200 text-black border border-neutral-200',
+          color: 'bg-neutral-200 text-black',
           icon: <Icons.role className="size-3 text-black" />,
         };
       case 'member':
         return {
           label: t.memberBadge,
-          color: 'bg-white text-black border border-neutral-200',
+          color: 'bg-neutral-100 text-black',
           icon: <Icons.activeUser className="size-3 text-neutral-500" />,
         };
       default:
         return {
           label: t.viewerBadge,
-          color: 'bg-neutral-50 text-neutral-600 border border-neutral-200',
+          color: 'bg-neutral-100 text-neutral-600',
           icon: <Icons.members className="size-3 text-neutral-400" />,
         };
     }
@@ -88,13 +104,13 @@ export const MembersList: React.FC<MembersListProps> = () => {
 
   return (
     <div className="bg-white rounded-xl border border-neutral-200 overflow-hidden shadow-xs">
-      <div className="p-4 sm:p-6 border-b border-neutral-200 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+      <div className="p-4 sm:p-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <div className="flex items-center gap-2">
             <h2 className="text-lg font-bold text-black tracking-tight">
               {t.manageMembers}
             </h2>
-            <span className="text-xs bg-neutral-100 text-black px-2 py-0.5 rounded-lg font-semibold border border-neutral-200">
+            <span className="text-xs bg-neutral-100 text-black px-2 py-0.5 rounded-lg font-semibold">
               {activeGroupMembers.length} {t.membersUnit}
             </span>
           </div>
@@ -106,7 +122,7 @@ export const MembersList: React.FC<MembersListProps> = () => {
       </div>
 
       {isSuperAdmin && (
-        <div className="hidden items-center gap-2 border-b border-neutral-200 bg-neutral-50 px-4 py-2.5 text-xs text-neutral-700 sm:flex sm:px-6">
+        <div className="hidden items-center gap-2 bg-neutral-50 px-4 py-2.5 text-xs text-neutral-700 sm:flex sm:px-6">
           <Icons.admin className="size-4 text-black shrink-0" />
           <span>
             {t.membersAdminNote}
@@ -114,7 +130,7 @@ export const MembersList: React.FC<MembersListProps> = () => {
         </div>
       )}
 
-      <div className="p-4 border-b border-neutral-200 bg-white flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
+      <div className="p-4 bg-white flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
         <div className="flex flex-wrap items-center gap-1 text-xs">
           <button
             onClick={() => setRoleFilter('all')}
@@ -169,27 +185,7 @@ export const MembersList: React.FC<MembersListProps> = () => {
                   {member.nameKm && <p className="text-xs text-neutral-500 truncate">{member.nameKm}</p>}
                   <p className="text-xs text-neutral-500 truncate">{member.email}</p>
                 </div>
-                {canReset(member.role, isCurrentUser) && (
-                  <button
-                    onClick={() => resetPassword(member)}
-                    aria-label={t.resetPasswordAction}
-                    title={t.resetPasswordAction}
-                    className="shrink-0 rounded-lg p-2 text-neutral-500 hover:bg-neutral-100 hover:text-black"
-                  >
-                    <Icons.password className="size-4" />
-                  </button>
-                )}
-                {canManageGroup && !isCurrentUser && (
-                  <button
-                    onClick={() => {
-                      if (confirm(t.removeMemberConfirm)) removeMemberFromGroup(member.id);
-                    }}
-                    aria-label={t.removeMember}
-                    className="shrink-0 rounded-lg p-2 text-neutral-500 hover:bg-neutral-100 hover:text-black"
-                  >
-                    <Icons.remove className="size-4" />
-                  </button>
-                )}
+                {memberActions(member, isCurrentUser)}
               </div>
 
               <div className="flex flex-wrap items-center gap-2 text-xs">
@@ -229,7 +225,7 @@ export const MembersList: React.FC<MembersListProps> = () => {
       <div className="hidden md:block overflow-x-auto">
         <table className="w-full text-left border-collapse">
           <thead>
-            <tr className="bg-neutral-50 border-b border-neutral-200 text-[11px] font-semibold text-neutral-600 uppercase tracking-wider">
+            <tr className="bg-neutral-50 text-[11px] font-semibold text-neutral-600 uppercase tracking-wider">
               <SortHeader label={t.memberName} column="name" sort={view.sort} onSort={view.toggleSort} className="py-3 px-6" />
               <SortHeader label={t.memberEmail} column="email" sort={view.sort} onSort={view.toggleSort} className="py-3 px-4" />
               <SortHeader label={t.memberRole} column="role" sort={view.sort} onSort={view.toggleSort} className="py-3 px-4" />
@@ -325,7 +321,7 @@ export const MembersList: React.FC<MembersListProps> = () => {
 
                     <td className="py-4 px-4 text-center">
                       {hasSubmittedToday ? (
-                        <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-black bg-neutral-100 border border-neutral-200 px-2 py-0.5 rounded-lg">
+                        <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-black bg-neutral-100 px-2 py-0.5 rounded-lg">
                           <Icons.done className="size-3 text-black" />
                           <span>{t.postedLabel}</span>
                         </span>
@@ -345,36 +341,7 @@ export const MembersList: React.FC<MembersListProps> = () => {
 
                     {canManageGroup && (
                       <td className="py-4 px-6 text-right">
-                        {!isCurrentUser ? (
-                          <>
-                          {canReset(member.role, isCurrentUser) && (
-                            <button
-                              onClick={() => resetPassword(member)}
-                              className="mr-1 text-neutral-500 hover:text-black hover:bg-neutral-100 p-1.5 rounded-lg transition-colors cursor-pointer inline-flex items-center gap-1"
-                              title={t.resetPasswordAction}
-                            >
-                              <Icons.password className="size-3.5" />
-                              <span className="text-[11px]">{t.resetPasswordAction}</span>
-                            </button>
-                          )}
-                          <button
-                            onClick={() => {
-                              if (confirm(t.removeMemberConfirm)) {
-                                removeMemberFromGroup(member.id);
-                              }
-                            }}
-                            className="text-neutral-500 hover:text-black hover:bg-neutral-100 p-1.5 rounded-lg transition-colors cursor-pointer inline-flex items-center gap-1"
-                            title={t.removeMember}
-                          >
-                            <Icons.remove className="size-3.5" />
-                            <span className="text-[11px]">{t.removeMember}</span>
-                          </button>
-                          </>
-                        ) : (
-                          <span className="text-neutral-400 text-[11px] italic">
-                            {t.youLabel}
-                          </span>
-                        )}
+                        {isCurrentUser ? <span className="text-[11px] italic text-neutral-400">{t.youLabel}</span> : memberActions(member, isCurrentUser)}
                       </td>
                     )}
                   </tr>

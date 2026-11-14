@@ -7,10 +7,7 @@ import { Icons } from './icons';
 const inputClass =
   'h-10 w-full rounded-lg border border-neutral-200 bg-white px-3 text-sm text-black transition-colors focus:border-brand focus:outline-none focus:ring-1 focus:ring-brand/40';
 
-/**
- * Blocks the app until a person replaces the password someone else chose for them.
- * It cannot be dismissed; the only other way out is to sign out.
- */
+/** Blocks the app until the temporary password is changed. */
 export const ForcePasswordChange: React.FC = () => {
   const { currentUser, isDemo, refresh, logout, t } = useApp();
   const [current, setCurrent] = useState('');

@@ -49,7 +49,6 @@ export const CreateGroupModal: React.FC<CreateGroupModalProps> = ({ isOpen, onCl
       });
       onClose();
     } catch {
-      // Error is shown as a notice; keep the form open.
     } finally {
       setSubmitting(false);
     }

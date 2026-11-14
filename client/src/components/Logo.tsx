@@ -4,7 +4,6 @@ interface LogoProps {
   className?: string;
 }
 
-/** The LeaderSync mark: two hands joining in a partnership. */
 export const Logo: React.FC<LogoProps> = ({ className = 'size-9' }) => (
   <svg viewBox="0 0 55.415 55.415" className={className} role="img" aria-label="LeaderSync" fill="none">
     <path

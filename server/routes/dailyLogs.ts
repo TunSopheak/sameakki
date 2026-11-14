@@ -76,7 +76,6 @@ dailyLogsRouter.post('/daily-logs/:logId/items/:itemId/toggle', async (req, res)
   item.done = !item.done;
 
   const allDone = items.length > 0 && items.every(i => i.done);
-  // Approved stays approved; otherwise follow the checklist
   const status = log.status === 'approved' ? 'approved' : allDone ? 'completed' : 'in_progress';
 
   await db.transaction(async tx => {
@@ -180,7 +179,6 @@ dailyLogsRouter.delete('/daily-logs/:logId', async (req, res) => {
 
 const reactionSchema = z.object({ emoji: z.string().refine(e => ALLOWED_EMOJIS.includes(e), 'unsupported emoji') });
 
-/** Add or remove the user's reaction. */
 dailyLogsRouter.post('/daily-logs/:logId/reactions', async (req, res) => {
   const user = req.user!;
   const db = await getDb();
@@ -196,7 +194,6 @@ dailyLogsRouter.post('/daily-logs/:logId/reactions', async (req, res) => {
       'INSERT INTO daily_log_reactions (log_id, user_id, emoji) VALUES ($1, $2, $3) ON CONFLICT DO NOTHING',
       [log.id, user.id, emoji]
     );
-    // One notification per person and emoji, so toggling a reaction cannot spam the author
     if (log.user_id !== user.id) {
       await notify(db, {
         userId: log.user_id,

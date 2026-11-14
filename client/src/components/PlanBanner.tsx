@@ -4,7 +4,7 @@ import { telegramLink } from '../lib/contact';
 import { localDateOf } from '../lib/dates';
 import { Icons } from './icons';
 
-/** Shown to an account whose plan has ended: it can still look at everything and export, but not change it. */
+/** Banner for a plan that has ended (view only). */
 export const PlanBanner: React.FC = () => {
   const { isReadOnly, groupFrozen, currentUser, t } = useApp();
   if (!isReadOnly && groupFrozen) {

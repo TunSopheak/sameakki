@@ -24,7 +24,6 @@ import {
   type Span,
 } from './ganttModel';
 
-/** How many pixels one day takes at each zoom level. */
 export const ZOOM_PX = { day: 44, week: 18, month: 7 } as const;
 export type Zoom = keyof typeof ZOOM_PX;
 
@@ -32,7 +31,7 @@ const ROW_HEIGHT = 44;
 const HEADER_ROW_HEIGHT = 36;
 const BAR_HEIGHT = 28;
 
-/** How each status looks, as a bar and as the legend swatch. "In progress" uses fixed colours because the grey tokens swap places in dark mode. */
+// Fixed colours for "in progress": the grey tokens swap in dark mode
 export const STATUS_STYLE: Record<Task['status'], string> = {
   todo: 'border border-dashed border-neutral-500 bg-neutral-100 text-black',
   in_progress: 'border border-[#8c8178] bg-[#4a3f37] text-[#ffffff]',
@@ -52,18 +51,15 @@ interface GanttChartProps {
   members: User[];
   groupBy: 'task' | 'member';
   zoom: Zoom;
-  /** The group's own deadline, drawn as a dashed line. */
   teamDeadline?: string;
   selectedId: string | null;
   canEdit: (task: Task) => boolean;
   onSelect: (id: string | null) => void;
-  /** Resolves once the new dates are saved and the page has refreshed. */
   onReschedule: (task: Task, startDate: string, dueDate: string) => Promise<void>;
-  /** Changes each time "Today" is pressed, to scroll back to today. */
   focusToken: number;
 }
 
-/** Tasks as bars on a calendar. Drag a bar to move it, or its ends to change the start or the due day. */
+/** Tasks as bars on a calendar. Drag a bar to change its dates. */
 export const GanttChart: React.FC<GanttChartProps> = ({ tasks, members, groupBy, zoom, teamDeadline, selectedId, canEdit, onSelect, onReschedule, focusToken }) => {
   const { t, language, users } = useApp();
   const locale = language === 'km' ? 'km-KH' : 'en-GB';
@@ -77,11 +73,9 @@ export const GanttChart: React.FC<GanttChartProps> = ({ tasks, members, groupBy,
   const trackWidth = (to - from + 1) * px;
 
   const [drag, setDrag] = useState<Drag | null>(null);
-  // Bars dropped in a new place, kept where they were dropped until the server has answered
   const [pending, setPending] = useState<Record<string, Span>>({});
   const scrollRef = useRef<HTMLDivElement>(null);
 
-  // Start with today in view, and come back to it when "Today" is pressed or the zoom changes
   useEffect(() => {
     const el = scrollRef.current;
     if (el) el.scrollTo({ left: Math.max(0, (today - from) * px - el.clientWidth * 0.35), behavior: focusToken ? 'smooth' : 'auto' });
@@ -97,7 +91,7 @@ export const GanttChart: React.FC<GanttChartProps> = ({ tasks, members, groupBy,
     setDrag({ id: item.task.id, mode, startX: e.clientX, delta: 0 });
   };
   const move = (e: PointerEvent<HTMLElement>, item: GanttItem) => {
-    // Fingers scroll the chart instead of dragging bars; the details panel has date fields for them
+    // Touch scrolls the chart; leaders edit dates in the details panel
     if (!drag || drag.id !== item.task.id || e.pointerType === 'touch' || !canEdit(item.task)) return;
     const delta = pixelsToDays(e.clientX - drag.startX, px);
     if (delta !== drag.delta) setDrag({ ...drag, delta });
@@ -125,7 +119,6 @@ export const GanttChart: React.FC<GanttChartProps> = ({ tasks, members, groupBy,
   const days = Array.from({ length: to - from + 1 }, (_, i) => from + i);
   const showDayRow = zoom !== 'month';
   const headerHeight = HEADER_ROW_HEIGHT + (showDayRow ? HEADER_ROW_HEIGHT : 0);
-  // Faint lines: every day when zoomed in, otherwise every Monday
   const firstMonday = (8 - weekday(from)) % 7;
   const gridLine = 'color-mix(in srgb, var(--color-neutral-400) 22%, transparent)';
   const trackBackground =
@@ -160,7 +153,7 @@ export const GanttChart: React.FC<GanttChartProps> = ({ tasks, members, groupBy,
     const span = spanOf(item);
     const shown = clipSpan(span, from, to);
     if (!shown) return null; // entirely outside the days drawn
-    // A bar cut off by the edge of the window cannot be dragged, because its true ends are out of sight
+    // A cut-off bar cannot be dragged
     const editable = canEdit(task) && !shown.clipped;
     const late = isLate(task, today);
     const dragging = drag?.id === task.id;
@@ -229,14 +222,12 @@ export const GanttChart: React.FC<GanttChartProps> = ({ tasks, members, groupBy,
     <div className="space-y-2">
     <div ref={scrollRef} className="overflow-x-auto rounded-xl border border-neutral-200 bg-white shadow-xs">
       <div className="relative [--gantt-left:9.5rem] sm:[--gantt-left:14rem]" style={{ width: `calc(var(--gantt-left) + ${trackWidth}px)` }}>
-        {/* Header: months, then days */}
         <div className="flex border-b border-neutral-200 bg-neutral-50" style={{ height: headerHeight }}>
           <div className={`${sticky} z-30 bg-neutral-50`} />
           <div className="relative" style={{ width: trackWidth }}>
             <div className="flex" style={{ height: HEADER_ROW_HEIGHT }}>
               {monthSegments(from, to).map(seg => (
                 <div key={seg.key} className="flex items-center overflow-clip border-l border-neutral-200 text-xs font-bold first:border-l-0" style={{ width: seg.days * px }}>
-                  {/* Sticks to the left edge of the visible days, so the month is named even when its first day has scrolled away */}
                   <span className="sticky left-[var(--gantt-left)] whitespace-nowrap px-2">{formatMonth(seg.from, seg.days * px > 110)}</span>
                 </div>
               ))}
@@ -264,7 +255,6 @@ export const GanttChart: React.FC<GanttChartProps> = ({ tasks, members, groupBy,
           </div>
         </div>
 
-        {/* Rows, with weekends, today and the team deadline drawn behind the bars */}
         <div className="relative">
           <div aria-hidden="true" className="pointer-events-none absolute inset-y-0 left-[var(--gantt-left)] z-0" style={{ width: trackWidth, ...trackBackground }}>
             {days.filter(isWeekend).map(day => (

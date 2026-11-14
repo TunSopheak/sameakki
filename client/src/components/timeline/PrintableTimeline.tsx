@@ -6,7 +6,7 @@ import { buildExportLabels } from './exportLabels';
 import { exportHeaders, exportRowCells, exportRows } from './exportModel';
 import { chartRange, clipSpan, fromDay, isLate, isWeekend, monthSegments, spanDays, toDay, toItem, weekday } from './ganttModel';
 
-// Fixed colours on purpose: paper is white, and the app's colour tokens turn dark in dark mode.
+// Fixed colours: paper is white
 const INK = '#1a1410';
 const MUTED = '#6f645b';
 const LINE = '#d3cbc2';
@@ -29,10 +29,7 @@ interface PrintableTimelineProps {
   teamDeadline?: string;
 }
 
-/**
- * The timeline as a page of paper: the whole chart (not the part that fits on screen), then the table.
- * It is only on screen while printing. Choose "Save as PDF" in the print window to get a PDF file.
- */
+/** The timeline as a printable page. */
 export const PrintableTimeline: React.FC<PrintableTimelineProps> = ({ groupName, tasks, users, teamDeadline }) => {
   const { t, language } = useApp();
   const labels = buildExportLabels(t);
@@ -48,7 +45,6 @@ export const PrintableTimeline: React.FC<PrintableTimelineProps> = ({ groupName,
   const total = to - from + 1;
   const pct = (day: number) => ((day - from) / total) * 100;
   const days = Array.from({ length: total }, (_, i) => from + i);
-  // Day numbers fit for about two months; beyond that only Mondays are numbered
   const everyDay = total <= 62;
   const dayOfMonth = (day: number) => new Date(day * 86_400_000).getUTCDate();
   const monthName = (day: number) => new Intl.DateTimeFormat(locale, { month: 'long', year: 'numeric', timeZone: 'UTC' }).format(new Date(day * 86_400_000));
@@ -69,7 +65,6 @@ export const PrintableTimeline: React.FC<PrintableTimelineProps> = ({ groupName,
         </p>
       </header>
 
-      {/* The chart */}
       <section style={{ border: `1px solid ${LINE}`, marginBottom: 12 }}>
         <div style={{ display: 'flex', borderBottom: `1px solid ${LINE}`, background: '#faf8f6' }}>
           <div style={{ width: LABEL_WIDTH, flexShrink: 0, borderRight: `1px solid ${LINE}` }} />
@@ -97,7 +92,6 @@ export const PrintableTimeline: React.FC<PrintableTimelineProps> = ({ groupName,
         </div>
 
         <div style={{ position: 'relative' }}>
-          {/* Weekends, today and the team deadline behind the bars */}
           <div style={{ position: 'absolute', top: 0, bottom: 0, left: LABEL_WIDTH, right: 0, pointerEvents: 'none' }}>
             {days.filter(isWeekend).map(day => (
               <span key={day} style={{ position: 'absolute', top: 0, bottom: 0, left: `${pct(day)}%`, width: `${100 / total}%`, background: '#f3f0ec' }} />
@@ -165,7 +159,6 @@ export const PrintableTimeline: React.FC<PrintableTimelineProps> = ({ groupName,
         {deadline !== undefined && <span>┆ {t.ganttTeamDeadline}</span>}
       </p>
 
-      {/* The table */}
       <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 10 }}>
         <thead style={{ display: 'table-header-group' }}>
           <tr>

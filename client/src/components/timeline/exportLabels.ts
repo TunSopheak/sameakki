@@ -11,7 +11,6 @@ export const buildXlsxLabels = (t: Words): XlsxLabels => ({
   overdue: t.xlsxOverdue,
 });
 
-/** The column names and status words for an export, in the language the person is using. */
 export const buildExportLabels = (t: Words): ExportLabels => ({
   columns: {
     title: t.colTitle,

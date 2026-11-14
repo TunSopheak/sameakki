@@ -43,7 +43,6 @@ const MainApp: React.FC = () => {
   const [leaveGroupId, setLeaveGroupId] = useState<string | null>(null);
   const [isReportModalOpen, setIsReportModalOpen] = useState(false);
 
-  // The report opens as a modal, not a tab
   const handleTabChange = (tab: Tab) => {
     if (tab === 'report') {
       setIsReportModalOpen(true);
@@ -184,12 +183,12 @@ const SessionGate: React.FC = () => {
   const { status, t, isDemo } = useApp();
   const route = useRoute();
 
-  // Remember that this browser has an account, so the next visit goes straight to the log-in form
+  // Remember this browser has logged in before
   useEffect(() => {
     if (status === 'ready' && !isDemo) rememberLogin();
   }, [status, isDemo]);
 
-  // "/" is the sales page for newcomers and the log-in form for people who have logged in before
+  // "/" shows login for returning users and the landing page for new ones
   const returning = hasLoggedInBefore();
   const showLogin = route === '/login' || (route === '/' && returning);
   useEffect(() => {
@@ -215,7 +214,6 @@ const SessionGate: React.FC = () => {
     );
   }
 
-  // Logged-in people can reopen the information page from the account menu
   if (route === '/about') return <LandingPage />;
 
   return <MainApp />;

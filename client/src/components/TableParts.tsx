@@ -12,7 +12,6 @@ interface SortHeaderProps {
   className?: string;
 }
 
-/** Clickable column title that shows the sort direction. */
 export const SortHeader: React.FC<SortHeaderProps> = ({ label, column, sort, onSort, className = '' }) => {
   const active = sort.key === column;
   return (
@@ -74,7 +73,7 @@ interface PagerProps {
 export const Pager: React.FC<PagerProps> = ({ page, pageCount, total, onPage }) => {
   const { t } = useApp();
   return (
-    <div className="flex items-center justify-between border-t border-neutral-100 px-4 py-2.5 text-xs text-neutral-500">
+    <div className="flex items-center justify-between px-4 py-2.5 text-xs text-neutral-500">
       <span>{total}</span>
       <div className="flex items-center gap-1">
         <button
@@ -112,11 +111,10 @@ interface IconActionProps {
   icon: React.ElementType;
   label: string;
   onClick: () => void;
-  /** `brand` colours the icon red, for restoring something that was deleted. */
   tone?: 'default' | 'brand';
 }
 
-/** A table-row action shown as an icon alone, so it fits on a phone. The label is the tooltip and the screen-reader name. */
+/** Icon-only action for table rows. */
 export const IconAction: React.FC<IconActionProps> = ({ icon: Icon, label, onClick, tone = 'default' }) => (
   <button
     type="button"

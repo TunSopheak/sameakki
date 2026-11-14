@@ -3,7 +3,6 @@ import { useApp } from '../context/AppContext';
 import { useTheme } from '../lib/theme';
 import { Icons } from './icons';
 
-/** Switches between light and dark. The look comes from `className`, so every screen shares one button. */
 export const ThemeToggle: React.FC<{ className?: string }> = ({ className = '' }) => {
   const { t } = useApp();
   const { theme, toggle } = useTheme();

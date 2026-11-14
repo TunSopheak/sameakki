@@ -1,6 +1,6 @@
 import { useEffect, type RefObject } from 'react';
 
-/** Calls `onDismiss` on a click outside `ref` or on Escape, while `active`. */
+/** Calls onDismiss on an outside click or Escape. */
 export function useDismiss(ref: RefObject<HTMLElement | null>, active: boolean, onDismiss: () => void) {
   useEffect(() => {
     if (!active) return;

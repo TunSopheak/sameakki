@@ -15,7 +15,6 @@ const profileSchema = z.object({
   specialty: z.string().trim().max(200).optional(),
 });
 
-/** People edit only their own details. Email and role stay under the admin's control. */
 usersRouter.patch('/users/me', async (req, res) => {
   const input = profileSchema.parse(req.body);
   const db = await getDb();

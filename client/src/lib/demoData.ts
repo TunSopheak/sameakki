@@ -1,6 +1,6 @@
 import type { ActivityEvent, AppNotification, BootstrapData, DailyLog, Task, User } from '@shared/types';
 
-// Sample workspace for the Explore button. It lives only in the browser; nothing is saved.
+// Sample data for the demo, kept in the browser only
 
 const DAY = 24 * 60 * 60 * 1000;
 const dateOffset = (days: number) => {
@@ -109,7 +109,6 @@ export function buildDemoData(): BootstrapData {
   };
 }
 
-/** A few sample notifications so the bell is not empty in the demo. */
 export function buildDemoNotifications(): AppNotification[] {
   const make = (id: string, type: AppNotification['type'], hoursAgo: number, read: boolean, actorName: string | undefined, params: Record<string, string>): AppNotification => ({
     id,

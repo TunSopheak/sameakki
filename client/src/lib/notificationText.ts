@@ -4,13 +4,11 @@ import type { Tab } from '../components/sidebar/SidebarNav';
 
 export interface NotificationView {
   text: string;
-  /** A note the leader wrote, shown under the text. */
   note?: string;
-  /** The tab to open when it is clicked. */
   tab?: Tab;
 }
 
-/** Words for a notification, in the reader's language (the database only keeps the type and values). */
+/** Notification text in the reader's language. */
 export function describeNotification(n: AppNotification, language: Language): NotificationView {
   const km = language === 'km';
   const who = n.actorName || (km ? 'មានម្នាក់' : 'Someone');
@@ -90,7 +88,6 @@ export function describeNotification(n: AppNotification, language: Language): No
   }
 }
 
-/** "5 minutes ago" in the reader's language. */
 export function timeAgo(iso: string, language: Language): string {
   const seconds = Math.round((new Date(iso).getTime() - Date.now()) / 1000);
   const rtf = new Intl.RelativeTimeFormat(language === 'km' ? 'km' : 'en', { numeric: 'auto' });

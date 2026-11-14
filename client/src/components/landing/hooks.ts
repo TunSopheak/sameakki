@@ -5,14 +5,11 @@ import { landing } from '../../locales/landing';
 
 const reducedMotion = () => typeof window !== 'undefined' && !!window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
 
-/** Words, language and the two main actions, so every section reads them the same way. */
 export function useLanding() {
   const { language, enterDemo, t, status } = useApp();
-  // Someone who is logged in can reopen this page, and has no use for the sample data
   return { language, t, copy: landing[language], enterDemo, signedIn: status === 'ready', contactHref: telegramLink(t.telegramMessage) };
 }
 
-/** True once the element has come into view (and stays true). Shows everything at once if motion is reduced. */
 export function useInView<T extends HTMLElement>(threshold = 0.15): [RefObject<T | null>, boolean] {
   const ref = useRef<T>(null);
   const [inView, setInView] = useState(reducedMotion);
@@ -40,7 +37,6 @@ export function useInView<T extends HTMLElement>(threshold = 0.15): [RefObject<T
   return [ref, inView];
 }
 
-/** Counts from 0 up to `target` once `active` turns true. */
 export function useCountUp(target: number, active: boolean, duration = 1400): number {
   const [value, setValue] = useState(reducedMotion() ? target : 0);
 
@@ -64,10 +60,6 @@ export function useCountUp(target: number, active: boolean, duration = 1400): nu
   return value;
 }
 
-/**
- * Fills the thin bar as the page scrolls (set straight on the element, so scrolling never re-renders)
- * and returns whether the page has moved away from the top.
- */
 export function useScrollProgress(barRef: RefObject<HTMLElement | null>): boolean {
   const [scrolled, setScrolled] = useState(false);
 
@@ -95,7 +87,6 @@ export function useScrollProgress(barRef: RefObject<HTMLElement | null>): boolea
   return scrolled;
 }
 
-/** Turns an element a few degrees towards the pointer. Spread the returned handlers on it. */
 export function useTilt<T extends HTMLElement>(maxDegrees = 6) {
   const ref = useRef<T>(null);
   return {
@@ -116,7 +107,6 @@ export function useTilt<T extends HTMLElement>(maxDegrees = 6) {
   };
 }
 
-/** The landing page turns on smooth scrolling and hides the Angkor drawing while it is shown. */
 export function useLandingPageClass() {
   useEffect(() => {
     document.documentElement.classList.add('landing-page');

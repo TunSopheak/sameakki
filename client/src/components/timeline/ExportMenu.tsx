@@ -19,7 +19,7 @@ interface ExportMenuProps {
   teamDeadline?: string;
 }
 
-/** The "Export" button: a PDF through the browser's print window, or a CSV file for Excel and Google Sheets. */
+/** Export button: PDF, Excel or CSV. */
 export const ExportMenu: React.FC<ExportMenuProps> = ({ groupName, tasks, users, teamDeadline }) => {
   const { t, language } = useApp();
   const [open, setOpen] = useState(false);
@@ -27,7 +27,6 @@ export const ExportMenu: React.FC<ExportMenuProps> = ({ groupName, tasks, users,
   const ref = useRef<HTMLDivElement>(null);
   useDismiss(ref, open, () => setOpen(false));
 
-  // Once the paper version is on the page, open the print window
   useEffect(() => (printing ? printPage(() => setPrinting(false)) : undefined), [printing]);
 
   const exportPdf = () => {
@@ -45,7 +44,6 @@ export const ExportMenu: React.FC<ExportMenuProps> = ({ groupName, tasks, users,
   const exportXlsx = async () => {
     setOpen(false);
     const labels = buildExportLabels(t);
-    // Loaded only now: the Excel library is large and most visits never export
     const { buildXlsx } = await import('./exportXlsx');
     const buffer = await buildXlsx(exportRows(tasks, users, labels, language), labels, buildXlsxLabels(t), groupName, toDay(todayLocal()));
     downloadBlob(new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' }), exportFileName(groupName, 'xlsx', todayLocal()));
@@ -70,7 +68,6 @@ export const ExportMenu: React.FC<ExportMenuProps> = ({ groupName, tasks, users,
       </button>
       {open && (
         <>
-          {/* On a phone the menu is a sheet above the tab bar, so it never covers the chart it exports */}
           <button type="button" aria-label={t.close} onClick={() => setOpen(false)} className="fixed inset-0 z-40 cursor-default bg-black/40 sm:hidden" />
         <div
           role="menu"

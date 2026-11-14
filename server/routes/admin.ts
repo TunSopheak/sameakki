@@ -13,7 +13,6 @@ import { getLandingSettings, landingSettingsSchema, saveLandingSettings } from '
 
 export const adminRouter = Router();
 
-/** Everyone who has an account, and every group, for the Super Admin dashboard. */
 adminRouter.get('/admin/overview', async (req, res) => {
   requireSuperAdmin(req.user!);
   const db = await getDb();
@@ -74,7 +73,6 @@ adminRouter.get('/admin/overview', async (req, res) => {
 
 const activeSchema = z.object({ active: z.boolean() });
 
-/** Delete (active = false) or restore a user. Rows are kept; only is_active changes. */
 adminRouter.post('/admin/users/:userId/active', async (req, res) => {
   const me = req.user!;
   requireSuperAdmin(me);
@@ -87,13 +85,11 @@ adminRouter.post('/admin/users/:userId/active', async (req, res) => {
     if (rows[0].role === 'super_admin') throw badRequest('A Super Admin cannot be deleted.');
 
     await tx.query('UPDATE users SET is_active = $2 WHERE id = $1', [req.params.userId, active ? 1 : 0]);
-    // A deleted person leaves every group. Their past tasks and posts stay.
     if (!active) await tx.query('DELETE FROM group_members WHERE user_id = $1', [req.params.userId]);
   });
   res.status(204).end();
 });
 
-/** Delete (active = false) or restore a group. */
 adminRouter.post('/admin/groups/:groupId/active', async (req, res) => {
   requireSuperAdmin(req.user!);
   const { active } = activeSchema.parse(req.body);
@@ -104,9 +100,7 @@ adminRouter.post('/admin/groups/:groupId/active', async (req, res) => {
 });
 
 const planFields = {
-  /** Last day the account works. null = never expires. */
   expiresAt: isoDate.nullable().optional(),
-  /** Most people allowed in each of this leader's groups. null = unlimited. */
   maxMembers: z.number().int().min(1).max(100000).nullable().optional(),
 };
 
@@ -120,12 +114,10 @@ const createUserSchema = z.object({
     .toLowerCase()
     .regex(/^[a-z0-9._-]{3,40}$/, 'Username: 3-40 letters, numbers, dot, dash or underscore.')
     .optional(),
-  // Leave out to have one generated; it is returned once so it can be passed on
   password: z.string().min(1).max(200).optional(),
   ...planFields,
 });
 
-/** The Super Admin creates a Team Leader account (there is no public sign-up). */
 adminRouter.post('/admin/users', async (req, res) => {
   requireSuperAdmin(req.user!);
   const input = createUserSchema.parse(req.body);
@@ -162,7 +154,6 @@ adminRouter.post('/admin/users', async (req, res) => {
 
 const planSchema = z.object(planFields);
 
-/** Renew, shorten or resize a leader's plan. Members the leader added follow the same expiry. */
 adminRouter.post('/admin/users/:userId/plan', async (req, res) => {
   requireSuperAdmin(req.user!);
   const input = planSchema.parse(req.body);
@@ -186,10 +177,6 @@ adminRouter.post('/admin/users/:userId/plan', async (req, res) => {
   res.status(204).end();
 });
 
-/**
- * Sets a new temporary password and returns it once. The person must change it at their next sign-in.
- * The Super Admin can do this for anyone; a leader only for accounts they created.
- */
 adminRouter.post('/users/:userId/reset-password', async (req, res) => {
   const me = req.user!;
   const db = await getDb();
@@ -201,17 +188,15 @@ adminRouter.post('/users/:userId/reset-password', async (req, res) => {
   assert(isSuperAdmin(me) || target.created_by === me.id, 'You can only reset the password of accounts you created.');
 
   const password = generatePassword();
-  // token_version ends any session opened with the old password, such as one held by someone who stole it
+  // Ends sessions opened with the old password
   await db.query('UPDATE users SET password_hash = $2, must_change_password = true, token_version = token_version + 1 WHERE id = $1', [
     target.id,
     await hashPassword(password),
   ]);
-  // The owner is told who reset it, so a reset can never happen unseen
   await notify(db, { userId: target.id, type: 'password_reset', actorName: me.name });
   res.json({ password });
 });
 
-/** The Super Admin edits what the public landing page shows (price, free-month line, sponsors). */
 adminRouter.put('/admin/landing', async (req, res) => {
   requireSuperAdmin(req.user!);
   const input = landingSettingsSchema.parse(req.body);

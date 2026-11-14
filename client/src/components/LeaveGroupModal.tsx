@@ -19,7 +19,6 @@ export const LeaveGroupModal: React.FC<LeaveGroupModalProps> = ({ groupId, onClo
       await leaveGroup(currentUser.id, groupId);
       onClose();
     } catch {
-      // Error is shown as a notice
     }
   };
 

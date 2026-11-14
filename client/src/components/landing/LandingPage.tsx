@@ -11,7 +11,7 @@ import { ProblemsSection } from './ProblemsSection';
 import { SponsorSection } from './SponsorSection';
 import { StepsSection } from './StepsSection';
 
-/** The page people see before signing in: what it is, what it costs, and how to start. */
+/** The page shown before login. */
 export const LandingPage: React.FC = () => {
   useLandingPageClass();
   const { copy } = useLanding();

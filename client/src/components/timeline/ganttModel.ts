@@ -1,34 +1,26 @@
-// The arithmetic behind the Gantt chart: days as whole numbers, the visible range, rows, and dragging.
-// Nothing here touches React or the screen, so it can be tested on its own.
+// Date and layout maths for the Gantt chart. No React.
 import type { Task, User } from '../../../../shared/types';
 
 export const DAY_MS = 86_400_000;
 
-/** Whole days since 1970-01-01 for a YYYY-MM-DD string. Time zones play no part: the date is read as it is written. */
+/** Whole days since 1970-01-01. */
 export const toDay = (iso: string): number => Math.round(Date.UTC(Number(iso.slice(0, 4)), Number(iso.slice(5, 7)) - 1, Number(iso.slice(8, 10))) / DAY_MS);
 
-/** The YYYY-MM-DD string for a day number. */
 export const fromDay = (day: number): string => new Date(day * DAY_MS).toISOString().slice(0, 10);
 
-/** 0 = Sunday … 6 = Saturday. 1970-01-01 was a Thursday. */
 export const weekday = (day: number): number => (((day + 4) % 7) + 7) % 7;
 export const isWeekend = (day: number): boolean => weekday(day) === 0 || weekday(day) === 6;
 
-/** A run of days, both ends included. */
 export interface Span {
   start: number;
   end: number;
 }
 export const spanDays = (span: Span): number => span.end - span.start + 1;
 
-/** The most days the chart ever draws. A mistyped year (2099) must not make it draw tens of thousands of columns. */
+/** Cap on drawn days, so a typo like the year 2099 stays fast. */
 export const MAX_DAYS = 400;
 
-/**
- * The days the chart shows: a little before the earliest start and after the latest end, always
- * including today and any extra marked days, never fewer than `minDays` and never more than `maxDays`.
- * When the tasks are spread wider than that, the window starts shortly before today.
- */
+/** The days to draw: around the tasks, and always including today. */
 export function chartRange(
   spans: Span[],
   today: number,
@@ -49,14 +41,12 @@ export function chartRange(
   return { from, to };
 }
 
-/** The part of a span inside the window, or null when none of it is. `clipped` says whether anything was cut off. */
 export function clipSpan(span: Span, from: number, to: number): (Span & { clipped: boolean }) | null {
   const start = Math.max(span.start, from);
   const end = Math.min(span.end, to);
   return start > end ? null : { start, end, clipped: start !== span.start || end !== span.end };
 }
 
-/** Puts items on as few lines as possible so that none on the same line overlap. Touching days count as overlapping. */
 export function packLanes<T extends Span>(items: T[]): T[][] {
   const lanes: T[][] = [];
   for (const item of [...items].sort((a, b) => a.start - b.start || a.end - b.end)) {
@@ -69,10 +59,6 @@ export function packLanes<T extends Span>(items: T[]): T[][] {
 
 export type DragMode = 'move' | 'start' | 'end';
 
-/**
- * The span after dragging it by `delta` days. Moving keeps the length; dragging an edge changes it but never
- * below one day. `bounds` stops it leaving the visible range.
- */
 export function dragSpan(span: Span, mode: DragMode, delta: number, bounds?: { from: number; to: number }): Span {
   let { start, end } = span;
   if (mode === 'move') {
@@ -88,7 +74,6 @@ export function dragSpan(span: Span, mode: DragMode, delta: number, bounds?: { f
   return { start, end };
 }
 
-/** Whole days for a drag of `pixels` when one day is `pxPerDay` wide. */
 export const pixelsToDays = (pixels: number, pxPerDay: number): number => Math.round(pixels / pxPerDay);
 
 export interface Segment {
@@ -97,7 +82,6 @@ export interface Segment {
   days: number;
 }
 
-/** Splits the days from..to into calendar months, for the top row of the header. */
 export function monthSegments(from: number, to: number): Segment[] {
   const out: Segment[] = [];
   let day = from;
@@ -117,11 +101,9 @@ export interface GanttItem extends Span {
 
 export interface GanttRow {
   id: string;
-  /** "task": one task per row. "header": a person's name. "lane": a line of that person's tasks. */
   kind: 'task' | 'header' | 'lane';
   member?: User;
   items: GanttItem[];
-  /** Number of tasks, for a person's header. */
   count?: number;
 }
 
@@ -131,10 +113,8 @@ export const toItem = (task: Task): GanttItem => {
   return { task, start: Math.min(start, end), end };
 };
 
-/** Late = still open and past its due day. Waiting for review or approved is not late. */
 export const isLate = (task: Task, today: number): boolean => (task.status === 'todo' || task.status === 'in_progress') && toDay(task.dueDate) < today;
 
-/** The rows to draw: one per task, or one block per person with their tasks packed onto as few lines as possible. */
 export function buildRows(tasks: Task[], members: User[], groupBy: 'task' | 'member'): GanttRow[] {
   const items = tasks.map(toItem);
   if (groupBy === 'task') {
@@ -146,7 +126,6 @@ export function buildRows(tasks: Task[], members: User[], groupBy: 'task' | 'mem
   const people: { id: string; member?: User }[] = [...members.map(member => ({ id: member.id, member })), { id: '' }];
   for (const person of people) {
     const mine = items.filter(i => (person.id === '' ? !known.has(i.task.assignedTo) : i.task.assignedTo === person.id));
-    // A member with no tasks still shows, so the leader can see who is free; the "nobody" block only when needed
     if (person.id === '' && mine.length === 0) continue;
     rows.push({ id: `h-${person.id || 'nobody'}`, kind: 'header', member: person.member, items: [], count: mine.length });
     packLanes(mine).forEach((lane, i) => rows.push({ id: `l-${person.id || 'nobody'}-${i}`, kind: 'lane', member: person.member, items: lane }));

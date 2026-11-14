@@ -6,7 +6,6 @@ import { useLanding, useScrollProgress } from './hooks';
 import { scrollToSection } from './ui';
 import { Icons } from '../icons';
 
-/** Sticks to the top, turns frosted once you scroll, and shows how far down the page you are. */
 export const LandingHeader: React.FC = () => {
   const { copy, signedIn } = useLanding();
   const progressRef = useRef<HTMLSpanElement>(null);

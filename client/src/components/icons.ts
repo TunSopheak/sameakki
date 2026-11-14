@@ -62,12 +62,8 @@ import {
   X,
 } from 'lucide-react';
 
-/**
- * One icon for one meaning, used everywhere. Components write `<Icons.edit />` instead of picking an icon of their
- * own, so the same action never looks different on two screens. Decorative icons (the marketing page) do not belong here.
- */
+/** One icon per meaning. Write <Icons.edit /> instead of picking an icon in each file. */
 export const Icons = {
-  // Places
   home: LayoutDashboard,
   daily: CheckSquare,
   tasks: ClipboardList,
@@ -80,7 +76,6 @@ export const Icons = {
   notifications: Bell,
   activity: History,
   comments: MessageSquare,
-  // Actions
   add: Plus,
   addMember: UserPlus,
   removeMember: UserMinus,
@@ -102,7 +97,6 @@ export const Icons = {
   settings: Settings,
   pageSettings: LayoutTemplate,
   today: LocateFixed,
-  // Things and states
   date: Calendar,
   deadline: CalendarClock,
   time: Clock,

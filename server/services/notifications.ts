@@ -11,13 +11,10 @@ interface NewNotification {
   targetId?: string;
   actorName?: string;
   params?: Record<string, string | undefined>;
-  /** The same key for the same person is only stored once. */
   dedupeKey?: string;
 }
 
-/** Add a notification. Never throws for a duplicate. */
 export async function notify(db: Queryable, n: NewNotification) {
-  // Leave out empty values so the client never prints "undefined"
   const params = Object.fromEntries(Object.entries(n.params ?? {}).filter(([, v]) => v !== undefined && v !== ''));
   await db.query(
     `INSERT INTO notifications (user_id, type, group_id, target_id, actor_name, params, dedupe_key)
@@ -27,10 +24,6 @@ export async function notify(db: Queryable, n: NewNotification) {
   );
 }
 
-/**
- * A new comment. If the person has not read an earlier comment on the same thing, that entry is
- * refreshed instead of adding another one, so a busy thread does not flood the bell.
- */
 export async function notifyComment(db: Queryable, n: Omit<NewNotification, 'type'> & { targetId: string }) {
   const params = Object.fromEntries(Object.entries(n.params ?? {}).filter(([, v]) => v !== undefined && v !== ''));
   const { rows } = await db.query(
@@ -42,7 +35,6 @@ export async function notifyComment(db: Queryable, n: Omit<NewNotification, 'typ
   if (!rows[0]) await notify(db, { ...n, type: 'comment_added' });
 }
 
-/** The group's leader and its team leads, except the person who did the action. */
 export async function groupLeadIds(db: Queryable, groupId: string, exceptUserId: string): Promise<string[]> {
   const { rows } = await db.query(
     `SELECT DISTINCT u.id
@@ -55,12 +47,8 @@ export async function groupLeadIds(db: Queryable, groupId: string, exceptUserId:
   return rows.map(r => r.id as string);
 }
 
-/**
- * Reminders that depend on the date are made when someone opens their notifications, so no
- * scheduler is needed. Each one has a dedupe key, so running this again adds nothing new.
- */
+/** Date reminders are made when notifications are opened, so no scheduler is needed. */
 export async function syncReminders(db: Queryable, userId: string) {
-  // Open tasks due today or tomorrow, or late by up to a week. Older ones would flood the bell the first time.
   await db.query(
     `INSERT INTO notifications (user_id, type, group_id, target_id, params, dedupe_key)
      SELECT t.assigned_to,
@@ -79,7 +67,6 @@ export async function syncReminders(db: Queryable, userId: string) {
     [userId, TIME_ZONE]
   );
 
-  // A leader's plan ends within 7 days
   await db.query(
     `INSERT INTO notifications (user_id, type, params, dedupe_key)
      SELECT u.id, 'plan_expiring',

@@ -1,17 +1,15 @@
-// Words for the landing page. Khmer first; English for the language switch.
+// Landing page texts
 
 export interface LandingCopy {
   nav: { backToApp: string; signIn: string; features: string; pricing: string; faq: string };
   hero: {
     eyebrow: string;
     title: string;
-    /** The second line of the title, shown in the brand colour. */
     highlight: string;
     subtitle: string;
     explore: string;
     exploreHint: string;
     contact: string;
-    /** Words on the sample board next to the title. All of it is made-up example data. */
     mock: {
       sample: string;
       group: string;

@@ -16,14 +16,13 @@ interface TaskDetailPanelProps {
   onClose: () => void;
 }
 
-/** What is under the chart when a bar is selected. Leaders can type new dates here, which also works on a phone. */
+/** Details under the chart. Leaders can type new dates here. */
 export const TaskDetailPanel: React.FC<TaskDetailPanelProps> = ({ task, assignee, canEdit, onReschedule, onClose }) => {
   const { t, language } = useApp();
   const [start, setStart] = useState(task.startDate);
   const [due, setDue] = useState(task.dueDate);
   const [saving, setSaving] = useState(false);
 
-  // Follow the task when it changes, for example after dragging its bar
   useEffect(() => {
     setStart(task.startDate);
     setDue(task.dueDate);
@@ -34,7 +33,7 @@ export const TaskDetailPanel: React.FC<TaskDetailPanelProps> = ({ task, assignee
   const changed = start !== task.startDate || due !== task.dueDate;
   const days = start && due && start <= due ? spanDays({ start: toDay(start), end: toDay(due) }) : null;
 
-  // The two dates never cross: moving one past the other takes the other along
+  // Start and due dates never cross
   const changeStart = (value: string) => {
     setStart(value);
     if (value && due && value > due) setDue(value);

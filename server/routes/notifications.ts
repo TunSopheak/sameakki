@@ -8,7 +8,6 @@ export const notificationsRouter = Router();
 
 const LIMIT = 40;
 
-/** The signed-in user's latest notifications and how many are unread. */
 notificationsRouter.get('/notifications', async (req, res) => {
   const userId = req.user!.id;
   const db = await getDb();

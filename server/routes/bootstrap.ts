@@ -15,12 +15,10 @@ export const bootstrapRouter = Router();
 
 const ACTIVITY_LIMIT_PER_GROUP = 200;
 
-/** Everything the signed-in user may see, in one response. */
 bootstrapRouter.get('/bootstrap', async (req, res) => {
   const user = req.user!;
   const db = await getDb();
 
-  // Not awaited so it never slows the response. Writes at most once every 5 minutes per person.
   void db
     .query(
       `UPDATE users SET last_seen_at = now()
@@ -29,7 +27,7 @@ bootstrapRouter.get('/bootstrap', async (req, res) => {
     )
     .catch(() => undefined);
 
-  // Even the Super Admin gets only their own groups, plus any a leader has opened for support
+  // The Super Admin sees only own groups and groups opened for support
   const { rows: groupRows } = isSuperAdmin(user)
     ? await db.query(
         `SELECT g.*, EXISTS (SELECT 1 FROM users l WHERE l.id = g.leader_id AND l.role <> 'super_admin' AND l.expires_at IS NOT NULL AND l.expires_at < now()) AS leader_plan_ended FROM groups g

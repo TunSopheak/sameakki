@@ -1,14 +1,11 @@
 import React from 'react';
 
 interface FlagProps {
-  /** km = Cambodia, en = United Kingdom */
   code: 'km' | 'en';
   className?: string;
 }
 
-/**
- * Flags are drawn as images because many phones and PCs show flag emoji as plain letters ("KH").
- */
+/** Flags are images because some devices show flag emoji as letters. */
 export const Flag: React.FC<FlagProps> = ({ code, className = 'h-4' }) => {
   const shape = `inline-block aspect-[3/2] rounded-[2px] object-cover shadow-[0_0_0_1px_rgb(0_0_0/0.1)] ${className}`;
 

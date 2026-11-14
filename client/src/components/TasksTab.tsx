@@ -16,7 +16,7 @@ const readView = (): View => {
   }
 };
 
-/** The Tasks page: the same tasks as cards, or as a timeline. The choice is remembered. */
+/** Tasks page: cards or timeline. */
 export const TasksTab: React.FC<{ onOpenAssignTask: () => void }> = ({ onOpenAssignTask }) => {
   const { t } = useApp();
   const [view, setView] = useState<View>(readView);
@@ -26,7 +26,7 @@ export const TasksTab: React.FC<{ onOpenAssignTask: () => void }> = ({ onOpenAss
     try {
       localStorage.setItem(STORAGE_KEY, next);
     } catch {
-      /* storage unavailable (private mode): the choice just lasts for this visit */
+      /* no storage */
     }
   };
 

@@ -18,7 +18,7 @@ interface FormState {
   sponsors: { name: string; url: string }[];
 }
 
-/** Super Admin: what the public landing page shows for the student plan and the sponsors. */
+/** Edit the plan and sponsors on the landing page. */
 export const LandingSettingsModal: React.FC<{ onClose: () => void }> = ({ onClose }) => {
   const { t, language } = useApp();
   const [form, setForm] = useState<FormState | null>(null);

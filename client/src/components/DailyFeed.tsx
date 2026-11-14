@@ -138,7 +138,7 @@ export const DailyFeed: React.FC = () => {
                 key={log.id}
                 className="lift bg-white rounded-xl border border-neutral-200 p-5 shadow-xs"
               >
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-neutral-100">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3">
                   <div className="flex items-center gap-3">
                     <Avatar name={author.name} avatar={author.avatar} className="size-9" />
                     <div>
@@ -154,7 +154,7 @@ export const DailyFeed: React.FC = () => {
                         <span className="text-[11px] text-neutral-500">{author.email}</span>
                       </div>
                       <div className="flex items-center gap-2 text-[11px] text-neutral-500 mt-0.5">
-                        <span className="font-semibold text-black bg-neutral-100 px-2 py-0.2 rounded-lg border border-neutral-200">
+                        <span className="font-semibold text-black bg-neutral-100 px-2 py-0.2 rounded-lg">
                           {log.title}
                         </span>
                         <span>·</span>
@@ -174,13 +174,13 @@ export const DailyFeed: React.FC = () => {
                       </span>
                     )}
                     {log.status === 'completed' && (
-                      <span className="inline-flex items-center gap-1 text-xs font-semibold text-black bg-neutral-200 px-2.5 py-0.5 rounded-lg border border-neutral-200">
+                      <span className="inline-flex items-center gap-1 text-xs font-semibold text-black bg-neutral-200 px-2.5 py-0.5 rounded-lg">
                         <Icons.time className="size-3.5 text-black" />
                         <span>{t.logDonePendingLong}</span>
                       </span>
                     )}
                     {log.status === 'in_progress' && (
-                      <span className="inline-flex items-center gap-1 text-xs font-medium text-neutral-800 bg-neutral-100 border border-neutral-200 px-2.5 py-0.5 rounded-lg">
+                      <span className="inline-flex items-center gap-1 text-xs font-medium text-neutral-800 bg-neutral-100 px-2.5 py-0.5 rounded-lg">
                         <span>{t.logInProgress}</span>
                         <span className="font-mono font-bold">({calcPercent}%)</span>
                       </span>
@@ -244,14 +244,14 @@ export const DailyFeed: React.FC = () => {
                       ))}
                     </div>
                   ) : (
-                    <p className="text-sm text-black whitespace-pre-line leading-relaxed bg-neutral-50 p-3 rounded-lg border border-neutral-200">
+                    <p className="text-sm text-black whitespace-pre-line leading-relaxed bg-neutral-50 p-3 rounded-lg">
                       {log.rawContent}
                     </p>
                   )}
                 </div>
 
                 {log.leaderChecked && log.leaderNote && (
-                  <div className="p-3 mb-3 bg-neutral-50 border border-neutral-200 rounded-lg text-xs flex items-start gap-2.5 text-black">
+                  <div className="p-3 mb-3 bg-neutral-50 rounded-lg text-xs flex items-start gap-2.5 text-black">
                     <Icons.approved className="size-4 text-black shrink-0 mt-0.5" />
                     <div className="flex-1">
                       <div className="font-bold text-black mb-0.5">
@@ -265,7 +265,7 @@ export const DailyFeed: React.FC = () => {
                 {isTeamLead && log.status !== 'approved' && (
                   <div className="mb-3">
                     {activeLeaderNoteId === log.id ? (
-                      <div className="p-3 bg-neutral-50 border border-neutral-200 rounded-lg space-y-2">
+                      <div className="p-3 bg-neutral-50 rounded-lg space-y-2">
                         <div className="flex items-center justify-between text-xs font-semibold text-black">
                           <span>{t.approveWithFeedback}</span>
                           <button
@@ -299,7 +299,7 @@ export const DailyFeed: React.FC = () => {
                   </div>
                 )}
 
-                <div className="pt-3 border-t border-neutral-100 flex flex-wrap items-center justify-between gap-3 text-xs">
+                <div className="pt-3 flex flex-wrap items-center justify-between gap-3 text-xs">
                   <div className="flex flex-wrap items-center gap-2">
                     {log.status === 'in_progress' && canEditChecklist && (
                       <button
@@ -329,10 +329,10 @@ export const DailyFeed: React.FC = () => {
                         <button
                           key={r.emoji}
                           onClick={() => addReactionToDailyLog(log.id, r.emoji)}
-                          className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs border transition-colors cursor-pointer ${
+                          className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs transition-colors cursor-pointer ${
                             userHasReacted
-                              ? 'bg-brand border-brand text-white'
-                              : 'bg-white border-neutral-200 text-neutral-700 hover:bg-neutral-100'
+                              ? 'bg-brand text-white'
+                              : 'bg-neutral-100 text-neutral-700 hover:bg-neutral-200'
                           }`}
                         >
                           <span>{r.emoji}</span>

@@ -14,11 +14,9 @@ const MAX_PER_THREAD = 200;
 interface Target {
   groupId: string;
   title: string;
-  /** People who own the thing being discussed: they are told about every new comment. */
   ownerIds: string[];
 }
 
-/** Finds the task or daily update and checks the caller belongs to its group. */
 async function loadTarget(db: Queryable, user: User, kind: CommentKind, id: string) {
   const { rows } =
     kind === 'task'
@@ -78,7 +76,6 @@ function register(kind: CommentKind, path: string) {
         [target.groupId, kind, req.params.id, user.id, body]
       );
 
-      // Tell the owners, the group's leaders and anyone who already joined the thread
       const { rows: earlier } = await tx.query(
         `SELECT DISTINCT user_id FROM comments WHERE target_type = $1 AND target_id = $2 AND is_active = 1`,
         [kind, req.params.id]
@@ -89,7 +86,6 @@ function register(kind: CommentKind, path: string) {
         ...earlier.map(r => r.user_id as string),
       ]);
       wanted.delete(user.id);
-      // Only people who are still in the group
       const { rows: members } = await tx.query(
         `SELECT user_id FROM group_members WHERE group_id = $1 AND user_id = ANY($2::uuid[])`,
         [target.groupId, [...wanted]]
@@ -118,7 +114,6 @@ function register(kind: CommentKind, path: string) {
 register('task', '/tasks');
 register('daily_log', '/daily-logs');
 
-/** The author can remove their own comment; a group leader can remove anyone's. */
 commentsRouter.delete('/comments/:commentId', async (req, res) => {
   const user = req.user!;
   const db = await getDb();

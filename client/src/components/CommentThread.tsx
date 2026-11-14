@@ -9,11 +9,10 @@ import { Icons } from './icons';
 interface CommentThreadProps {
   kind: CommentKind;
   targetId: string;
-  /** Comment count from the last refresh, shown until the thread is opened. */
   count: number;
 }
 
-/** A collapsible discussion under a task or a daily update. */
+/** Comments under a task or a daily update. */
 export const CommentThread: React.FC<CommentThreadProps> = ({ kind, targetId, count }) => {
   const { t, language, currentUser, canContribute, isTeamLead, isDemo, showError } = useApp();
   const [open, setOpen] = useState(false);
@@ -37,7 +36,6 @@ export const CommentThread: React.FC<CommentThreadProps> = ({ kind, targetId, co
     }
   }, [isDemo, kind, targetId, showError]);
 
-  // Load when opened, and refresh when the count changes because someone else commented
   useEffect(() => {
     if (open) void load();
   }, [open, count, load]);

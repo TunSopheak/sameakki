@@ -5,7 +5,7 @@ interface AnimatedNumberProps {
   suffix?: string;
 }
 
-/** Counts up (or down) to `value` instead of jumping. */
+/** Counts up to the value instead of jumping. */
 export const AnimatedNumber: React.FC<AnimatedNumberProps> = ({ value, suffix = '' }) => {
   const [shown, setShown] = useState(0);
   const from = useRef(0);

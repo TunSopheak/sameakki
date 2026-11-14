@@ -5,7 +5,6 @@ import { Reveal, Section, SectionTitle } from './ui';
 
 const ICONS = [ClipboardCheck, CalendarClock, Check, Bell, MessageSquare, Smartphone];
 
-/** Six things you get. Each card rises a little and its icon fills with colour on hover. */
 export const FeaturesSection: React.FC = () => {
   const { copy } = useLanding();
   return (

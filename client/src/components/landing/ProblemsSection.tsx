@@ -5,7 +5,6 @@ import { Reveal, Section, SectionTitle } from './ui';
 
 const ICONS = [Users, Bell, FileText];
 
-/** The three problems every student knows, in one panel. */
 export const ProblemsSection: React.FC = () => {
   const { copy } = useLanding();
   return (

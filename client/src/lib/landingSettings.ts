@@ -17,15 +17,11 @@ const writeCache = (settings: LandingSettings) => {
   try {
     localStorage.setItem(CACHE_KEY, JSON.stringify(settings));
   } catch {
-    /* storage unavailable (private mode): the page just loads them each time */
+    /* no storage */
   }
 };
 
-/**
- * What the landing page shows, as the Super Admin saved it. A returning visitor sees the last
- * saved values at once; a first-time visitor sees nothing for the prices until they arrive, so a
- * wrong price is never shown for a moment.
- */
+/** Landing page settings. Prices stay hidden until loaded so a wrong price never shows. */
 export function useLandingSettings() {
   const [settings, setSettings] = useState<LandingSettings>(() => readCache() ?? DEFAULT_LANDING_SETTINGS);
   const [ready, setReady] = useState(() => readCache() !== null);
@@ -40,7 +36,6 @@ export function useLandingSettings() {
         writeCache(next);
         setReady(true);
       })
-      // The server could not be reached: show the defaults rather than an empty page
       .catch(() => !cancelled && setReady(true));
     return () => {
       cancelled = true;

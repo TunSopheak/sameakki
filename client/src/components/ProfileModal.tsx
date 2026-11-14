@@ -13,7 +13,6 @@ interface ProfileModalProps {
 const input =
   'h-10 w-full rounded-lg border border-neutral-200 bg-white px-3 text-sm transition-colors focus:border-brand focus:outline-none focus:ring-1 focus:ring-brand/40';
 
-/** A person edits their own name, specialty and password. Email and role are not here on purpose. */
 export const ProfileModal: React.FC<ProfileModalProps> = ({ isOpen, onClose }) => {
   const { currentUser, updateProfile, t } = useApp();
   const [name, setName] = useState('');
@@ -34,7 +33,7 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({ isOpen, onClose }) =
     setNewPassword('');
     setError('');
     setShowPassword(false);
-    // Only reset when opened, so a background refresh never wipes what someone is typing.
+    // Reset only when opened
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isOpen]);
 
@@ -64,7 +63,7 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({ isOpen, onClose }) =
     </label>
   );
 
-  // Rendered on <body>: the sidebar has its own stacking context and would trap a fixed overlay.
+  // Shown on <body> so the sidebar does not trap it
   return createPortal(
       <div className="modal-overlay fixed inset-0 z-50 flex items-end justify-center bg-black/60 backdrop-blur-2xs sm:items-center sm:p-4">
         <form

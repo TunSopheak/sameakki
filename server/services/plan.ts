@@ -8,10 +8,7 @@ const DAY = 24 * 60 * 60 * 1000;
 export const LOCKED_MESSAGE = `Your account has expired and the ${config.expiredGraceDays}-day view-only period has ended. Please contact the admin on Telegram to renew it.`;
 export const READ_ONLY_MESSAGE = 'Your account has expired, so it is view-only. Please contact the admin on Telegram to renew it.';
 
-/**
- * Where an account stands: `active`; `read_only` for the grace days after the plan ends (can look and export,
- * cannot change anything); `locked` after that. The Super Admin and accounts without an end date never expire.
- */
+/** active, read_only (grace days after the end date) or locked. */
 export function planState(row: { role: string; expires_at?: Date | string | null }): Omit<PlanInfo, 'status'> & { status: 'active' | 'read_only' | 'locked' } {
   if (row.role === 'super_admin' || !row.expires_at) return { status: 'active' };
   const ends = new Date(row.expires_at).getTime();
@@ -21,15 +18,11 @@ export function planState(row: { role: string; expires_at?: Date | string | null
   return { status: Date.now() <= locksAt.getTime() ? 'read_only' : 'locked', ...info };
 }
 
-/** Throws once the view-only period is over too. */
 export function assertNotLocked(row: { role: string; expires_at?: Date | string | null }) {
   if (planState(row).status === 'locked') throw unauthorized(LOCKED_MESSAGE);
 }
 
-/**
- * Throws when adding one more person would pass the group leader's member limit. It locks the group's row
- * until the transaction ends, so two people joining at the same moment cannot both take the last place.
- */
+/** Throws when a new member would pass the leader's limit. Locks the group row so two joins cannot both take the last place. */
 export async function assertCapacity(db: Queryable, groupId: string) {
   const { rows } = await db.query(
     `SELECT u.max_members,
@@ -47,5 +40,4 @@ export async function assertCapacity(db: Queryable, groupId: string) {
   }
 }
 
-/** "YYYY-MM-DD" to the end of that day (UTC), or null to remove the limit. */
 export const endOfDay = (date: string | null) => (date ? new Date(`${date}T23:59:59.999Z`) : null);

@@ -6,7 +6,7 @@ import { Icons } from './icons';
 
 const OPTIONS = [24, 72] as const;
 
-/** The group's leader decides whether the Super Admin may open this group, and for how long. */
+/** The leader lets the Super Admin view the group for a while. */
 export const SupportAccessControl: React.FC = () => {
   const { t, language, activeGroup, refresh, showError } = useApp();
   const [open, setOpen] = useState(false);

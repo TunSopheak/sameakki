@@ -25,7 +25,6 @@ export const ActivityLog: React.FC<ActivityLogProps> = ({
   } = useApp();
 
   const [searchQuery, setSearchQuery] = useState('');
-  // Long histories are shown in pages, so a phone does not have to scroll through everything
   const [limit, setLimit] = useState(maxItems ?? PAGE_SIZE);
 
   const [filterType, setFilterType] = useState<'all' | 'tasks' | 'members' | 'deadlines' | 'standups'>('all');
@@ -127,7 +126,7 @@ export const ActivityLog: React.FC<ActivityLogProps> = ({
 
   return (
     <div className="bg-white rounded-xl border border-neutral-200 p-5 shadow-xs">
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-4 border-b border-neutral-100">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-4">
         <div className="flex items-center gap-2">
           <div className="size-8 rounded-lg bg-brand text-white flex items-center justify-center">
             <Icons.activity className="size-4" />
@@ -137,7 +136,7 @@ export const ActivityLog: React.FC<ActivityLogProps> = ({
               <h3 className="text-base font-bold text-black tracking-tight">
                 {t.activityTitle}
               </h3>
-              <span className="text-[11px] px-1.5 py-0.2 rounded-lg bg-neutral-100 text-neutral-800 border border-neutral-200 font-bold">
+              <span className="text-[11px] px-1.5 py-0.2 rounded-lg bg-neutral-100 text-neutral-800 font-bold">
                 {activeGroupActivityEvents.length}
               </span>
             </div>
@@ -162,7 +161,7 @@ export const ActivityLog: React.FC<ActivityLogProps> = ({
       </div>
 
       {showFilters && (
-        <div className="py-3 border-b border-neutral-100 flex flex-col md:flex-row items-stretch md:items-center justify-between gap-2.5">
+        <div className="py-3 flex flex-col md:flex-row items-stretch md:items-center justify-between gap-2.5">
           <div className="flex flex-wrap items-center gap-1 text-xs">
             <button
               onClick={() => setFilterType('all')}
@@ -222,7 +221,7 @@ export const ActivityLog: React.FC<ActivityLogProps> = ({
 
       <div className="pt-4">
         {displayedEvents.length === 0 ? (
-          <div className="py-8 text-center text-xs text-neutral-500 bg-neutral-50 rounded-lg border border-neutral-200">
+          <div className="py-8 text-center text-xs text-neutral-500 bg-neutral-50 rounded-lg">
             <Icons.time className="size-6 text-neutral-400 mx-auto mb-1.5" />
             <span className="font-semibold block text-neutral-700">
               {t.activityEmpty}
@@ -232,23 +231,23 @@ export const ActivityLog: React.FC<ActivityLogProps> = ({
             </span>
           </div>
         ) : (
-          <div className="relative pl-6 space-y-4 before:content-[''] before:absolute before:left-2.5 before:top-2 before:bottom-2 before:w-px before:bg-neutral-200">
+          <div className="relative pl-6 space-y-4 ">
             {displayedEvents.map(event => {
               const badge = getEventBadge(event.type);
 
               return (
                 <div key={event.id} className="relative group">
                   <div
-                    className={`absolute -left-6 top-1 size-5 rounded-lg flex items-center justify-center border shadow-2xs ${
+                    className={`absolute -left-6 top-1 size-5 rounded-lg flex items-center justify-center ${
                       badge.isBlack
-                        ? 'bg-brand border-brand text-white'
-                        : 'bg-white border-neutral-200 text-black'
+                        ? 'bg-brand text-white'
+                        : 'bg-neutral-100 text-black'
                     }`}
                   >
                     {badge.icon}
                   </div>
 
-                  <div className="p-3 bg-neutral-50 hover:bg-neutral-100/70 border border-neutral-200 rounded-lg transition-colors text-xs space-y-1">
+                  <div className="p-3 bg-neutral-50 hover:bg-neutral-100/70 rounded-lg transition-colors text-xs space-y-1">
                     <div className="flex flex-wrap items-center justify-between gap-2">
                       <div className="flex items-center gap-1.5 flex-wrap">
                         <span className="font-bold text-black">
@@ -265,7 +264,7 @@ export const ActivityLog: React.FC<ActivityLogProps> = ({
                     </div>
 
                     <div className="flex items-center gap-2 pt-0.5">
-                      <span className="rounded-lg border border-neutral-200 bg-white px-1.5 py-0.5 text-[11px] font-semibold text-black">{badge.label}</span>
+                      <span className="rounded-lg bg-neutral-200 px-1.5 py-0.5 text-[11px] font-semibold text-black">{badge.label}</span>
                       {event.metadata?.newValue && (
                         <span className="rounded-lg bg-neutral-200 px-1.5 py-0.5 text-[11px] text-neutral-600">→ {event.metadata.newValue}</span>
                       )}
@@ -279,7 +278,7 @@ export const ActivityLog: React.FC<ActivityLogProps> = ({
         {!maxItems && filteredEvents.length > limit && (
           <button
             onClick={() => setLimit(n => n + PAGE_SIZE)}
-            className="mt-4 w-full cursor-pointer rounded-lg border border-neutral-200 py-2 text-xs font-semibold text-black transition-colors hover:bg-neutral-100"
+            className="mt-4 w-full cursor-pointer rounded-lg bg-neutral-100 py-2 text-xs font-semibold text-black transition-colors hover:bg-neutral-100"
           >
             {t.showMore}
           </button>

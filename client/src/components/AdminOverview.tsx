@@ -20,7 +20,7 @@ export const AdminOverview: React.FC = () => {
   const [data, setData] = useState<Overview | null>(null);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
-  // 'new' = create a Team Leader; a user = edit that leader's plan
+  // "new" creates a leader, a user edits their plan
   const [accountModal, setAccountModal] = useState<'new' | AdminUserRow | null>(null);
   const [landingOpen, setLandingOpen] = useState(false);
   const [tempPassword, setTempPassword] = useState<{ name: string; email: string; password: string } | null>(null);
@@ -41,7 +41,6 @@ export const AdminOverview: React.FC = () => {
     load();
   }, [load]);
 
-  /** Run a change, then reload this page and the rest of the app. */
   const change = async (action: () => Promise<unknown>) => {
     try {
       await action();
@@ -152,7 +151,7 @@ export const AdminOverview: React.FC = () => {
 
       <div className="flex flex-wrap gap-2">
         {ROLES.map(role => (
-          <span key={role} className="rounded-full border border-neutral-200 bg-white px-3 py-1 text-xs font-semibold text-neutral-700">
+          <span key={role} className="rounded-full bg-neutral-100 px-3 py-1 text-xs font-semibold text-neutral-700">
             {roleLabel[role]} · <span className="text-brand">{users.filter(u => u.role === role).length}</span>
           </span>
         ))}

@@ -22,7 +22,6 @@ export const AddMemberModal: React.FC<AddMemberModalProps> = ({ isOpen, onClose 
   const [query, setQuery] = useState('');
   const [results, setResults] = useState<Candidate[]>([]);
   const [searched, setSearched] = useState(false);
-  // An existing account picked from the search. When set, no new account is created.
   const [selected, setSelected] = useState<Candidate | null>(null);
 
   const [name, setName] = useState('');
@@ -45,7 +44,7 @@ export const AddMemberModal: React.FC<AddMemberModalProps> = ({ isOpen, onClose 
     setCreated(null);
   }, [isOpen]);
 
-  // Search existing accounts while typing (waits a moment after the last key)
+  // Search while typing
   useEffect(() => {
     if (!isOpen || selected || isDemo || !activeGroup) return;
     let cancelled = false;
@@ -84,14 +83,12 @@ export const AddMemberModal: React.FC<AddMemberModalProps> = ({ isOpen, onClose 
         password: selected ? undefined : password || undefined,
         groupId: activeGroup?.id,
       });
-      // A new account without a typed password gets a generated one, shown once
       if (result?.password) {
         setCreated({ name: memberName, email: address, password: result.password });
       } else {
         onClose();
       }
     } catch {
-      // Error is shown as a notice; keep the form open.
     } finally {
       setSubmitting(false);
     }
@@ -99,11 +96,9 @@ export const AddMemberModal: React.FC<AddMemberModalProps> = ({ isOpen, onClose 
 
   const roles: { role: Role; label: string }[] = [
     { role: 'member', label: t.memberBadge },
-    // Only the Super Admin creates Team Leaders
     ...(isSuperAdmin ? [{ role: 'team_lead' as Role, label: t.teamLeadBadge }] : []),
     { role: 'viewer', label: t.viewerBadge },
   ];
-  // A leader adding an existing account cannot change that person's role
   const showRoles = isSuperAdmin || !selected;
   const displayName = (c: Candidate) => (language === 'km' && c.nameKm ? c.nameKm : c.name);
 
@@ -123,7 +118,6 @@ export const AddMemberModal: React.FC<AddMemberModalProps> = ({ isOpen, onClose 
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-4">
-          {/* 1. Pick someone who already has an account */}
           <div>
             <label className="mb-1 flex items-center gap-1 text-xs font-bold text-black">
               <Icons.search className="size-3.5 text-neutral-400" />
@@ -181,7 +175,6 @@ export const AddMemberModal: React.FC<AddMemberModalProps> = ({ isOpen, onClose 
             )}
           </div>
 
-          {/* 2. Otherwise create a new account */}
           {!selected && (
             <>
               <div className="flex items-center gap-3 text-[11px] font-semibold uppercase tracking-wider text-neutral-400">

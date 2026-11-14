@@ -2,7 +2,6 @@ import React, { type CSSProperties } from 'react';
 import { useInView, useLanding } from './hooks';
 import { Reveal, Section, SectionTitle } from './ui';
 
-/** Three numbered steps. The numbers pop in one after another. */
 export const StepsSection: React.FC = () => {
   const { copy } = useLanding();
   const [ref, inView] = useInView<HTMLOListElement>(0.3);

@@ -16,7 +16,6 @@ const preferred = (): Theme => saved() ?? (window.matchMedia('(prefers-color-sch
 
 const apply = (theme: Theme) => document.documentElement.classList.toggle('dark', theme === 'dark');
 
-/** Call once before the first render so the page does not flash light. */
 export const initTheme = () => apply(preferred());
 
 export const useTheme = () => {
@@ -32,7 +31,7 @@ export const useTheme = () => {
       try {
         localStorage.setItem(KEY, next);
       } catch {
-        // private mode: the choice just lasts for this visit
+        // no storage
       }
       return next;
     });

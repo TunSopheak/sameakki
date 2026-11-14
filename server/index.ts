@@ -5,13 +5,11 @@ import { runMigrations } from './db/migrate';
 
 const sleep = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
 
-/** Hosted databases may still be waking up, so try a few times before giving up. */
 async function connectDatabase(attempts = 5) {
   for (let attempt = 1; ; attempt++) {
     try {
       const db = await getDb();
       await runMigrations(db);
-      // Open a few connections now so the first visitors don't wait for them
       await Promise.all([db.query('SELECT 1'), db.query('SELECT 1'), db.query('SELECT 1')]);
       return db;
     } catch (err) {

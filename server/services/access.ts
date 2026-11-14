@@ -31,7 +31,7 @@ export async function getGroupAccess(db: Queryable, user: User, groupId: string)
   // The Super Admin sees a group's content only as a member, or while its leader allows support access
   if (!isMember && !(isSuperAdmin(user) && row.support_open)) throw notFound('Group not found.');
 
-  // Once the leader's plan has ended the whole group is view-only, whatever the members' own accounts say
+  // A leader with an ended plan freezes the whole group
   const frozen = row.leader_plan_ended === true && !isSuperAdmin(user);
   const canLead =
     !frozen && (isSuperAdmin(user) || (isMember && (user.role === 'team_lead' || row.leader_id === user.id)));

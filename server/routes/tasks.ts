@@ -30,14 +30,12 @@ const createTaskSchema = z
     description: z.string().trim().max(5000).optional(),
     assignedTo: z.string().uuid(),
     priority: z.enum(TASK_PRIORITIES).default('medium'),
-    /** Left out = today. A task cannot start after it is due, so a past due date pulls the start back to it. */
     startDate: isoDate.optional(),
     dueDate: isoDate,
     dueTime: time.optional(),
   })
   .refine(v => !v.startDate || v.startDate <= v.dueDate, { message: START_AFTER_DUE, path: ['startDate'] });
 
-/** Moves a task to new dates, and tells the person it is assigned to. Used by both ways of changing dates. */
 async function applySchedule(
   tx: Queryable,
   actor: User,
@@ -168,7 +166,6 @@ tasksRouter.patch('/tasks/:taskId/status', async (req, res) => {
         description: `submitted task "${task.title}" as completed / ready for leader review`,
         descriptionKm: `បានបញ្ជាក់ការសម្រេចកិច្ចការ "${task.title}" រង់ចាំប្រធានត្រួតពិនិត្យ`,
       });
-      // Tell the leaders once, not every time the status is saved again
       if (task.status !== 'ready_for_review') {
         for (const leadId of await groupLeadIds(tx, task.group_id, user.id)) {
           await notify(tx, {
@@ -196,7 +193,6 @@ tasksRouter.patch('/tasks/:taskId/deadline', async (req, res) => {
   assert(access.canLead, 'Only team leads can change task deadlines.');
   const input = deadlineSchema.parse(req.body);
 
-  // A due date before the start pulls the start back, so the two never cross
   const startDate = task.start_date <= input.dueDate ? task.start_date : input.dueDate;
   await db.transaction(tx => applySchedule(tx, user, task, { startDate, dueDate: input.dueDate, dueTime: input.dueTime }));
 
@@ -207,7 +203,6 @@ const scheduleSchema = z
   .object({ startDate: isoDate, dueDate: isoDate, dueTime: time.optional() })
   .refine(v => v.startDate <= v.dueDate, { message: START_AFTER_DUE, path: ['startDate'] });
 
-/** Move a task on the timeline: change its start and due dates together. */
 tasksRouter.patch('/tasks/:taskId/schedule', async (req, res) => {
   const user = req.user!;
   const db = await getDb();

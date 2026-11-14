@@ -4,7 +4,6 @@ import type { ActivityEvent, User } from '../../shared/types';
 type NewActivity = Pick<ActivityEvent, 'groupId' | 'type' | 'targetTitle' | 'description'> &
   Partial<Pick<ActivityEvent, 'targetId' | 'descriptionKm' | 'metadata'>>;
 
-/** Add an entry to a group's activity log. */
 export async function logActivity(db: Queryable, actor: User, event: NewActivity) {
   await db.query(
     `INSERT INTO activity_events

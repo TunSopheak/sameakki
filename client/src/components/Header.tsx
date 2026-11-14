@@ -10,7 +10,6 @@ import type { Tab } from './sidebar/SidebarNav';
 
 interface HeaderProps {
   activeTab: Tab;
-  /** Opens a tab when a notification is clicked. */
   onNavigate: (tab: Tab) => void;
 }
 

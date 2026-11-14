@@ -177,7 +177,7 @@ export const OverviewDashboard: React.FC<OverviewDashboardProps> = ({
             </div>
 
             {submittedTodayLogs.length === 0 ? (
-              <div className="p-8 text-center bg-neutral-50 rounded-xl border border-dashed border-neutral-200">
+              <div className="p-8 text-center bg-neutral-50 rounded-xl">
                 <Icons.time className="size-8 text-neutral-400 mx-auto mb-2" />
                 <p className="text-xs font-medium text-neutral-700">
                   {t.overviewNoPosts}
@@ -196,7 +196,7 @@ export const OverviewDashboard: React.FC<OverviewDashboardProps> = ({
                   return (
                     <div
                       key={log.id}
-                      className="p-3.5 bg-neutral-50 rounded-lg border border-neutral-200 hover:border-neutral-200 transition-colors"
+                      className="p-3.5 bg-neutral-50 rounded-lg"
                     >
                       <div className="flex items-center justify-between gap-2 mb-1.5">
                         <div className="flex items-center gap-2">
@@ -208,7 +208,7 @@ export const OverviewDashboard: React.FC<OverviewDashboardProps> = ({
                             {formatDateTime(log.timestamp)}
                           </span>
                         </div>
-                        <span className="text-[11px] font-bold text-black bg-white px-2 py-0.5 rounded-lg border border-neutral-200">
+                        <span className="text-[11px] font-bold text-black bg-white px-2 py-0.5 rounded-lg">
                           {log.status === 'approved' ? 'Approved' : log.status === 'completed' ? 'Done' : 'In Progress'}
                         </span>
                       </div>
@@ -252,7 +252,7 @@ export const OverviewDashboard: React.FC<OverviewDashboardProps> = ({
                   return (
                     <div
                       key={task.id}
-                      className="p-3 bg-neutral-50 rounded-lg border border-neutral-200 space-y-1.5"
+                      className="p-3 bg-neutral-50 rounded-lg space-y-1.5"
                     >
                       <div className="flex items-center justify-between text-xs">
                         <span className="font-semibold text-[11px] uppercase tracking-wider text-black">

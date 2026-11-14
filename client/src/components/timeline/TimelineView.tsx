@@ -9,7 +9,6 @@ import { Icons } from '../icons';
 
 const LEGEND: Task['status'][] = ['todo', 'in_progress', 'ready_for_review', 'approved'];
 
-/** The Gantt chart with its controls: group by task or person, zoom, hide finished work. */
 export const TimelineView: React.FC<{ onOpenAssignTask: () => void }> = ({ onOpenAssignTask }) => {
   const { t, users, activeGroup, activeGroupTasks, activeGroupMembers, isTeamLead, rescheduleTask } = useApp();
   const [groupBy, setGroupBy] = useState<'task' | 'member'>('task');
@@ -20,7 +19,6 @@ export const TimelineView: React.FC<{ onOpenAssignTask: () => void }> = ({ onOpe
 
   const tasks = hideDone ? activeGroupTasks.filter(task => task.status !== 'approved') : activeGroupTasks;
   const selected = tasks.find(task => task.id === selectedId);
-  // Only leaders reschedule, and a task that is already approved stays where it is
   const canEdit = (task: Task) => isTeamLead && task.status !== 'approved';
   const reschedule = (task: Task, startDate: string, dueDate: string) => rescheduleTask(task.id, startDate, dueDate);
 

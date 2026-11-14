@@ -64,7 +64,6 @@ authRouter.post('/change-password', requireAuth, authLimiter, async (req, res) =
   const ok = rows[0]?.password_hash && (await bcrypt.compare(input.currentPassword, rows[0].password_hash));
   if (!ok) throw badRequest('Current password is incorrect.');
   if (input.newPassword === input.currentPassword) throw badRequest('Choose a different password from the current one.');
-  // Every other session ends; this browser gets a fresh one so the person is not signed out
   const { rows: updated } = await db.query(
     'UPDATE users SET password_hash = $2, must_change_password = false, token_version = token_version + 1 WHERE id = $1 RETURNING token_version',
     [req.user!.id, await hashPassword(input.newPassword)]

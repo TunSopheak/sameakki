@@ -10,13 +10,12 @@ const fieldClass =
   'w-full rounded-lg border border-neutral-200 bg-white px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-brand/40';
 
 interface AccountModalProps {
-  /** Set to edit an existing leader's plan; leave out to create a new account. */
   user?: AdminUserRow;
   onClose: () => void;
   onSaved: () => void;
 }
 
-/** Super Admin: create a Team Leader account, or change its expiry date and member limit. */
+/** Create a leader, or edit their plan. */
 export const AccountModal: React.FC<AccountModalProps> = ({ user, onClose, onSaved }) => {
   const { t } = useApp();
   const editing = !!user;
@@ -30,7 +29,6 @@ export const AccountModal: React.FC<AccountModalProps> = ({ user, onClose, onSav
   });
   const [error, setError] = useState('');
   const [submitting, setSubmitting] = useState(false);
-  // Set after creating an account with a generated password, so it can be shown once
   const [created, setCreated] = useState<{ name: string; email: string; password: string } | null>(null);
 
   const update = (field: keyof typeof form) => (e: React.ChangeEvent<HTMLInputElement>) =>
@@ -44,7 +42,7 @@ export const AccountModal: React.FC<AccountModalProps> = ({ user, onClose, onSav
     setError('');
     setSubmitting(true);
     try {
-      // The member limit belongs to leaders; for anyone else only the end date is changed
+      // Only leaders have a member limit
       const plan = {
         expiresAt: form.expiresAt || null,
         ...(isLeader ? { maxMembers: form.maxMembers ? Number(form.maxMembers) : null } : {}),
@@ -78,7 +76,7 @@ export const AccountModal: React.FC<AccountModalProps> = ({ user, onClose, onSav
 
   if (created) return <TempPasswordModal {...created} onClose={onClose} />;
 
-  // Rendered on document.body: an animated parent would otherwise break position: fixed
+  // Shown on <body> so an animated parent does not break fixed
   return createPortal(
     <div className="modal-overlay fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-2xs">
       <div className="modal-panel max-h-[92vh] w-full max-w-lg overflow-y-auto rounded-xl border border-neutral-200 bg-white p-5 shadow-2xl sm:p-6">

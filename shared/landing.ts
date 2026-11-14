@@ -1,5 +1,4 @@
-// What the landing page shows under "Plans" and "Help this project grow".
-// The Super Admin edits it in the Admin tab; these defaults are used until something is saved.
+// Default plan and sponsors for the landing page (the Super Admin edits them in Admin)
 
 export const PRICE_TERMS = ['semester', 'month', 'year'] as const;
 export type PriceTerm = (typeof PRICE_TERMS)[number];
@@ -10,17 +9,12 @@ export interface Sponsor {
 }
 
 export interface LandingSettings {
-  /** Shown big, for example "$4" or "16,000៛". Empty shows "Ask for the price". */
   studentPrice: string;
   studentTerm: PriceTerm;
-  /** A short line under the price, in each language. */
   studentNoteKm: string;
   studentNoteEn: string;
-  /** Most people in each student group. Match the "max members" you give a leader's account. */
   maxMembers: number;
-  /** Shows the "first groups get a free month" line. Turn on only if you really offer it. */
   pilotOffer: boolean;
-  /** Listed on the page. Never add anyone without their permission. */
   sponsors: Sponsor[];
 }
 

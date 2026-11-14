@@ -62,7 +62,6 @@ export const UsersTable: React.FC<UsersTableProps> = ({ users, onDelete, onChang
     initialSort: { key: 'created', dir: 'asc' },
   });
 
-  // Line 1: when the plan ends. Line 2 (leaders only): how many members each of their groups may have.
   const planLabel = (user: AdminUserRow) => {
     if (user.role === 'super_admin') return '—';
     const expired = !!user.expiresAt && new Date(user.expiresAt).getTime() < Date.now();
@@ -90,7 +89,7 @@ export const UsersTable: React.FC<UsersTableProps> = ({ users, onDelete, onChang
 
   return (
     <section className="overflow-hidden rounded-xl border border-neutral-200 bg-white shadow-xs">
-      <div className="flex flex-wrap items-center gap-2 border-b border-neutral-200 px-4 py-3">
+      <div className="flex flex-wrap items-center gap-2 px-4 py-3">
         <h3 className="mr-auto text-sm font-bold text-black">
           {t.adminUsers} ({view.total})
         </h3>

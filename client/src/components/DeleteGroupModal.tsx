@@ -19,7 +19,6 @@ export const DeleteGroupModal: React.FC<DeleteGroupModalProps> = ({ groupId, onC
       await deleteGroup(groupId);
       onClose();
     } catch {
-      // Error is shown as a notice
     }
   };
 

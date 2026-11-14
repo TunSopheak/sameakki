@@ -15,7 +15,6 @@ export const DailyStandupBox: React.FC = () => {
   const [justSubmitted, setJustSubmitted] = useState(false);
   const [submitting, setSubmitting] = useState(false);
 
-  // Viewers cannot post
   if (!canContribute || !activeGroup) return null;
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -29,7 +28,6 @@ export const DailyStandupBox: React.FC = () => {
       setJustSubmitted(true);
       setTimeout(() => setJustSubmitted(false), 3000);
     } catch {
-      // Error is shown as a notice; keep the text.
     } finally {
       setSubmitting(false);
     }

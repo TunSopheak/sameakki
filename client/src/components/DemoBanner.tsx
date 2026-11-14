@@ -4,7 +4,7 @@ import { telegramLink } from '../lib/contact';
 import { navigate } from '../lib/route';
 import { Icons } from './icons';
 
-/** Shown on top of the sample workspace so nobody mistakes it for a real account. */
+/** Banner shown in the demo. */
 export const DemoBanner: React.FC = () => {
   const { isDemo, t, logout } = useApp();
   if (!isDemo) return null;

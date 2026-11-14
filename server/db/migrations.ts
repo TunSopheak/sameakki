@@ -1,4 +1,4 @@
-// Each migration runs once, in order. Never edit an old one; add a new one.
+// Each migration runs once, in order. Never edit an old one.
 
 export const migrations: { id: string; sql: string }[] = [
   {
@@ -112,7 +112,6 @@ export const migrations: { id: string; sql: string }[] = [
     `,
   },
   {
-    // People are identified by email now; username is an optional sign-in name
     id: '002_drop_student_id_add_username',
     sql: `
       ALTER TABLE users DROP COLUMN student_id;
@@ -121,12 +120,10 @@ export const migrations: { id: string; sql: string }[] = [
     `,
   },
   {
-    // Sticker avatars: the column now holds a key like "m1" or "f3"
     id: '003_avatar_key',
     sql: `ALTER TABLE users RENAME COLUMN avatar_url TO avatar`,
   },
   {
-    // Lets the Super Admin see who has signed in and when
     id: '004_last_seen',
     sql: `ALTER TABLE users ADD COLUMN last_seen_at TIMESTAMPTZ`,
   },
@@ -150,9 +147,7 @@ export const migrations: { id: string; sql: string }[] = [
     `,
   },
   {
-    // Accounts are created by the Super Admin. expires_at ends access (NULL = never),
-    // max_members caps the size of a leader's groups (NULL = unlimited), and created_by
-    // lets a renewal reach the members a leader added.
+    // expires_at ends access; max_members limits a leader's groups
     id: '007_account_plan',
     sql: `
       ALTER TABLE users ADD COLUMN expires_at TIMESTAMPTZ;
@@ -161,12 +156,10 @@ export const migrations: { id: string; sql: string }[] = [
     `,
   },
   {
-    // Set when someone else chose the password (new account or reset); cleared when the person changes it
     id: '008_must_change_password',
     sql: `ALTER TABLE users ADD COLUMN must_change_password BOOLEAN NOT NULL DEFAULT false`,
   },
   {
-    // In-app notifications. dedupe_key stops the same reminder or reaction from being added twice.
     id: '009_notifications',
     sql: `
       CREATE TABLE notifications (
@@ -186,7 +179,6 @@ export const migrations: { id: string; sql: string }[] = [
     `,
   },
   {
-    // Comments on tasks and daily updates. target_id points at tasks or daily_logs, so it has no foreign key.
     id: '010_comments',
     sql: `
       CREATE TABLE comments (
@@ -203,12 +195,10 @@ export const migrations: { id: string; sql: string }[] = [
     `,
   },
   {
-    // The Super Admin cannot open a group's content unless its leader allows it, until this time
     id: '011_support_access',
     sql: `ALTER TABLE groups ADD COLUMN support_access_until TIMESTAMPTZ`,
   },
   {
-    // Settings the Super Admin edits in the app, such as what the landing page shows
     id: '012_site_settings',
     sql: `
       CREATE TABLE site_settings (
@@ -219,12 +209,11 @@ export const migrations: { id: string; sql: string }[] = [
     `,
   },
   {
-    // Raised whenever a password changes, so a sign-in made with the old password stops working
     id: '013_token_version',
     sql: `ALTER TABLE users ADD COLUMN token_version INTEGER NOT NULL DEFAULT 0`,
   },
   {
-    // Gantt chart: a task now runs from start_date to due_date. Older tasks start the day they were created.
+    // Gantt: tasks run from start_date to due_date
     id: '014_task_start_date',
     sql: `
       ALTER TABLE tasks ADD COLUMN start_date DATE;

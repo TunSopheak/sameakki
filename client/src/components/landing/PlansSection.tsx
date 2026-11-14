@@ -81,11 +81,9 @@ const PlanCard: React.FC<{ plan: Plan }> = ({ plan }) => {
 
 interface PlansSectionProps {
   settings: LandingSettings;
-  /** False until the saved prices have arrived. */
   ready: boolean;
 }
 
-/** The free sample and the student plan. The price and the notes are set by the Super Admin. */
 export const PlansSection: React.FC<PlansSectionProps> = ({ settings, ready }) => {
   const { copy } = useLanding();
 
@@ -108,7 +106,6 @@ export const PlansSection: React.FC<PlansSectionProps> = ({ settings, ready }) =
         <p className="mx-auto mt-5 max-w-xl rounded-lg bg-brand-soft p-3 text-center text-xs font-semibold text-brand">{copy.pricing.pilot}</p>
       )}
 
-      {/* Until the saved prices arrive, keep the space so the page does not jump */}
       {!ready ? (
         <div className="mx-auto mt-14 h-[30rem] max-w-3xl" />
       ) : (

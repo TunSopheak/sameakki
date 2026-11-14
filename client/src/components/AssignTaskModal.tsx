@@ -22,7 +22,6 @@ export const AssignTaskModal: React.FC<AssignTaskModalProps> = ({ isOpen, onClos
   const [dueTime, setDueTime] = useState('18:00');
   const [submitting, setSubmitting] = useState(false);
 
-  // Start fresh each time the modal opens
   useEffect(() => {
     if (!isOpen) return;
     setTitle('');
@@ -54,7 +53,6 @@ export const AssignTaskModal: React.FC<AssignTaskModalProps> = ({ isOpen, onClos
       });
       onClose();
     } catch {
-      // Error is shown as a notice; keep the form open.
     } finally {
       setSubmitting(false);
     }
@@ -156,7 +154,7 @@ export const AssignTaskModal: React.FC<AssignTaskModalProps> = ({ isOpen, onClos
                 value={startDate}
                 onChange={e => {
                   setStartDate(e.target.value);
-                  // The two dates never cross: moving one past the other takes the other along
+                  // Start and due dates never cross
                   if (e.target.value > dueDate) setDueDate(e.target.value);
                 }}
                 className="w-full px-3 py-2 text-sm bg-white border border-neutral-200 rounded-lg focus:outline-none focus:ring-1 focus:ring-brand/40"

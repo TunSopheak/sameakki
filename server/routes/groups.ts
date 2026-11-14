@@ -14,7 +14,7 @@ import { isoDate } from '../services/validation';
 
 export const groupsRouter = Router();
 
-// No 0/O or 1/I, so codes are easy to read out
+// No 0/O or 1/I, so codes are easy to read
 const CODE_ALPHABET = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
 const generateGroupCode = () =>
   'GRP-' + Array.from({ length: 6 }, () => CODE_ALPHABET[randomInt(CODE_ALPHABET.length)]).join('');
@@ -82,7 +82,6 @@ groupsRouter.post('/groups', async (req, res) => {
 
 const joinGroupSchema = z.object({ code: z.string().trim().min(1).max(40) });
 
-/** Join a group with its code, as a regular member. */
 groupsRouter.post('/groups/join', joinLimiter, async (req, res) => {
   const user = req.user!;
   const input = joinGroupSchema.parse(req.body);
@@ -185,15 +184,12 @@ const addMemberSchema = z.object({
   name: z.string().trim().min(1).max(120),
   nameKm: optionalText(120),
   email: z.string().trim().toLowerCase().email().max(200),
-  // There is only one Super Admin, so it cannot be given here
   role: z.enum(['team_lead', 'member', 'viewer']).default('member'),
   specialty: optionalText(200),
   department: optionalText(120),
-  // Starting password for a new account. The person can change it after signing in.
   password: z.string().min(1).max(200).optional(),
 });
 
-/** Existing accounts the caller may add to this group (search by name, email or username). */
 groupsRouter.get('/groups/:groupId/member-candidates', async (req, res) => {
   const user = req.user!;
   const db = await getDb();
@@ -202,7 +198,6 @@ groupsRouter.get('/groups/:groupId/member-candidates', async (req, res) => {
   assert(admin || access.leaderId === user.id, 'Only a Super Admin or the group leader can add members.');
 
   const q = String(req.query.q ?? '').trim().toLowerCase().slice(0, 100);
-  // Escape LIKE wildcards so the search text is matched literally
   const like = `%${q.replace(/[\\%_]/g, m => '\\' + m)}%`;
   const { rows } = await db.query(
     `SELECT id, name, name_km, email, username, avatar, role
@@ -235,7 +230,6 @@ groupsRouter.post('/groups/:groupId/members', async (req, res) => {
   assert(admin || access.leaderId === user.id, 'Only a Super Admin or the group leader can add members.');
   const input = addMemberSchema.parse(req.body);
   if (!admin && input.role === 'team_lead') throw badRequest('Only a Super Admin can create a Team Leader.');
-  // Only used when a new account is created; without one, a temporary password is generated
   const plainPassword = input.password ?? generatePassword();
   const passwordHash = await hashPassword(plainPassword);
   let issuedPassword: string | undefined;
@@ -248,7 +242,6 @@ groupsRouter.post('/groups/:groupId/members', async (req, res) => {
 
     let target = matches[0];
     if (target && !admin) {
-      // A leader can only reuse accounts that they (or the Super Admin on their behalf) created
       if (target.created_by !== user.id) throw conflict('That email already has an account that you cannot add.');
     } else if (target) {
       if (target.id === user.id && input.role !== target.role) {
@@ -261,7 +254,7 @@ groupsRouter.post('/groups/:groupId/members', async (req, res) => {
       target = rows[0];
     } else {
       if (!input.password) issuedPassword = plainPassword;
-      // The new account follows the leader's plan expiry, so a renewal reaches it too
+      // A new account follows the leader's plan expiry
       const { rows: plan } = access.leaderId
         ? await tx.query('SELECT expires_at FROM users WHERE id = $1', [access.leaderId])
         : { rows: [] as any[] };
@@ -308,10 +301,8 @@ groupsRouter.post('/groups/:groupId/members', async (req, res) => {
   res.status(201).json({ id: member.id, password: issuedPassword });
 });
 
-/** Super Admin removes a member, or a member leaves. */
 const supportSchema = z.object({ hours: z.number().int().min(0).max(168) });
 
-/** The group's leader lets the Super Admin open the group for a while (hours > 0), or takes it back (0). */
 groupsRouter.post('/groups/:groupId/support-access', async (req, res) => {
   const user = req.user!;
   const db = await getDb();

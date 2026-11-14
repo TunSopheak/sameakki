@@ -4,11 +4,9 @@ interface SegmentedProps<T extends string> {
   options: { value: T; label: string; icon?: LucideIcon }[];
   value: T;
   onChange: (value: T) => void;
-  /** Read out by screen readers, since the buttons alone do not say what is being chosen. */
   label: string;
 }
 
-/** A small "pick one" switch, such as List / Timeline. */
 export function Segmented<T extends string>({ options, value, onChange, label }: SegmentedProps<T>) {
   return (
     <div role="radiogroup" aria-label={label} className="inline-flex rounded-lg border border-neutral-200 bg-neutral-100 p-0.5">

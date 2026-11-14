@@ -10,7 +10,7 @@ interface TempPasswordModalProps {
   onClose: () => void;
 }
 
-/** Shows a reset password once, so the admin or leader can pass it on. */
+/** Shows a reset password once. */
 export const TempPasswordModal: React.FC<TempPasswordModalProps> = ({ name, email, password, onClose }) => {
   const { t } = useApp();
   const [copied, setCopied] = useState(false);
@@ -21,7 +21,7 @@ export const TempPasswordModal: React.FC<TempPasswordModalProps> = ({ name, emai
       setCopied(true);
       window.setTimeout(() => setCopied(false), 2000);
     } catch {
-      // Clipboard blocked: the password is on screen to copy by hand
+      // Copy blocked, the user copies by hand
     }
   };
 

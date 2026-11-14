@@ -7,7 +7,7 @@ export class ApiError extends Error {
   }
 }
 
-// Same origin by default. Set VITE_API_URL only if the API is hosted elsewhere.
+// Same origin unless VITE_API_URL is set
 const BASE = (import.meta.env.VITE_API_URL || '').replace(/\/$/, '') + '/api';
 
 async function request<T = void>(method: string, path: string, body?: unknown): Promise<T> {

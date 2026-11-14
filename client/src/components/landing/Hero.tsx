@@ -4,7 +4,6 @@ import { useLanding } from './hooks';
 import { SampleBoard } from './SampleBoard';
 import { Reveal } from './ui';
 
-/** Words on one side, a sample of the app on the other, with slow colour drifting behind. */
 export const Hero: React.FC = () => {
   const { copy } = useLanding();
   const { hero } = copy;

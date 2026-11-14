@@ -19,7 +19,6 @@ export const AvatarPickerModal: React.FC<AvatarPickerModalProps> = ({ isOpen, on
       await updateAvatar(key);
       onClose();
     } catch {
-      // Error is shown as a notice
     }
   };
 
@@ -52,7 +51,7 @@ export const AvatarPickerModal: React.FC<AvatarPickerModalProps> = ({ isOpen, on
     </div>
   );
 
-  // Rendered on <body>: the sidebar has its own stacking context and would trap a fixed overlay.
+  // Shown on <body> so the sidebar does not trap it
   return createPortal(
       <div className="modal-overlay fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-2xs">
         <div className="modal-panel w-full max-w-sm rounded-xl border border-neutral-200 bg-white p-5 shadow-2xl sm:p-6">

@@ -13,7 +13,6 @@ const sponsorSchema = z.object({
     .refine(v => !v || /^https?:\/\/\S+$/i.test(v), 'The link must start with http:// or https://'),
 });
 
-/** What the Super Admin may save. Anything else is rejected, so the public page cannot be broken from here. */
 export const landingSettingsSchema = z.object({
   studentPrice: z.string().trim().max(LANDING_LIMITS.price),
   studentTerm: z.enum(PRICE_TERMS),
@@ -26,7 +25,6 @@ export const landingSettingsSchema = z.object({
 
 const KEY = 'landing';
 
-/** Saved settings on top of the defaults. A missing or damaged row falls back to the defaults. */
 export async function getLandingSettings(db: Queryable): Promise<LandingSettings> {
   try {
     const { rows } = await db.query('SELECT value FROM site_settings WHERE key = $1', [KEY]);

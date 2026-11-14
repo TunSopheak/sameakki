@@ -19,7 +19,6 @@ const SponsorChip: React.FC<{ sponsor: Sponsor }> = ({ sponsor }) => {
   );
 };
 
-/** An invitation to help the project grow: what is planned next, what sponsors receive, and who already did. */
 export const SponsorSection: React.FC<{ settings: LandingSettings; ready: boolean }> = ({ settings, ready }) => {
   const { copy } = useLanding();
   const { sponsor } = copy;

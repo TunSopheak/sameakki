@@ -159,17 +159,17 @@ export const GroupBanner: React.FC<GroupBannerProps> = ({
               </div>
 
               <span
-                className={`text-xs px-2.5 py-0.5 rounded-lg font-medium border ${
+                className={`text-xs px-2.5 py-0.5 rounded-lg font-medium ${
                   activeGroup.status === 'completed'
-                    ? 'bg-neutral-900 text-white border-brand'
-                    : 'bg-neutral-100 text-neutral-800 border-neutral-200'
+                    ? 'bg-neutral-900 text-white'
+                    : 'bg-neutral-100 text-neutral-800'
                 }`}
               >
                 {activeGroup.status === 'completed' ? t.groupCompleted : t.activeGroups}
               </span>
 
               <EditableDate value={activeGroup.deadline || ''} canEdit={canManageGroup} onSave={date => updateGroupDeadline(activeGroup.id, date)}>
-                <span className="inline-flex items-center gap-1 rounded-lg border border-neutral-200 bg-white px-2.5 py-0.5 text-xs font-medium text-neutral-800 group-hover/edit:border-brand">
+                <span className="inline-flex items-center gap-1 rounded-lg bg-neutral-100 px-2.5 py-0.5 text-xs font-medium text-neutral-800 group-hover/edit:bg-neutral-200">
                   <Icons.date className="size-3 text-black" />
                   {activeGroup.deadline ? `${activeGroup.deadline} (${deadlineInfo?.text})` : t.noDeadline}
                 </span>

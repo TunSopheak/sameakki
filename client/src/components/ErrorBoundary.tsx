@@ -4,7 +4,7 @@ interface State {
   failed: boolean;
 }
 
-/** Shows a reload screen instead of a blank page when something crashes. */
+/** Shows a reload screen if the app crashes. */
 export class ErrorBoundary extends React.Component<{ children: React.ReactNode }, State> {
   state: State = { failed: false };
 

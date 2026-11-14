@@ -29,7 +29,7 @@ interface NotificationBellProps {
   onNavigate: (tab: Tab) => void;
 }
 
-/** The bell in the header: unread count, a list of what happened, and a click to jump there. */
+/** Bell with the unread count and the list. */
 export const NotificationBell: React.FC<NotificationBellProps> = ({ onNavigate }) => {
   const { t, language, groups, setActiveGroupId, isDemo, showError } = useApp();
   const [open, setOpen] = useState(false);
@@ -48,11 +48,9 @@ export const NotificationBell: React.FC<NotificationBellProps> = ({ onNavigate }
       setItems(res.items);
       setUnread(res.unread);
     } catch {
-      // Not critical: the bell just keeps what it had
     }
   }, [isDemo]);
 
-  // Load now, then keep fresh while the tab is open and when it regains focus
   useEffect(() => {
     void load();
     const tick = () => {
@@ -66,7 +64,7 @@ export const NotificationBell: React.FC<NotificationBellProps> = ({ onNavigate }
     };
   }, [load]);
 
-  // The demo has no server, so count its unread items here
+  // The demo has no server, so count here
   const unreadCount = isDemo ? items.filter(i => !i.read).length : unread;
 
   const markRead = async (n: AppNotification) => {

@@ -15,29 +15,24 @@ interface AppContextType {
   status: SessionStatus;
   currentUser: User;
   login: (email: string, password: string) => Promise<void>;
-  /** Open the read-only sample workspace (no account needed). */
   enterDemo: () => void;
   isDemo: boolean;
-  /** The plan has ended: everything can be looked at and exported, nothing can be changed. */
   isReadOnly: boolean;
-  /** The active group's leader has no plan any more, so the group can only be looked at. */
   groupFrozen: boolean;
   logout: () => Promise<void>;
   refresh: () => Promise<void>;
 
   notice: { type: 'error' | 'success'; message: string } | null;
   dismissNotice: () => void;
-  /** Show an error toast for a call a component made itself. */
   showError: (message: string) => void;
 
   isSuperAdmin: boolean;
-  /** Can create groups: the Super Admin and Team Leaders. */
   canCreateGroup: boolean;
-  /** Can add and remove members and set the deadline of the active group: the Super Admin or that group's leader. */
+  /** Super Admin or the group leader. */
   canManageGroup: boolean;
-  /** Can assign/approve tasks and approve standups in the active group. */
+  /** Can assign and approve tasks. */
   isTeamLead: boolean;
-  /** Can post standups and work on tasks in the active group (not a viewer). */
+  /** Can post and work on tasks (not a viewer). */
   canContribute: boolean;
 
   users: User[];
@@ -62,7 +57,6 @@ interface AppContextType {
     department?: string;
     password?: string;
     groupId?: string;
-    // Resolves with the temporary password when one was generated for a new account
   }) => Promise<{ password?: string } | undefined>;
   removeMemberFromGroup: (userId: string, groupId?: string) => Promise<void>;
   updateAvatar: (avatar: string) => Promise<void>;
@@ -77,7 +71,6 @@ interface AppContextType {
     deadline?: string;
     category: Group['category'];
   }) => Promise<void>;
-  /** Join an existing group using the group code its leader shared. */
   joinGroup: (code: string) => Promise<void>;
   deleteGroup: (groupId: string) => Promise<void>;
   leaveGroup: (userId: string, groupId?: string) => Promise<void>;
@@ -96,14 +89,12 @@ interface AppContextType {
     description: string;
     assignedTo: string;
     priority: Task['priority'];
-    /** Left out = today. */
     startDate?: string;
     dueDate: string;
     dueTime?: string;
   }) => Promise<void>;
   updateTaskStatus: (taskId: string, status: Exclude<TaskStatus, 'approved'>, memberNotes?: string) => Promise<void>;
   updateTaskDeadline: (taskId: string, newDueDate: string, newDueTime?: string) => Promise<void>;
-  /** Moves a task on the timeline: new start and due dates together. */
   rescheduleTask: (taskId: string, startDate: string, dueDate: string) => Promise<void>;
   approveTask: (taskId: string, leaderFeedback?: string) => Promise<void>;
   deleteTask: (taskId: string) => Promise<void>;
@@ -111,7 +102,7 @@ interface AppContextType {
   clearActivityLogs: (groupId?: string) => Promise<void>;
 }
 
-// localStorage keeps UI preferences only; team data lives in the database.
+// localStorage keeps UI preferences only
 const STORAGE_KEYS = {
   ACTIVE_GROUP: 'leadersync_active_group',
   LANGUAGE: 'leadersync_language',
@@ -130,7 +121,7 @@ const writeStorage = (key: string, value: string) => {
   try {
     localStorage.setItem(key, value);
   } catch {
-    /* storage unavailable (private mode) — ignore */
+    /* no storage */
   }
 };
 
@@ -181,7 +172,6 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     });
   }, [refresh, showNotice]);
 
-  // Refresh while the tab is open and when it regains focus
   useEffect(() => {
     if (status !== 'ready' || isDemo) return;
     const tick = () => {
@@ -224,9 +214,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   }, [activeGroup, users, tasks, dailyLogs, activityEvents, resolvedGroupId]);
 
   const isSuperAdmin = currentUser.role === 'super_admin';
-  // After the plan ends the server refuses every change, so the screen stops offering them too
   const isReadOnly = currentUser.plan?.status === 'read_only';
-  // A group whose leader's plan has ended is view-only for its members too
   const groupFrozen = !!activeGroup?.planEnded && !isSuperAdmin;
   const noEdits = isReadOnly || groupFrozen;
   const canCreateGroup = !isReadOnly && (isSuperAdmin || currentUser.role === 'team_lead');
@@ -237,10 +225,9 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     (isSuperAdmin || (isMemberOfActive && (currentUser.role === 'team_lead' || activeGroup?.leaderId === currentUser.id)));
   const canContribute = !noEdits && (isSuperAdmin || (isMemberOfActive && currentUser.role !== 'viewer'));
 
-  // Call the API, show any error, then reload the data
   const run = useCallback(
     async (action: () => Promise<unknown>, successMessage?: string) => {
-      // The demo workspace is sample data only, so nothing is sent or saved
+      // The demo changes nothing
       if (demoRef.current) {
         showNotice('error', t.demoReadOnly);
         return;
@@ -261,7 +248,6 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     },
     [refresh, showNotice, t]
   );
-  // For handlers that ignore the result; the error is already shown
   const quiet = (p: Promise<unknown>) => p.then(() => undefined, () => undefined);
 
   const value: AppContextType = {

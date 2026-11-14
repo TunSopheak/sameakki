@@ -33,7 +33,7 @@ export const GroupsTable: React.FC<GroupsTableProps> = ({ groups, onDelete }) =>
 
   return (
     <section className="overflow-hidden rounded-xl border border-neutral-200 bg-white shadow-xs">
-      <div className="flex flex-wrap items-center gap-2 border-b border-neutral-200 px-4 py-3">
+      <div className="flex flex-wrap items-center gap-2 px-4 py-3">
         <h3 className="mr-auto text-sm font-bold text-black">
           {t.adminGroups} ({view.total})
         </h3>

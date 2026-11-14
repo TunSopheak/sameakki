@@ -27,7 +27,6 @@ export const JoinGroupModal: React.FC<JoinGroupModalProps> = ({ isOpen, onClose 
       await joinGroup(code.trim());
       onClose();
     } catch {
-      // Error is shown as a notice; keep the form open.
     } finally {
       setSubmitting(false);
     }

@@ -11,7 +11,7 @@ const STATE_STYLE = {
   late: 'bg-brand-soft text-brand',
 } as const;
 
-/** A drawn example of the task board, so visitors see what they get. Every name and number is made up. */
+/** A fake sample board. All names are made up. */
 export const SampleBoard: React.FC = () => {
   const { copy } = useLanding();
   const mock = copy.hero.mock;

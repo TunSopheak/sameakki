@@ -1,4 +1,4 @@
-// The Excel workbook: a task table, a summary and a timeline, with live formulas so edits inside Excel recalculate.
+// Excel file with live formulas
 import type { Task } from '../../../../shared/types';
 import { exportHeaders, exportRowCells, type ExportLabels, type ExportRow } from './exportModel';
 import { chartRange, toDay } from './ganttModel';
@@ -16,7 +16,6 @@ const fill = (argb: string) => ({ type: 'pattern', pattern: 'solid', fgColor: { 
 const dateOf = (iso: string) => new Date(toDay(iso) * 86_400_000);
 const STATUS_ORDER: Task['status'][] = ['todo', 'in_progress', 'ready_for_review', 'approved'];
 
-/** Builds the .xlsx file. `today` is a day number (see ganttModel.toDay). The sheet names stay in English so formulas never break. */
 export async function buildXlsx(rows: ExportRow[], labels: ExportLabels, words: XlsxLabels, groupName: string, today: number): Promise<ArrayBuffer> {
   const { default: ExcelJS } = await import('exceljs');
   const book = new ExcelJS.Workbook();
@@ -24,7 +23,7 @@ export async function buildXlsx(rows: ExportRow[], labels: ExportLabels, words: 
   book.created = new Date();
   const last = rows.length + 1;
 
-  // 1. Tasks
+  // Tasks sheet
   const tasks = book.addWorksheet('Tasks', { views: [{ state: 'frozen', ySplit: 1 }] });
   tasks.addRow(exportHeaders(labels));
   rows.forEach((row, i) => {
@@ -40,7 +39,7 @@ export async function buildXlsx(rows: ExportRow[], labels: ExportLabels, words: 
   tasks.getColumn('I').alignment = { wrapText: true, vertical: 'top' };
   tasks.autoFilter = { from: 'A1', to: `I${Math.max(last, 1)}` };
 
-  // 2. Summary
+  // Summary sheet
   const sum = book.addWorksheet('Summary');
   sum.getCell('A1').value = groupName;
   sum.getCell('A1').font = { bold: true, size: 14 };
@@ -69,7 +68,7 @@ export async function buildXlsx(rows: ExportRow[], labels: ExportLabels, words: 
   for (const c of ['A8', 'A9', 'A10']) sum.getCell(c).font = { bold: true };
   sum.columns = [{ width: 30 }, { width: 12 }];
 
-  // 3. Timeline: one column per day, painted by a rule that reads the start and due columns
+  // Timeline sheet
   const items = rows.map(r => ({ start: toDay(r.start), end: toDay(r.due) }));
   const { from, to } = chartRange(items, today, [], { before: 1, after: 1 }, 14);
   const line = book.addWorksheet('Timeline', { views: [{ state: 'frozen', xSplit: 3, ySplit: 1 }] });

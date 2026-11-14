@@ -3,19 +3,15 @@ import { useApp } from '../context/AppContext';
 import { Icons } from './icons';
 
 interface EditableDateProps {
-  /** The current date, "YYYY-MM-DD". Empty when there is none. */
   value: string;
-  /** Without permission the date is shown and cannot be changed. */
   canEdit: boolean;
   onSave: (date: string) => void;
-  /** What to show while not editing. */
   children: React.ReactNode;
-  /** Where the chip is placed, e.g. 'justify-end'. */
   className?: string;
   size?: 'sm' | 'md';
 }
 
-/** A date that turns into a small date field with save and cancel when a leader clicks it. */
+/** A date that turns into an input when clicked. */
 export const EditableDate: React.FC<EditableDateProps> = ({ value, canEdit, onSave, children, className = '', size = 'md' }) => {
   const { t } = useApp();
   const [editing, setEditing] = useState(false);

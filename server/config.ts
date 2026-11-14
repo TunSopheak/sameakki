@@ -12,13 +12,13 @@ if (isProduction && jwtSecret.length < 32) {
 export const config = {
   isProduction,
   port: Number(env.PORT) || 3000,
-  /** Empty means the embedded PGlite database (local testing only). */
+  /** Empty = embedded PGlite (local only). */
   databaseUrl: env.DATABASE_URL || '',
   pgliteDir: path.resolve(env.PGLITE_DIR || './data/pglite'),
   databaseSsl: env.DATABASE_SSL ? env.DATABASE_SSL !== 'false' : isProduction,
   jwtSecret,
   cookieSecure: env.COOKIE_SECURE ? env.COOKIE_SECURE !== 'false' : isProduction,
-  /** Days after the plan ends when an account can still look at its data (and export it) but not change anything. */
+  /** View-only days after a plan ends. */
   expiredGraceDays: Number(env.EXPIRED_GRACE_DAYS) || 30,
   jwtExpiresInDays: Number(env.JWT_EXPIRES_IN_DAYS) || 7,
   corsOrigins: (env.CORS_ORIGINS || '').split(',').map(s => s.trim()).filter(Boolean),

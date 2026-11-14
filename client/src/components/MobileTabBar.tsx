@@ -9,7 +9,7 @@ interface MobileTabBarProps {
   onOpenMenu: () => void;
 }
 
-/** Thumb-friendly tabs at the bottom of the screen on phones. The rest lives in the menu. */
+/** Bottom tabs on phones. */
 export const MobileTabBar: React.FC<MobileTabBarProps> = ({ activeTab, onSelect, onOpenMenu }) => {
   const { t } = useApp();
 

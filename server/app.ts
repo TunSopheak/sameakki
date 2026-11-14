@@ -45,7 +45,7 @@ export function createApp() {
   app.use(express.json({ limit: '1mb' }));
   app.use(cookieParser());
 
-  // Host health checks call this often, so it must not touch the database (that would keep Neon awake all day)
+  // No database call here, so health checks do not wake Neon
   app.get('/api/health', (_req, res) => {
     res.json({ ok: true });
   });
@@ -70,7 +70,7 @@ export function createApp() {
 
   const indexHtml = path.join(config.clientDistDir, 'index.html');
   if (fs.existsSync(indexHtml)) {
-    // Files in /assets have a hash in the name, so they can be cached for a year. Everything else must refresh.
+    // Hashed assets are cached for a year
     app.use(
       express.static(config.clientDistDir, {
         index: false,
@@ -80,7 +80,7 @@ export function createApp() {
         },
       })
     );
-    // Any other GET returns the app. Not cached, so new deploys show up at once.
+    // Other GET requests return the app (not cached)
     app.get(/^(?!\/api\/).*/, (_req, res) => {
       res.setHeader('Cache-Control', 'no-cache');
       res.sendFile(indexHtml);

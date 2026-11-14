@@ -10,7 +10,6 @@ interface FaqItemProps {
   onToggle: () => void;
 }
 
-/** One question. The answer slides open and closed instead of jumping. */
 const FaqItem: React.FC<FaqItemProps> = ({ question, answer, open, onToggle }) => (
   <div className="group">
     <button
@@ -29,7 +28,6 @@ const FaqItem: React.FC<FaqItemProps> = ({ question, answer, open, onToggle }) =
   </div>
 );
 
-/** Frequently asked questions, one open at a time. */
 export const FaqSection: React.FC = () => {
   const { copy } = useLanding();
   const [openIndex, setOpenIndex] = useState<number | null>(null);

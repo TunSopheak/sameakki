@@ -4,12 +4,11 @@ import { Button } from './ui';
 import { Icons } from '../icons';
 
 interface CtaButtonsProps {
-  /** On the brand-coloured block, which needs light buttons. */
   onBrand?: boolean;
   align?: 'center' | 'start';
 }
 
-/** "Try it now" and "Contact on Telegram": the two things we want visitors to do. */
+/** The Try it now and Contact buttons. */
 export const CtaButtons: React.FC<CtaButtonsProps> = ({ onBrand = false, align = 'center' }) => {
   const { copy, enterDemo, contactHref, signedIn } = useLanding();
   return (

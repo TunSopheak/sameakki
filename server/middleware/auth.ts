@@ -29,7 +29,6 @@ const cookieOptions = {
   path: '/',
 };
 
-/** `version` is the user's token_version. A password change raises it, which ends every older session. */
 export function setAuthCookie(res: Response, userId: string, version: number) {
   const token = jwt.sign({ sub: userId, v: version }, config.jwtSecret, {
     expiresIn: `${config.jwtExpiresInDays}d`,
@@ -44,7 +43,6 @@ export function clearAuthCookie(res: Response) {
   res.clearCookie(AUTH_COOKIE, cookieOptions);
 }
 
-/** Loads the signed-in user from the database, so role changes apply at once. */
 export const requireAuth: RequestHandler = async (req, _res, next) => {
   const header = req.headers.authorization;
   const token =
@@ -67,7 +65,7 @@ export const requireAuth: RequestHandler = async (req, _res, next) => {
   if (rows[0].token_version !== version) return next(unauthorized('Your session has expired. Please sign in again.'));
   const plan = planState(rows[0]);
   if (plan.status === 'locked') return next(unauthorized(LOCKED_MESSAGE));
-  // View-only: reading is fine, changing anything is not (except the person's own password, profile and notifications)
+  // View only: reads are fine, writes are not (except own password, profile and notifications)
   if (plan.status === 'read_only' && !SAFE_METHODS.has(req.method) && !STILL_ALLOWED.test(req.originalUrl.split('?')[0])) {
     return next(forbidden(READ_ONLY_MESSAGE));
   }

@@ -1,10 +1,10 @@
 import type { Database } from './index';
 import { migrations } from './migrations';
 
-// Any fixed number works; it only has to be the same for every server instance.
+// Any fixed number, the same on every server
 const MIGRATION_LOCK_ID = 727274;
 
-/** Apply pending migrations. Safe to run on every start, even from two servers at once. */
+/** Run pending migrations. Safe on every start. */
 export async function runMigrations(db: Database) {
   await db.transaction(async tx => {
     await tx.query('SELECT pg_advisory_xact_lock($1)', [MIGRATION_LOCK_ID]);
@@ -29,7 +29,6 @@ export async function runMigrations(db: Database) {
   });
 }
 
-// Both drivers run one statement per query.
 function splitStatements(sql: string): string[] {
   return sql
     .split(/;\s*(?:\n|$)/)

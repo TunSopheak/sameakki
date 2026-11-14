@@ -94,23 +94,23 @@ export const TaskBoard: React.FC<TaskBoardProps> = ({
       case 'urgent':
         return {
           label: t.taskPriorityUrgent,
-          className: 'bg-brand text-white border-brand font-bold',
+          className: 'bg-brand text-white font-bold',
         };
       case 'high':
         return {
           label: t.taskPriorityHigh,
-          className: 'bg-neutral-200 text-black border-neutral-200 font-semibold',
+          className: 'bg-neutral-200 text-black font-semibold',
         };
       case 'medium':
         return {
           label: t.taskPriorityMedium,
-          className: 'bg-white text-black border-neutral-200',
+          className: 'bg-neutral-100 text-black',
         };
       case 'low':
       default:
         return {
           label: t.taskPriorityLow,
-          className: 'bg-neutral-50 text-neutral-600 border-neutral-200',
+          className: 'bg-neutral-100 text-neutral-600',
         };
     }
   };
@@ -193,7 +193,7 @@ export const TaskBoard: React.FC<TaskBoardProps> = ({
           </div>
         </div>
 
-        <div className="flex flex-wrap items-center justify-between gap-2 pt-2 border-t border-neutral-100 text-xs">
+        <div className="flex flex-wrap items-center justify-between gap-2 pt-2 text-xs">
           <div className="flex flex-wrap items-center gap-1">
             <button
               onClick={() => setStatusFilter('all')}
@@ -286,10 +286,10 @@ export const TaskBoard: React.FC<TaskBoardProps> = ({
             </span>
             <button
               onClick={() => setCategoryFilter('all')}
-              className={`px-2 py-0.5 rounded-lg text-[11px] font-medium border cursor-pointer ${
+              className={`px-2 py-0.5 rounded-lg text-[11px] font-medium cursor-pointer ${
                 categoryFilter === 'all'
-                  ? 'bg-brand text-white border-brand'
-                  : 'bg-white text-neutral-700 border-neutral-200 hover:bg-neutral-50'
+                  ? 'bg-brand text-white'
+                  : 'bg-neutral-100 text-neutral-700 hover:bg-neutral-200'
               }`}
             >
               {t.adminAllStatus}
@@ -298,10 +298,10 @@ export const TaskBoard: React.FC<TaskBoardProps> = ({
               <button
                 key={cat}
                 onClick={() => setCategoryFilter(categoryFilter === cat ? 'all' : cat)}
-                className={`px-2 py-0.5 rounded-lg text-[11px] font-medium border cursor-pointer ${
+                className={`px-2 py-0.5 rounded-lg text-[11px] font-medium cursor-pointer ${
                   categoryFilter.toLowerCase() === cat.toLowerCase()
-                    ? 'bg-brand text-white border-brand font-semibold'
-                    : 'bg-white text-neutral-700 border-neutral-200 hover:border-brand'
+                    ? 'bg-brand text-white font-semibold'
+                    : 'bg-neutral-100 text-neutral-700 hover:bg-neutral-200'
                 }`}
               >
                 {cat}
@@ -322,7 +322,7 @@ export const TaskBoard: React.FC<TaskBoardProps> = ({
           {isAnyFilterActive ? (
             <button
               onClick={handleResetFilters}
-              className="mt-3 inline-flex items-center gap-1.5 px-3 py-1.5 bg-neutral-100 hover:bg-neutral-200 text-black rounded-lg text-xs font-semibold cursor-pointer border border-neutral-200"
+              className="mt-3 inline-flex items-center gap-1.5 px-3 py-1.5 bg-neutral-100 hover:bg-neutral-200 text-black rounded-lg text-xs font-semibold cursor-pointer"
             >
               <Icons.close className="size-3.5" />
               <span>{t.filterReset}</span>
@@ -361,7 +361,7 @@ export const TaskBoard: React.FC<TaskBoardProps> = ({
                   <div className="flex items-center justify-between gap-2">
                     <button
                       onClick={() => setCategoryFilter(task.module)}
-                      className="text-xs font-semibold text-black bg-neutral-100 hover:bg-neutral-200 border border-neutral-200 px-2 py-0.5 rounded-lg cursor-pointer transition-colors"
+                      className="text-xs font-semibold text-black bg-neutral-100 hover:bg-neutral-200 px-2 py-0.5 rounded-lg cursor-pointer transition-colors"
                       title={t.titleFilterCategory}
                     >
                       {task.module}
@@ -369,7 +369,7 @@ export const TaskBoard: React.FC<TaskBoardProps> = ({
 
                     <div className="flex items-center gap-2">
                       <span
-                        className={`text-[11px] uppercase px-2 py-0.5 rounded-lg border ${priorityBadge.className}`}
+                        className={`text-[11px] uppercase px-2 py-0.5 rounded-lg ${priorityBadge.className}`}
                       >
                         {priorityBadge.label}
                       </span>
@@ -407,7 +407,7 @@ export const TaskBoard: React.FC<TaskBoardProps> = ({
                 </div>
 
                 {task.memberNotes && (
-                  <div className="p-2.5 bg-neutral-50 border border-neutral-200 rounded-lg text-xs text-black">
+                  <div className="p-2.5 bg-neutral-50 rounded-lg text-xs text-black">
                     <span className="font-bold block mb-0.5">
                       {t.memberNotesLabel}
                     </span>
@@ -416,7 +416,7 @@ export const TaskBoard: React.FC<TaskBoardProps> = ({
                 )}
 
                 {task.leaderFeedback && (
-                  <div className="p-2.5 bg-neutral-50 border border-neutral-200 rounded-lg text-xs text-black">
+                  <div className="p-2.5 bg-neutral-50 rounded-lg text-xs text-black">
                     <div className="flex items-center gap-1 font-bold mb-0.5">
                       <Icons.approved className="size-3.5 text-black" />
                       <span>{t.leaderFeedbackText}{t.colon}</span>
@@ -425,7 +425,7 @@ export const TaskBoard: React.FC<TaskBoardProps> = ({
                   </div>
                 )}
 
-                <div className="pt-3 border-t border-neutral-100 space-y-3">
+                <div className="pt-3 space-y-3">
                   <div className="flex items-center justify-between text-xs gap-2">
                     <div
                       onClick={() => setAssigneeFilter(assignee.id)}
@@ -465,13 +465,13 @@ export const TaskBoard: React.FC<TaskBoardProps> = ({
                         </span>
                       )}
                       {task.status === 'ready_for_review' && (
-                        <span className="inline-flex items-center gap-1 text-xs font-semibold text-black bg-neutral-200 px-2 py-0.5 rounded-lg border border-neutral-200">
+                        <span className="inline-flex items-center gap-1 text-xs font-semibold text-black bg-neutral-200 px-2 py-0.5 rounded-lg">
                           <Icons.time className="size-3.5 text-black" />
                           <span>{t.taskStatusReview}</span>
                         </span>
                       )}
                       {task.status === 'in_progress' && (
-                        <span className="inline-flex items-center gap-1 text-xs font-medium text-neutral-800 bg-neutral-100 border border-neutral-200 px-2 py-0.5 rounded-lg">
+                        <span className="inline-flex items-center gap-1 text-xs font-medium text-neutral-800 bg-neutral-100 px-2 py-0.5 rounded-lg">
                           <span>{t.taskStatusInProgress}</span>
                         </span>
                       )}
@@ -514,7 +514,7 @@ export const TaskBoard: React.FC<TaskBoardProps> = ({
                   </div>
 
                   {completingTaskId === task.id && canWorkOnTask && (
-                    <div className="p-3 bg-neutral-50 border border-neutral-200 rounded-lg space-y-2 mt-2">
+                    <div className="p-3 bg-neutral-50 rounded-lg space-y-2 mt-2">
                       <div className="flex items-center justify-between text-xs font-semibold text-black">
                         <span>{t.submitTaskDone}</span>
                         <button
@@ -541,7 +541,7 @@ export const TaskBoard: React.FC<TaskBoardProps> = ({
                   )}
 
                   {approvingTaskId === task.id && isTeamLead && (
-                    <div className="p-3 bg-neutral-50 border border-neutral-200 rounded-lg space-y-2 mt-2">
+                    <div className="p-3 bg-neutral-50 rounded-lg space-y-2 mt-2">
                       <div className="flex items-center justify-between text-xs font-semibold text-black">
                         <span>{t.approveTaskDone}</span>
                         <button

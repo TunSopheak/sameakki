@@ -15,7 +15,7 @@ const SECTION = 'mb-3 text-sm font-bold text-black';
 const TABLE = 'w-full border-collapse text-left text-xs';
 const HEAD_ROW = 'border-b-2 border-brand bg-neutral-100 font-bold text-black print:bg-transparent';
 
-/** The group's report as a page: who is on the team, what each task's state is, and the recent daily logs. */
+/** The group report page. */
 export const AssignmentReportModal: React.FC<AssignmentReportModalProps> = ({ isOpen, onClose }) => {
   const { activeGroup, activeGroupMembers, activeGroupTasks, activeGroupDailyLogs, users, language, t } = useApp();
 
@@ -40,7 +40,6 @@ export const AssignmentReportModal: React.FC<AssignmentReportModalProps> = ({ is
   const logStatus: Record<DailyLogStatus, string> = { in_progress: t.taskStatusInProgress, completed: t.reportLogDone, approved: t.taskStatusApproved };
 
   return createPortal(
-    // Printed as a page: see .print-root in index.css
     <div className="modal-overlay print-root report-paper fixed inset-0 z-50 flex items-center justify-center overflow-y-auto bg-black/60 p-4 backdrop-blur-2xs">
       <div className="modal-panel max-h-[90vh] w-full max-w-4xl overflow-y-auto rounded-xl border border-neutral-200 bg-white shadow-2xl">
         <div className="sticky top-0 z-10 flex items-center justify-between border-b border-neutral-200 bg-white px-6 py-4 print:hidden">
@@ -69,7 +68,6 @@ export const AssignmentReportModal: React.FC<AssignmentReportModalProps> = ({ is
         </div>
 
         <div className="space-y-8 p-8 print:p-0">
-          {/* Letterhead and title */}
           <div className="keep-together text-center">
             <p className="text-xs font-bold tracking-widest text-brand">LeaderSync</p>
             <div className="mx-auto mt-2 h-px w-24 bg-brand" />
@@ -78,7 +76,6 @@ export const AssignmentReportModal: React.FC<AssignmentReportModalProps> = ({ is
             {activeGroup.courseOrProject && <p className="text-sm text-neutral-600">{activeGroup.courseOrProject}</p>}
           </div>
 
-          {/* The facts of the document, as a form */}
           <table className={`${TABLE} keep-together border border-neutral-300`}>
             <tbody className="divide-y divide-neutral-300">
               {[

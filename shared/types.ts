@@ -17,7 +17,7 @@ export type GroupStatus = (typeof GROUP_STATUSES)[number];
 
 export type DailyLogStatus = 'in_progress' | 'completed' | 'approved';
 
-/** Where a paid account stands. After the end date there are some view-only days, then the account is locked. */
+/** Active, then view only after the end date, then locked. */
 export interface PlanInfo {
   status: 'active' | 'read_only';
   expiresAt?: string;
@@ -33,9 +33,7 @@ export interface User {
   role: Role;
   specialty?: string;
   department?: string;
-  /** Only set on the signed-in user: someone else chose this password, so it must be changed first. */
   mustChangePassword?: boolean;
-  /** Only set on the signed-in user. */
   plan?: PlanInfo;
 }
 
@@ -73,7 +71,6 @@ export interface DailyLog {
 
 export type CommentKind = 'task' | 'daily_log';
 
-/** A comment under a task or a daily update. The author's name is included so removed members still show. */
 export interface Comment {
   id: string;
   userId: string;
@@ -94,7 +91,6 @@ export interface Task {
   assignedBy: string;
   priority: TaskPriority;
   status: TaskStatus;
-  /** First day of work, YYYY-MM-DD. Never after dueDate. */
   startDate: string;
   dueDate: string; // YYYY-MM-DD
   dueTime?: string; // HH:mm
@@ -120,9 +116,8 @@ export interface Group {
   deadline?: string; // YYYY-MM-DD
   status: GroupStatus;
   category: GroupCategory;
-  /** The leader's plan has ended, so the group is view-only for everyone except the Super Admin. */
+  /** The leader's plan has ended: view only. */
   planEnded?: boolean;
-  /** While in the future, the Super Admin can open this group to help. Only the leader sets it. */
   supportAccessUntil?: string;
 }
 
@@ -176,7 +171,6 @@ export const NOTIFICATION_TYPES = [
 ] as const;
 export type NotificationType = (typeof NOTIFICATION_TYPES)[number];
 
-/** One entry in the bell. `params` holds the words to fill in (title, date, emoji, feedback). */
 export interface AppNotification {
   id: string;
   type: NotificationType;
@@ -188,7 +182,6 @@ export interface AppNotification {
   read: boolean;
 }
 
-/** Response of GET /api/notifications. */
 export interface NotificationsResponse {
   items: AppNotification[];
   unread: number;
@@ -203,15 +196,10 @@ export interface AdminUserRow {
   role: Role;
   avatar?: string;
   createdAt: string;
-  /** Last time the person used the app (checked every few minutes while it is open) */
   lastSeenAt?: string;
-  /** false = added by an admin but has not created the password yet */
   registered: boolean;
-  /** false = deleted (kept in the database, can be restored) */
   isActive: boolean;
-  /** Last moment the account works (ISO). Missing = never expires. */
   expiresAt?: string;
-  /** Most people allowed in each of this leader's groups. Missing = unlimited. */
   maxMembers?: number;
   groupCount: number;
 }
@@ -228,17 +216,14 @@ export interface AdminGroupRow {
   memberCount: number;
   taskCount: number;
   isActive: boolean;
-  /** While in the future, the leader has allowed the Super Admin to open this group. */
   supportAccessUntil?: string;
 }
 
-/** Response of GET /api/admin/overview (Super Admin only). */
 export interface AdminOverview {
   users: AdminUserRow[];
   groups: AdminGroupRow[];
 }
 
-/** Response of GET /api/bootstrap. */
 export interface BootstrapData {
   currentUser: User;
   users: User[];

@@ -3,7 +3,7 @@ import { useApp } from '../context/AppContext';
 import { Flag } from './Flag';
 import { ThemeToggle } from './ThemeToggle';
 
-/** The light/dark and Khmer/English buttons used on the pages shown before signing in. */
+/** Theme and language buttons for the pages before login. */
 export const PreferenceToggles: React.FC<{ variant?: 'bordered' | 'ghost' }> = ({ variant = 'bordered' }) => {
   const { language, setLanguage } = useApp();
   const look = variant === 'bordered' ? 'border border-neutral-200 bg-white hover:bg-neutral-100' : 'hover:bg-neutral-100';

@@ -2,7 +2,6 @@ import React from 'react';
 import { isAvatarKey, type AvatarKey } from '@shared/avatars';
 
 interface AvatarProps {
-  /** Used for the letter shown when no sticker is chosen */
   name: string;
   avatar?: string;
   className?: string;
@@ -11,9 +10,7 @@ interface AvatarProps {
 interface Sticker {
   bg: string;
   shirt: string;
-  /** Drawn behind the face (long hair, pigtails, bun) */
   back?: React.ReactNode;
-  /** Drawn over the face (fringe, cap, glasses) */
   front?: React.ReactNode;
 }
 
@@ -157,7 +154,7 @@ const Face: React.FC = () => (
   </>
 );
 
-/** A cute sticker avatar, or the first letter of the name when none is chosen. */
+/** Sticker avatar, or the first letter of the name. */
 export const Avatar: React.FC<AvatarProps> = ({ name, avatar, className = 'size-9' }) => {
   if (!isAvatarKey(avatar)) {
     return (

@@ -1,13 +1,12 @@
 import { useEffect, useState } from 'react';
 
-/** The few addresses the app has. Clean paths (no "#"), so "/login" is what people see and share. */
+/** Page addresses, without "#". */
 export type Route = '/' | '/login' | '/about';
 
 const KNOWN: Route[] = ['/', '/login', '/about'];
 const CHANGE = 'leadersync:route';
 const RETURNING_KEY = 'leadersync_returning';
 
-/** Reads the address. An old "#login" link still works and becomes "/login". */
 export function currentRoute(): Route {
   if (window.location.hash === '#login') return '/login';
   const path = window.location.pathname.replace(/\/+$/, '') || '/';
@@ -34,7 +33,6 @@ export function useRoute(): Route {
   return route;
 }
 
-/** True when this browser has logged in before, so visitors who already have an account can skip the sales page. */
 export function hasLoggedInBefore(): boolean {
   try {
     return localStorage.getItem(RETURNING_KEY) === '1';
@@ -47,6 +45,5 @@ export function rememberLogin() {
   try {
     localStorage.setItem(RETURNING_KEY, '1');
   } catch {
-    // Without storage, the sales page simply shows every time
   }
 }
