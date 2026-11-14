@@ -137,7 +137,7 @@ export const OverviewDashboard: React.FC<OverviewDashboardProps> = ({
             <span className="text-[11px] sm:text-xs font-semibold text-neutral-500 uppercase tracking-wider">
               {language === 'km' ? 'សមាជិកក្នុងក្រុម' : 'Team Members'}
             </span>
-            <Users className="w-4 h-4 text-neutral-400" />
+            <Users className="w-4 h-4 text-black" />
           </div>
           <div className="mt-3">
             <div className="flex flex-wrap items-baseline gap-x-2">
