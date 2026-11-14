@@ -53,7 +53,7 @@ bootstrapRouter.get('/bootstrap', async (req, res) => {
     return;
   }
 
-  const [members, users, tasks, logs, reactions, events] = await Promise.all([
+  const [members, users, tasks, logs, reactions, events, commentCounts] = await Promise.all([
     db.query('SELECT group_id, user_id FROM group_members WHERE group_id = ANY($1::uuid[]) ORDER BY joined_at', [groupIds]),
     isSuperAdmin(user)
       ? db.query(`SELECT ${USER_COLUMNS} FROM users ORDER BY created_at`)
@@ -82,7 +82,14 @@ bootstrapRouter.get('/bootstrap', async (req, res) => {
        ) ranked WHERE rn <= ${ACTIVITY_LIMIT_PER_GROUP} ORDER BY created_at DESC`,
       [groupIds]
     ),
+    db.query(
+      `SELECT target_type || ':' || target_id::text AS key, count(*)::int AS n
+         FROM comments WHERE group_id = ANY($1::uuid[]) AND is_active = 1 GROUP BY 1`,
+      [groupIds]
+    ),
   ]);
+
+  const commentCountOf = new Map<string, number>(commentCounts.rows.map(r => [r.key as string, r.n as number]));
 
   const membersByGroup = new Map<string, string[]>();
   for (const m of members.rows) {
@@ -107,8 +114,11 @@ bootstrapRouter.get('/bootstrap', async (req, res) => {
     currentUser: user,
     users: users.rows.map(toUser),
     groups: groupRows.map(g => toGroup(g, membersByGroup.get(g.id) ?? [])),
-    tasks: tasks.rows.map(toTask),
-    dailyLogs: logs.rows.map(l => toDailyLog(l, reactionsByLog.get(l.id) ?? [])),
+    tasks: tasks.rows.map(r => ({ ...toTask(r), commentCount: commentCountOf.get(`task:${r.id}`) ?? 0 })),
+    dailyLogs: logs.rows.map(l => ({
+      ...toDailyLog(l, reactionsByLog.get(l.id) ?? []),
+      commentCount: commentCountOf.get(`daily_log:${l.id}`) ?? 0,
+    })),
     activityEvents: events.rows.map(toActivityEvent),
   };
   res.json(data);

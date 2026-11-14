@@ -16,6 +16,8 @@ import { usersRouter } from './routes/users';
 import { tasksRouter } from './routes/tasks';
 import { dailyLogsRouter } from './routes/dailyLogs';
 import { adminRouter } from './routes/admin';
+import { notificationsRouter } from './routes/notifications';
+import { commentsRouter } from './routes/comments';
 
 export function createApp() {
   const app = express();
@@ -60,7 +62,7 @@ export function createApp() {
   app.use('/api/auth', authRouter);
   const api = express.Router();
   api.use(requireAuth);
-  api.use(bootstrapRouter, groupsRouter, usersRouter, tasksRouter, dailyLogsRouter, adminRouter);
+  api.use(bootstrapRouter, groupsRouter, usersRouter, tasksRouter, dailyLogsRouter, adminRouter, notificationsRouter, commentsRouter);
   app.use('/api', api);
   app.use('/api', notFoundApi);
 

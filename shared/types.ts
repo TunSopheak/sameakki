@@ -59,6 +59,20 @@ export interface DailyLog {
   leaderNote?: string;
   approvedBy?: string;
   reactions: DailyLogReaction[];
+  commentCount?: number;
+}
+
+export type CommentKind = 'task' | 'daily_log';
+
+/** A comment under a task or a daily update. The author's name is included so removed members still show. */
+export interface Comment {
+  id: string;
+  userId: string;
+  userName: string;
+  userNameKm?: string;
+  avatar?: string;
+  body: string;
+  createdAt: string;
 }
 
 export interface Task {
@@ -79,6 +93,7 @@ export interface Task {
   approvedBy?: string;
   memberNotes?: string;
   leaderFeedback?: string;
+  commentCount?: number;
 }
 
 export interface Group {
@@ -128,6 +143,37 @@ export interface ActivityEvent {
     role?: string;
     feedback?: string;
   };
+}
+
+export const NOTIFICATION_TYPES = [
+  'task_assigned',
+  'task_ready_for_review',
+  'task_approved',
+  'task_due_soon',
+  'task_overdue',
+  'daily_approved',
+  'daily_reaction',
+  'plan_expiring',
+  'comment_added',
+] as const;
+export type NotificationType = (typeof NOTIFICATION_TYPES)[number];
+
+/** One entry in the bell. `params` holds the words to fill in (title, date, emoji, feedback). */
+export interface AppNotification {
+  id: string;
+  type: NotificationType;
+  groupId?: string;
+  targetId?: string;
+  actorName?: string;
+  params: Record<string, string>;
+  createdAt: string;
+  read: boolean;
+}
+
+/** Response of GET /api/notifications. */
+export interface NotificationsResponse {
+  items: AppNotification[];
+  unread: number;
 }
 
 export interface AdminUserRow {

@@ -165,4 +165,41 @@ export const migrations: { id: string; sql: string }[] = [
     id: '008_must_change_password',
     sql: `ALTER TABLE users ADD COLUMN must_change_password BOOLEAN NOT NULL DEFAULT false`,
   },
+  {
+    // In-app notifications. dedupe_key stops the same reminder or reaction from being added twice.
+    id: '009_notifications',
+    sql: `
+      CREATE TABLE notifications (
+        id         UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+        user_id    UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+        type       TEXT NOT NULL,
+        group_id   UUID REFERENCES groups(id) ON DELETE CASCADE,
+        target_id  TEXT,
+        actor_name TEXT,
+        params     JSONB NOT NULL DEFAULT '{}'::jsonb,
+        dedupe_key TEXT,
+        created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+        read_at    TIMESTAMPTZ
+      );
+      CREATE INDEX notifications_user_idx ON notifications (user_id, created_at DESC);
+      CREATE UNIQUE INDEX notifications_dedupe_unique ON notifications (user_id, dedupe_key) WHERE dedupe_key IS NOT NULL;
+    `,
+  },
+  {
+    // Comments on tasks and daily updates. target_id points at tasks or daily_logs, so it has no foreign key.
+    id: '010_comments',
+    sql: `
+      CREATE TABLE comments (
+        id          UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+        group_id    UUID NOT NULL REFERENCES groups(id) ON DELETE CASCADE,
+        target_type TEXT NOT NULL CHECK (target_type IN ('task', 'daily_log')),
+        target_id   UUID NOT NULL,
+        user_id     UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+        body        TEXT NOT NULL,
+        created_at  TIMESTAMPTZ NOT NULL DEFAULT now(),
+        is_active   SMALLINT NOT NULL DEFAULT 1 CHECK (is_active IN (0, 1))
+      );
+      CREATE INDEX comments_target_idx ON comments (target_type, target_id, created_at);
+    `,
+  },
 ];

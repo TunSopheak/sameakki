@@ -17,6 +17,7 @@ import {
 import { Avatar } from './Avatar';
 import { FilterSelect, Pager, SearchBox } from './TableParts';
 import { useTableView } from '../lib/useTableView';
+import { CommentThread } from './CommentThread';
 
 interface TaskBoardProps {
   onOpenAssignTask: () => void;
@@ -620,6 +621,8 @@ export const TaskBoard: React.FC<TaskBoardProps> = ({
                     </div>
                   )}
                 </div>
+
+                <CommentThread kind="task" targetId={task.id} count={task.commentCount ?? 0} />
               </div>
             );
           })}

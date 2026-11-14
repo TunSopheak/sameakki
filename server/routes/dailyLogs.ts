@@ -5,6 +5,7 @@ import type { DailyTodoItem, User } from '../../shared/types';
 import { parseRawLogContent } from '../../shared/dailyLogParser';
 import { assert, getGroupAccess } from '../services/access';
 import { logActivity } from '../services/activity';
+import { notify } from '../services/notifications';
 import { notFound } from '../middleware/errors';
 
 export const dailyLogsRouter = Router();
@@ -152,6 +153,16 @@ dailyLogsRouter.post('/daily-logs/:logId/approve', async (req, res) => {
       descriptionKm: `បានអនុម័ត និងទទួលស្គាល់ ToDo ប្រចាំថ្ងៃរបស់ ${rows[0]?.name || 'សមាជិក'}`,
       metadata: input.feedback ? { feedback: input.feedback } : undefined,
     });
+    if (log.user_id !== user.id) {
+      await notify(tx, {
+        userId: log.user_id,
+        type: 'daily_approved',
+        groupId: log.group_id,
+        targetId: log.id,
+        actorName: user.name,
+        params: { title: log.title, feedback: input.feedback },
+      });
+    }
   });
 
   res.status(204).end();
@@ -184,6 +195,18 @@ dailyLogsRouter.post('/daily-logs/:logId/reactions', async (req, res) => {
       'INSERT INTO daily_log_reactions (log_id, user_id, emoji) VALUES ($1, $2, $3) ON CONFLICT DO NOTHING',
       [log.id, user.id, emoji]
     );
+    // One notification per person and emoji, so toggling a reaction cannot spam the author
+    if (log.user_id !== user.id) {
+      await notify(db, {
+        userId: log.user_id,
+        type: 'daily_reaction',
+        groupId: log.group_id,
+        targetId: log.id,
+        actorName: user.name,
+        params: { title: log.title, emoji },
+        dedupeKey: `react:${log.id}:${user.id}:${emoji}`,
+      });
+    }
   }
   res.status(204).end();
 });

@@ -1,4 +1,4 @@
-import type { AdminOverview, BootstrapData, Role, TaskPriority, TaskStatus, User, GroupCategory } from '@shared/types';
+import type { AdminOverview, BootstrapData, Comment, CommentKind, NotificationsResponse, Role, TaskPriority, TaskStatus, User, GroupCategory } from '@shared/types';
 
 export class ApiError extends Error {
   constructor(public status: number, message: string) {
@@ -33,6 +33,8 @@ const post = <T = void>(path: string, body: unknown = {}) => request<T>('POST', 
 const patch = (path: string, body: unknown) => request('PATCH', path, body);
 const del = (path: string) => request('DELETE', path);
 
+const commentPath = (kind: CommentKind, id: string) => (kind === 'task' ? `/tasks/${id}` : `/daily-logs/${id}`);
+
 export const api = {
   me: () => get<{ user: User }>('/auth/me'),
   login: (email: string, password: string) => post<{ user: User }>('/auth/login', { email, password }),
@@ -42,6 +44,14 @@ export const api = {
     post('/auth/change-password', { currentPassword, newPassword }),
 
   bootstrap: () => get<BootstrapData>('/bootstrap'),
+
+  comments: (kind: CommentKind, id: string) => get<Comment[]>(`${commentPath(kind, id)}/comments`),
+  addComment: (kind: CommentKind, id: string, body: string) => post<Comment>(`${commentPath(kind, id)}/comments`, { body }),
+  deleteComment: (commentId: string) => del(`/comments/${commentId}`),
+
+  notifications: () => get<NotificationsResponse>('/notifications'),
+  markNotificationRead: (id: string) => post(`/notifications/${id}/read`),
+  markAllNotificationsRead: () => post('/notifications/read-all'),
 
   createGroup: (data: {
     name: string;

@@ -1,4 +1,4 @@
-import type { ActivityEvent, BootstrapData, DailyLog, Task, User } from '@shared/types';
+import type { ActivityEvent, AppNotification, BootstrapData, DailyLog, Task, User } from '@shared/types';
 
 // Sample workspace for the Explore button. It lives only in the browser; nothing is saved.
 
@@ -106,4 +106,23 @@ export function buildDemoData(): BootstrapData {
     dailyLogs,
     activityEvents,
   };
+}
+
+/** A few sample notifications so the bell is not empty in the demo. */
+export function buildDemoNotifications(): AppNotification[] {
+  const make = (id: string, type: AppNotification['type'], hoursAgo: number, read: boolean, actorName: string | undefined, params: Record<string, string>): AppNotification => ({
+    id,
+    type,
+    groupId: DEMO_GROUP_ID,
+    actorName,
+    params,
+    createdAt: isoOffset(0, -hoursAgo),
+    read,
+  });
+  return [
+    make('demo-n1', 'task_ready_for_review', 1, false, 'Dara', { title: 'Create the tasks API' }),
+    make('demo-n2', 'task_overdue', 3, false, undefined, { title: 'Fix the mobile menu', dueDate: dateOffset(-1) }),
+    make('demo-n3', 'daily_reaction', 6, false, 'Sokha', { title: 'Dashboard', emoji: '\u{1F44F}' }),
+    make('demo-n4', 'task_due_soon', 20, true, undefined, { title: 'Build the dashboard page', dueDate: dateOffset(1) }),
+  ];
 }

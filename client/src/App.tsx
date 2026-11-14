@@ -69,7 +69,7 @@ const MainApp: React.FC = () => {
         }`}
       >
         <DemoBanner />
-        <Header activeTab={activeTab} />
+        <Header activeTab={activeTab} onNavigate={handleTabChange} />
 
         <main className="flex-1 pb-8 lg:pb-16">
           {activeTab !== 'admin' && (

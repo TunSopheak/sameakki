@@ -5,6 +5,7 @@ import { TASK_PRIORITIES } from '../../shared/types';
 import type { User } from '../../shared/types';
 import { assert, getGroupAccess } from '../services/access';
 import { logActivity } from '../services/activity';
+import { groupLeadIds, notify } from '../services/notifications';
 import { badRequest, notFound } from '../middleware/errors';
 
 export const tasksRouter = Router();
@@ -70,6 +71,16 @@ tasksRouter.post('/groups/:groupId/tasks', async (req, res) => {
       descriptionKm: `បានចាត់តាំងកិច្ចការ "${input.title}" ជូន ${name} (Deadline: ${input.dueDate})`,
       metadata: { newValue: input.dueDate },
     });
+    if (input.assignedTo !== user.id) {
+      await notify(tx, {
+        userId: input.assignedTo,
+        type: 'task_assigned',
+        groupId: access.groupId,
+        targetId: rows[0].id,
+        actorName: user.name,
+        params: { title: input.title, dueDate: input.dueDate },
+      });
+    }
     return rows[0].id;
   });
 
@@ -111,6 +122,19 @@ tasksRouter.patch('/tasks/:taskId/status', async (req, res) => {
         description: `submitted task "${task.title}" as completed / ready for leader review`,
         descriptionKm: `បានបញ្ជាក់ការសម្រេចកិច្ចការ "${task.title}" រង់ចាំប្រធានត្រួតពិនិត្យ`,
       });
+      // Tell the leaders once, not every time the status is saved again
+      if (task.status !== 'ready_for_review') {
+        for (const leadId of await groupLeadIds(tx, task.group_id, user.id)) {
+          await notify(tx, {
+            userId: leadId,
+            type: 'task_ready_for_review',
+            groupId: task.group_id,
+            targetId: task.id,
+            actorName: user.name,
+            params: { title: task.title },
+          });
+        }
+      }
     }
   });
 
@@ -171,6 +195,16 @@ tasksRouter.post('/tasks/:taskId/approve', async (req, res) => {
       descriptionKm: `បានអនុម័ត និងចុះហត្ថលេខាទទួលស្គាល់កិច្ចការ "${task.title}"`,
       metadata: input.feedback ? { feedback: input.feedback } : undefined,
     });
+    if (task.assigned_to && task.assigned_to !== user.id) {
+      await notify(tx, {
+        userId: task.assigned_to,
+        type: 'task_approved',
+        groupId: task.group_id,
+        targetId: task.id,
+        actorName: user.name,
+        params: { title: task.title, feedback: input.feedback },
+      });
+    }
   });
 
   res.status(204).end();

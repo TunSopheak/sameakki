@@ -14,6 +14,7 @@ import {
 import { Avatar } from './Avatar';
 import { Pager, SearchBox } from './TableParts';
 import { useTableView } from '../lib/useTableView';
+import { CommentThread } from './CommentThread';
 
 export const DailyFeed: React.FC = () => {
   const {
@@ -367,6 +368,10 @@ export const DailyFeed: React.FC = () => {
                       })}
                     </div>
                   </div>
+                </div>
+
+                <div className="pt-3">
+                  <CommentThread kind="daily_log" targetId={log.id} count={log.commentCount ?? 0} />
                 </div>
               </div>
             );
