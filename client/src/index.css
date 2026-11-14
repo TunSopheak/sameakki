@@ -232,25 +232,63 @@ button:not(:disabled):active {
   }
 }
 
-/* Printing the timeline: only the paper version is shown, on A4 landscape */
+/* Printing: only the element marked .print-root is shown (see lib/printPage.ts) */
 @page timeline {
   size: A4 landscape;
   margin: 10mm;
 }
-.timeline-print-root {
+@page report {
+  size: A4 portrait;
+  margin: 15mm 15mm 18mm;
+  @bottom-left {
+    content: 'LeaderSync';
+    font-size: 9pt;
+    color: #6f645b;
+  }
+  @bottom-right {
+    content: counter(page) ' / ' counter(pages);
+    font-size: 9pt;
+    color: #6f645b;
+  }
+}
+.timeline-paper {
   page: timeline;
 }
+.report-paper {
+  page: report;
+}
 @media print {
-  html.printing-timeline body > *:not(.timeline-print-root) {
+  html.printing body > *:not(.print-root) {
     display: none !important;
   }
-  html.printing-timeline,
-  html.printing-timeline body {
+  html.printing,
+  html.printing body {
     background: #ffffff !important;
   }
-  .timeline-print-root,
-  .timeline-print-root * {
+  /* A dialog printed as a page: no overlay, no scrolling box, no frame */
+  html.printing .print-root.modal-overlay {
+    position: static !important;
+    display: block !important;
+    overflow: visible !important;
+    padding: 0 !important;
+    background: none !important;
+    backdrop-filter: none !important;
+  }
+  html.printing .print-root .modal-panel {
+    max-height: none !important;
+    max-width: none !important;
+    overflow: visible !important;
+    border: 0 !important;
+    box-shadow: none !important;
+    animation: none !important;
+  }
+  .print-root,
+  .print-root * {
     print-color-adjust: exact;
     -webkit-print-color-adjust: exact;
+  }
+  .print-root tr,
+  .print-root .keep-together {
+    break-inside: avoid;
   }
 }

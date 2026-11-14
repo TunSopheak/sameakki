@@ -54,7 +54,7 @@ export const PrintableTimeline: React.FC<PrintableTimelineProps> = ({ groupName,
   const monthName = (day: number) => new Intl.DateTimeFormat(locale, { month: 'long', year: 'numeric', timeZone: 'UTC' }).format(new Date(day * 86_400_000));
 
   return (
-    <div className="timeline-print-root hidden bg-white p-0 text-[11px] print:block" style={{ color: INK, background: '#ffffff' }}>
+    <div className="print-root timeline-paper hidden bg-white p-0 text-[11px] print:block" style={{ color: INK, background: '#ffffff' }}>
       <header style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', borderBottom: `2px solid ${BRAND}`, paddingBottom: 6, marginBottom: 10 }}>
         <div>
           <h1 style={{ fontSize: 20, fontWeight: 700, lineHeight: 1.3 }}>{groupName}</h1>

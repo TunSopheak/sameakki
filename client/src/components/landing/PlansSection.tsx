@@ -14,7 +14,7 @@ interface Plan {
 }
 
 const PlanCard: React.FC<{ plan: Plan }> = ({ plan }) => {
-  const { copy, language, enterDemo, contactHref } = useLanding();
+  const { copy, language, enterDemo, contactHref, signedIn } = useLanding();
   const text = copy.pricing.plans[plan.id];
   const isDemo = plan.id === 'demo';
   const term = { semester: copy.pricing.perSemester, month: copy.pricing.perMonth, year: copy.pricing.perYear, custom: '' }[plan.term];
@@ -63,9 +63,11 @@ const PlanCard: React.FC<{ plan: Plan }> = ({ plan }) => {
 
       <div className="mt-8">
         {isDemo ? (
-          <Button variant="secondary" icon={Compass} onClick={enterDemo} fullWidth>
-            {text.cta}
-          </Button>
+          !signedIn && (
+            <Button variant="secondary" icon={Compass} onClick={enterDemo} fullWidth>
+              {text.cta}
+            </Button>
+          )
         ) : (
           <Button icon={Send} href={contactHref} fullWidth>
             {text.cta}

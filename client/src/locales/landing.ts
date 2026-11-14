@@ -1,7 +1,7 @@
 // Words for the landing page. Khmer first; English for the language switch.
 
 export interface LandingCopy {
-  nav: { signIn: string; features: string; pricing: string; faq: string };
+  nav: { backToApp: string; signIn: string; features: string; pricing: string; faq: string };
   hero: {
     eyebrow: string;
     title: string;
@@ -53,7 +53,7 @@ export interface LandingCopy {
 
 export const landing: Record<'km' | 'en', LandingCopy> = {
   km: {
-    nav: { signIn: 'ចូលប្រើប្រាស់', features: 'មុខងារ', pricing: 'កញ្ចប់', faq: 'សំណួរ' },
+    nav: { backToApp: 'ត្រឡប់ទៅកម្មវិធី', signIn: 'ចូលប្រើប្រាស់', features: 'មុខងារ', pricing: 'កញ្ចប់', faq: 'សំណួរ' },
     hero: {
       eyebrow: 'សម្រាប់ក្រុមនិស្សិត',
       title: 'កិច្ចការក្រុម',
@@ -198,7 +198,7 @@ export const landing: Record<'km' | 'en', LandingCopy> = {
   },
 
   en: {
-    nav: { signIn: 'Sign in', features: 'Features', pricing: 'Plans', faq: 'FAQ' },
+    nav: { backToApp: 'Back to the app', signIn: 'Log in', features: 'Features', pricing: 'Plans', faq: 'FAQ' },
     hero: {
       eyebrow: 'Made for student teams',
       title: 'Group projects',
@@ -323,7 +323,7 @@ export const landing: Record<'km' | 'en', LandingCopy> = {
         },
         {
           q: 'What if I forget my password?',
-          a: 'Tell your team leader (or the Admin if you are the leader). They create a new temporary password, and you must change it the next time you sign in. You get a notification showing who reset it, and old passwords can never be read.',
+          a: 'Tell your team leader (or the Admin if you are the leader). They create a new temporary password, and you must change it the next time you log in. You get a notification showing who reset it, and old passwords can never be read.',
         },
         {
           q: 'Can my lecturer see our progress?',

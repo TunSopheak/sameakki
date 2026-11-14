@@ -2,6 +2,7 @@ import React from 'react';
 import { Send } from 'lucide-react';
 import { useApp } from '../context/AppContext';
 import { telegramLink } from '../lib/contact';
+import { navigate } from '../lib/route';
 
 /** Shown on top of the sample workspace so nobody mistakes it for a real account. */
 export const DemoBanner: React.FC = () => {
@@ -22,7 +23,7 @@ export const DemoBanner: React.FC = () => {
       </a>
       <button
         onClick={() => {
-          window.location.hash = '';
+          navigate('/about');
           void logout();
         }} className="cursor-pointer rounded-lg border border-brand px-3 py-1.5 font-semibold hover:bg-white">
         {t.exitDemo}

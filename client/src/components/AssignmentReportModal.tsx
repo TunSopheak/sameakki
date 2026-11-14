@@ -1,156 +1,132 @@
 import React from 'react';
+import { createPortal } from 'react-dom';
+import { FileText, Printer, X } from 'lucide-react';
+import type { DailyLogStatus, Role, Task, User } from '@shared/types';
 import { useApp } from '../context/AppContext';
-import {
-  FileText,
-  Printer,
-  X
-} from 'lucide-react';
+import { localDateOf, todayLocal } from '../lib/dates';
+import { printPage } from '../lib/printPage';
 
 interface AssignmentReportModalProps {
   isOpen: boolean;
   onClose: () => void;
 }
 
-export const AssignmentReportModal: React.FC<AssignmentReportModalProps> = ({
-  isOpen,
-  onClose,
-}) => {
-  const {
-    activeGroup,
-    activeGroupMembers,
-    activeGroupTasks,
-    activeGroupDailyLogs,
-    users,
-    language,
-    t,
-  } = useApp();
+const SECTION = 'mb-3 text-sm font-bold text-black';
+const TABLE = 'w-full border-collapse text-left text-xs';
+const HEAD_ROW = 'border-b-2 border-brand bg-neutral-100 font-bold text-black print:bg-transparent';
+
+/** The group's report as a page: who is on the team, what each task's state is, and the recent daily logs. */
+export const AssignmentReportModal: React.FC<AssignmentReportModalProps> = ({ isOpen, onClose }) => {
+  const { activeGroup, activeGroupMembers, activeGroupTasks, activeGroupDailyLogs, users, language, t } = useApp();
 
   if (!isOpen || !activeGroup) return null;
 
+  const km = language === 'km';
+  const nameOf = (user?: User) => (user ? (km && user.nameKm ? user.nameKm : user.name) : '');
   const leader = users.find(u => u.id === activeGroup.leaderId);
   const totalTasks = activeGroupTasks.length;
-  const approvedTasks = activeGroupTasks.filter(t => t.status === 'approved').length;
+  const approvedTasks = activeGroupTasks.filter(task => task.status === 'approved').length;
   const progressPercent = totalTasks > 0 ? Math.round((approvedTasks / totalTasks) * 100) : 0;
 
-  const handlePrint = () => {
-    window.print();
+  const colon = km ? '៖' : ':';
+  const reference = `LS/${activeGroup.code}/${todayLocal().replaceAll('-', '')}`;
+  const roleLabel: Record<Role, string> = { super_admin: t.superAdminBadge, team_lead: t.teamLeadBadge, member: t.memberBadge, viewer: t.viewerBadge };
+  const taskStatus: Record<Task['status'], string> = {
+    todo: t.taskStatusTodo,
+    in_progress: t.taskStatusInProgress,
+    ready_for_review: t.taskStatusReview,
+    approved: t.taskStatusApproved,
   };
+  const logStatus: Record<DailyLogStatus, string> = { in_progress: t.taskStatusInProgress, completed: t.reportLogDone, approved: t.taskStatusApproved };
 
-  return (
-    <div className="modal-overlay fixed inset-0 z-50 overflow-y-auto bg-black/60 backdrop-blur-2xs flex items-center justify-center p-4">
-      <div className="modal-panel bg-white rounded-xl max-w-4xl w-full max-h-[90vh] overflow-y-auto shadow-2xl border border-neutral-200">
-        <div className="sticky top-0 bg-white border-b border-neutral-200 px-6 py-4 flex items-center justify-between z-10 print:hidden">
-          <div className="flex items-center gap-2 text-black font-bold text-base">
-            <FileText className="w-5 h-5 text-black" />
+  return createPortal(
+    // Printed as a page: see .print-root in index.css
+    <div className="modal-overlay print-root report-paper fixed inset-0 z-50 flex items-center justify-center overflow-y-auto bg-black/60 p-4 backdrop-blur-2xs">
+      <div className="modal-panel max-h-[90vh] w-full max-w-4xl overflow-y-auto rounded-xl border border-neutral-200 bg-white shadow-2xl">
+        <div className="sticky top-0 z-10 flex items-center justify-between border-b border-neutral-200 bg-white px-6 py-4 print:hidden">
+          <div className="flex items-center gap-2 text-base font-bold text-black">
+            <FileText className="size-5" />
             <span>{t.tabReport}</span>
           </div>
-
           <div className="flex items-center gap-3">
             <button
-              onClick={handlePrint}
-              className="inline-flex items-center gap-1.5 px-3.5 py-2 bg-brand hover:bg-brand-dark text-white rounded-lg text-xs font-semibold shadow-xs cursor-pointer"
+              onClick={() => printPage()}
+              className="inline-flex cursor-pointer items-center gap-1.5 rounded-lg bg-brand px-3.5 py-2 text-xs font-semibold text-white shadow-xs transition-colors hover:bg-brand-dark"
             >
-              <Printer className="w-4 h-4" />
+              <Printer className="size-4" />
               <span>{t.printReport}</span>
             </button>
             <button
               onClick={onClose}
-              className="p-1.5 text-neutral-400 hover:text-black rounded-lg hover:bg-neutral-100 transition-colors cursor-pointer"
+              aria-label={t.close}
+              className="cursor-pointer rounded-lg p-1.5 text-neutral-400 transition-colors hover:bg-neutral-100 hover:text-black"
             >
-              <X className="w-5 h-5" />
+              <X className="size-5" />
             </button>
           </div>
         </div>
 
-        <div className="p-8 space-y-8 print:p-0">
-          <div className="border-b-2 border-brand pb-6">
-            <div className="flex justify-between items-start gap-4">
-              <div>
-                <span className="font-mono text-xs uppercase tracking-widest text-neutral-500 font-bold">
-                  OFFICIAL ASSIGNMENT REPORT
-                </span>
-                <h1 className="text-2xl font-bold text-black mt-1">
-                  {language === 'km' && activeGroup.nameKm ? activeGroup.nameKm : activeGroup.name}
-                </h1>
-                <p className="text-sm font-semibold text-neutral-700 mt-1">
-                  {activeGroup.courseOrProject}
-                </p>
-              </div>
+        <div className="space-y-8 p-8 print:p-0">
+          {/* Letterhead and title */}
+          <div className="keep-together text-center">
+            <p className="text-xs font-bold tracking-widest text-brand">LeaderSync</p>
+            <div className="mx-auto mt-2 h-px w-24 bg-brand" />
+            <h1 className="mt-4 text-xl font-bold leading-snug text-black">{t.reportOfficial}</h1>
+            <p className="mt-1 text-base font-semibold text-black">{km && activeGroup.nameKm ? activeGroup.nameKm : activeGroup.name}</p>
+            {activeGroup.courseOrProject && <p className="text-sm text-neutral-600">{activeGroup.courseOrProject}</p>}
+          </div>
 
-              <div className="text-right">
-                <span className="font-mono text-xs font-bold text-black block">
-                  CODE: {activeGroup.code}
-                </span>
-                <span className="text-xs text-neutral-500 block mt-0.5">
-                  Generated: {new Date().toLocaleDateString()}
-                </span>
-                <span className="inline-block mt-2 text-xs font-bold px-2.5 py-0.5 rounded-lg bg-brand text-white">
-                  {progressPercent}% Completed
-                </span>
-              </div>
-            </div>
-
-            <p className="text-xs text-neutral-600 mt-4 leading-relaxed">
+          {/* The facts of the document, as a form */}
+          <table className={`${TABLE} keep-together border border-neutral-300`}>
+            <tbody className="divide-y divide-neutral-300">
+              {[
+                [t.reportRef, reference, t.reportDate, todayLocal()],
+                [t.reportCode, activeGroup.code, t.reportCategory, activeGroup.category || '—'],
+                [t.reportLeader, `${nameOf(leader)}${leader?.email ? ` · ${leader.email}` : ''}`, t.reportPeriod, `${localDateOf(activeGroup.createdAt)} → ${activeGroup.deadline || t.reportNoDeadline}`],
+                [t.reportSummary, `${activeGroupMembers.length} ${t.reportMembersCount} · ${totalTasks} ${t.colTasks} · ${approvedTasks} ${t.reportApprovedCount}`, t.reportProgress, `${progressPercent}%`],
+              ].map(([k1, v1, k2, v2]) => (
+                <tr key={k1}>
+                  <th className="w-[15%] bg-neutral-100 px-3 py-2 font-bold text-black print:bg-transparent">{k1}{colon}</th>
+                  <td className="w-[40%] px-3 py-2 text-black">{v1}</td>
+                  <th className="w-[15%] bg-neutral-100 px-3 py-2 font-bold text-black print:bg-transparent">{k2}{colon}</th>
+                  <td className="px-3 py-2 text-black">{v2}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+          {activeGroup.description && (
+            <p className="text-xs leading-relaxed text-neutral-700">
+              <span className="font-bold text-black">{t.reportPurpose}{colon} </span>
               {activeGroup.description}
             </p>
-          </div>
-
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 p-4 bg-neutral-50 rounded-lg border border-neutral-200 text-xs">
-            <div>
-              <span className="text-neutral-500 block">{language === 'km' ? 'ប្រធានក្រុម / Leader៖' : 'Group Leader:'}</span>
-              <span className="font-bold text-black text-sm mt-0.5 block">
-                {leader?.name} {leader?.nameKm && `(${leader.nameKm})`}
-              </span>
-              <span className="text-neutral-500 text-[11px]">{leader?.email}</span>
-            </div>
-            <div>
-              <span className="text-neutral-500 block">{language === 'km' ? 'កាលបរិច្ឆេទបង្កើត & Deadline៖' : 'Timeline & Deadline:'}</span>
-              <span className="font-semibold text-black mt-0.5 block">
-                {activeGroup.createdAt} → {activeGroup.deadline || 'Ongoing'}
-              </span>
-              <span className="text-neutral-500 text-[11px]">Category: {activeGroup.category}</span>
-            </div>
-            <div>
-              <span className="text-neutral-500 block">{language === 'km' ? 'ស្ថិតិសរុប៖' : 'Aggregate Metrics:'}</span>
-              <span className="font-semibold text-black mt-0.5 block">
-                {activeGroupMembers.length} Members · {totalTasks} Tasks
-              </span>
-              <span className="text-neutral-700 font-bold text-[11px]">
-                {approvedTasks} Approved Completions
-              </span>
-            </div>
-          </div>
+          )}
 
           <div>
-            <h3 className="text-sm font-bold text-black uppercase tracking-wider mb-3">
-              1. Team Members & Responsibilities
-            </h3>
-            <table className="w-full text-left border-collapse text-xs">
+            <h3 className={SECTION}>{t.reportSectionMembers}</h3>
+            <table className={TABLE}>
               <thead>
-                <tr className="border-b border-brand bg-neutral-100 font-bold text-black">
-                  <th className="py-2.5 px-3">Member Name</th>
-                  <th className="py-2.5 px-3">Student ID</th>
-                  <th className="py-2.5 px-3">Assigned Specialty</th>
-                  <th className="py-2.5 px-3">Role</th>
-                  <th className="py-2.5 px-3 text-right">Tasks Approved</th>
+                <tr className={HEAD_ROW}>
+                  <th className="w-10 px-3 py-2.5">{t.reportColNo}</th>
+                  <th className="px-3 py-2.5">{t.reportColMember}</th>
+                  <th className="px-3 py-2.5">{t.reportColEmail}</th>
+                  <th className="px-3 py-2.5">{t.reportColSpecialty}</th>
+                  <th className="px-3 py-2.5">{t.reportColRole}</th>
+                  <th className="px-3 py-2.5 text-right">{t.reportColApproved}</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-neutral-200">
-                {activeGroupMembers.map(m => {
-                  const mTasks = activeGroupTasks.filter(t => t.assignedTo === m.id);
-                  const mApproved = mTasks.filter(t => t.status === 'approved').length;
+                {activeGroupMembers.map((member, index) => {
+                  const mine = activeGroupTasks.filter(task => task.assignedTo === member.id);
+                  const done = mine.filter(task => task.status === 'approved').length;
                   return (
-                    <tr key={m.id}>
-                      <td className="py-2.5 px-3 font-semibold text-black">
-                        {m.name} {m.nameKm && `(${m.nameKm})`}
-                      </td>
-                      <td className="py-2.5 px-3 text-neutral-600">{m.email}</td>
-                      <td className="py-2.5 px-3 text-neutral-700">{m.specialty || 'General'}</td>
-                      <td className="py-2.5 px-3 capitalize text-black font-medium">
-                        {m.role.replace('_', ' ')}
-                      </td>
-                      <td className="py-2.5 px-3 text-right font-bold">
-                        {mApproved}/{mTasks.length}
+                    <tr key={member.id}>
+                      <td className="px-3 py-2.5 text-neutral-500">{index + 1}</td>
+                      <td className="px-3 py-2.5 font-semibold text-black">{nameOf(member)}</td>
+                      <td className="px-3 py-2.5 text-neutral-600">{member.email}</td>
+                      <td className="px-3 py-2.5 text-neutral-700">{member.specialty || t.reportGeneral}</td>
+                      <td className="px-3 py-2.5 font-medium text-black">{roleLabel[member.role]}</td>
+                      <td className="px-3 py-2.5 text-right font-bold">
+                        {done}/{mine.length}
                       </td>
                     </tr>
                   );
@@ -160,103 +136,94 @@ export const AssignmentReportModal: React.FC<AssignmentReportModalProps> = ({
           </div>
 
           <div>
-            <h3 className="text-sm font-bold text-black uppercase tracking-wider mb-3">
-              2. Deliverables & Leader Sign-Off Status
-            </h3>
-            <table className="w-full text-left border-collapse text-xs">
+            <h3 className={SECTION}>{t.reportSectionTasks}</h3>
+            <table className={TABLE}>
               <thead>
-                <tr className="border-b border-brand bg-neutral-100 font-bold text-black">
-                  <th className="py-2.5 px-3">Module & Task</th>
-                  <th className="py-2.5 px-3">Assignee</th>
-                  <th className="py-2.5 px-3">Deadline</th>
-                  <th className="py-2.5 px-3">Status</th>
-                  <th className="py-2.5 px-3">Leader Verification</th>
+                <tr className={HEAD_ROW}>
+                  <th className="w-10 px-3 py-2.5">{t.reportColNo}</th>
+                  <th className="px-3 py-2.5">{t.colTitle}</th>
+                  <th className="px-3 py-2.5">{t.colAssignee}</th>
+                  <th className="px-3 py-2.5">{t.reportColDeadline}</th>
+                  <th className="px-3 py-2.5">{t.colStatus}</th>
+                  <th className="px-3 py-2.5">{t.reportColCheck}</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-neutral-200">
-                {activeGroupTasks.map(t => {
-                  const assignee = activeGroupMembers.find(m => m.id === t.assignedTo);
-                  return (
-                    <tr key={t.id}>
-                      <td className="py-2.5 px-3">
-                        <span className="font-bold text-black block">{t.title}</span>
-                        <span className="text-[11px] text-neutral-500">[{t.module}]</span>
-                      </td>
-                      <td className="py-2.5 px-3 text-neutral-700">{assignee?.name}</td>
-                      <td className="py-2.5 px-3 text-neutral-600">{t.dueDate}</td>
-                      <td className="py-2.5 px-3">
-                        <span
-                          className={`inline-block px-2 py-0.5 rounded-lg text-[11px] font-bold uppercase ${
-                            t.status === 'approved'
-                              ? 'bg-brand text-white'
-                              : 'bg-neutral-200 text-black'
-                          }`}
-                        >
-                          {t.status.replace('_', ' ')}
-                        </span>
-                      </td>
-                      <td className="py-2.5 px-3 text-neutral-700 italic">
-                        {t.leaderFeedback || (t.status === 'approved' ? 'Verified by Leader' : 'Pending')}
-                      </td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
-          </div>
-
-          <div>
-            <h3 className="text-sm font-bold text-black uppercase tracking-wider mb-3">
-              3. Daily Standup Log & Progress Trail
-            </h3>
-            <div className="space-y-2.5">
-              {activeGroupDailyLogs.slice(0, 5).map(log => {
-                const author = activeGroupMembers.find(m => m.id === log.userId);
-                return (
-                  <div
-                    key={log.id}
-                    className="p-3 bg-neutral-50 rounded-lg border border-neutral-200 text-xs space-y-1"
-                  >
-                    <div className="flex items-center justify-between">
-                      <span className="font-bold text-black">
-                        {author?.name} · [{log.title}]
+                {activeGroupTasks.map((task, index) => (
+                  <tr key={task.id}>
+                    <td className="px-3 py-2.5 text-neutral-500">{index + 1}</td>
+                    <td className="px-3 py-2.5">
+                      <span className="block font-bold text-black">{task.title}</span>
+                      <span className="text-[11px] text-neutral-500">{task.module}</span>
+                    </td>
+                    <td className="px-3 py-2.5 text-neutral-700">{nameOf(activeGroupMembers.find(m => m.id === task.assignedTo)) || t.ganttNobody}</td>
+                    <td className="px-3 py-2.5 text-neutral-600">{task.dueDate}</td>
+                    <td className="px-3 py-2.5">
+                      <span className={`inline-block rounded-lg px-2 py-0.5 text-[11px] font-bold ${task.status === 'approved' ? 'bg-brand text-white print:border print:border-brand print:bg-transparent print:text-brand' : 'bg-neutral-200 text-black print:border print:border-neutral-500 print:bg-transparent'}`}>
+                        {taskStatus[task.status]}
                       </span>
-                      <span className="font-mono text-neutral-500 text-[11px]">
-                        {log.date} at {log.timestamp} ({log.status.toUpperCase()})
+                    </td>
+                    <td className="px-3 py-2.5 italic text-neutral-700">{task.leaderFeedback || (task.status === 'approved' ? t.reportVerified : t.reportPending)}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+
+          <div>
+            <h3 className={SECTION}>{t.reportSectionLogs}</h3>
+            {activeGroupDailyLogs.length === 0 ? (
+              <p className="text-xs text-neutral-500">{t.reportNoLogs}</p>
+            ) : (
+              <div className="space-y-2.5">
+                {activeGroupDailyLogs.slice(0, 5).map(log => (
+                  <div key={log.id} className="keep-together space-y-1 rounded-lg border border-neutral-300 bg-neutral-50 p-3 print:bg-transparent text-xs">
+                    <div className="flex items-center justify-between gap-3">
+                      <span className="font-bold text-black">
+                        {nameOf(activeGroupMembers.find(m => m.id === log.userId))} · {log.title}
+                      </span>
+                      <span className="shrink-0 text-[11px] text-neutral-500">
+                        {log.date} · {logStatus[log.status]}
                       </span>
                     </div>
-                    <p className="text-neutral-800 whitespace-pre-line text-[11px] bg-white p-2 rounded-lg border border-neutral-200">
-                      {log.rawContent}
-                    </p>
+                    <p className="whitespace-pre-line rounded-lg border border-neutral-200 bg-white p-2 text-[11px] print:border-0 print:p-0 text-neutral-800">{log.rawContent}</p>
                     {log.leaderNote && (
-                      <p className="text-black font-semibold text-[11px] pt-1">
-                        ↳ Leader note: "{log.leaderNote}"
+                      <p className="pt-1 text-[11px] font-semibold text-black">
+                        ↳ {t.reportLeaderNote}{colon} “{log.leaderNote}”
                       </p>
                     )}
                   </div>
-                );
-              })}
-            </div>
+                ))}
+              </div>
+            )}
           </div>
 
-          <div className="pt-8 border-t border-neutral-400 grid grid-cols-2 gap-8 text-xs">
-            <div className="space-y-12">
-              <span className="text-neutral-500 block">Prepared By Group Leader:</span>
-              <div className="border-t border-brand pt-2 w-48">
-                <span className="font-bold text-black block">{leader?.name}</span>
-                <span className="text-neutral-500 text-[11px]">Team Leader / Super Admin</span>
-              </div>
+          <div className="keep-together space-y-6 border-t border-neutral-400 pt-6 text-xs">
+            <p className="text-neutral-700">
+              {t.reportPlaceDate}{colon} ........................................................
+            </p>
+            <div className="grid grid-cols-3 gap-6 text-center">
+              {[
+                [t.reportPreparedBy, nameOf(leader), t.teamLeadBadge],
+                [t.reportReviewedBy, '', t.reportReviewerRole],
+                [t.reportApprovedBy, '', t.reportStamp],
+              ].map(([title, name, note]) => (
+                <div key={title} className="flex h-40 flex-col justify-between">
+                  <span className="font-bold text-black">{title}</span>
+                  <div className="border-t border-neutral-500 pt-2">
+                    <span className="block h-4 font-bold text-black">{name}</span>
+                    <span className="text-[11px] text-neutral-500">{note}</span>
+                  </div>
+                </div>
+              ))}
             </div>
-
-            <div className="space-y-12 text-right">
-              <span className="text-neutral-500 block">Supervisor Acknowledgment:</span>
-              <div className="border-t border-brand pt-2 w-48 ml-auto text-left">
-                <span className="text-neutral-400 text-[11px] italic">Date & Signature</span>
-              </div>
-            </div>
+            <p className="text-center text-[11px] text-neutral-500">
+              {t.printGenerated} {todayLocal()} · {reference}
+            </p>
           </div>
         </div>
       </div>
-    </div>
+    </div>,
+    document.body,
   );
 };

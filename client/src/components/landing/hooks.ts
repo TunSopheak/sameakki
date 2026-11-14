@@ -7,8 +7,9 @@ const reducedMotion = () => typeof window !== 'undefined' && !!window.matchMedia
 
 /** Words, language and the two main actions, so every section reads them the same way. */
 export function useLanding() {
-  const { language, enterDemo, t } = useApp();
-  return { language, t, copy: landing[language], enterDemo, contactHref: telegramLink(t.telegramMessage) };
+  const { language, enterDemo, t, status } = useApp();
+  // Someone who is logged in can reopen this page, and has no use for the sample data
+  return { language, t, copy: landing[language], enterDemo, signedIn: status === 'ready', contactHref: telegramLink(t.telegramMessage) };
 }
 
 /** True once the element has come into view (and stays true). Shows everything at once if motion is reduced. */

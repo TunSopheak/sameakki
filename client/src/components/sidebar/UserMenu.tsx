@@ -1,6 +1,7 @@
 import React, { useRef, useState } from 'react';
-import { ChevronsUpDown, LogOut, Settings, Smile } from 'lucide-react';
+import { ChevronsUpDown, Info, LogOut, Settings, Smile } from 'lucide-react';
 import { useApp } from '../../context/AppContext';
+import { navigate } from '../../lib/route';
 import { useDismiss } from '../../lib/useDismiss';
 import { Avatar } from '../Avatar';
 import { AvatarPickerModal } from '../AvatarPickerModal';
@@ -76,6 +77,18 @@ export const UserMenu: React.FC<{ isCollapsed: boolean }> = ({ isCollapsed }) =>
           >
             <Smile className="size-4 text-neutral-500" />
             {t.changeAvatar}
+          </button>
+          <button
+            type="button"
+            role="menuitem"
+            onClick={() => {
+              setOpen(false);
+              navigate('/about');
+            }}
+            className="flex w-full items-center gap-2 rounded-lg px-2.5 py-2 text-sm font-medium text-black transition-colors hover:bg-neutral-100"
+          >
+            <Info className="size-4 text-neutral-500" />
+            {t.aboutApp}
           </button>
           <button
             type="button"

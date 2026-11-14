@@ -24,6 +24,7 @@ import { AuthScreen } from './components/AuthScreen';
 import { Notice } from './components/Notice';
 import { DemoBanner } from './components/DemoBanner';
 import { ForcePasswordChange } from './components/ForcePasswordChange';
+import { hasLoggedInBefore, navigate, rememberLogin, useRoute } from './lib/route';
 import { LandingPage } from './components/landing/LandingPage';
 
 const MainApp: React.FC = () => {
@@ -180,15 +181,21 @@ const MainApp: React.FC = () => {
 };
 
 const SessionGate: React.FC = () => {
-  const { status, t } = useApp();
+  const { status, t, isDemo } = useApp();
+  const route = useRoute();
 
-  // The sign-in form lives at "#login"; anything else shows the landing page. The back button works.
-  const [showLogin, setShowLogin] = useState(() => window.location.hash === '#login');
+  // Remember that this browser has an account, so the next visit goes straight to the log-in form
   useEffect(() => {
-    const onHash = () => setShowLogin(window.location.hash === '#login');
-    window.addEventListener('hashchange', onHash);
-    return () => window.removeEventListener('hashchange', onHash);
-  }, []);
+    if (status === 'ready' && !isDemo) rememberLogin();
+  }, [status, isDemo]);
+
+  // "/" is the sales page for newcomers and the log-in form for people who have logged in before
+  const returning = hasLoggedInBefore();
+  const showLogin = route === '/login' || (route === '/' && returning);
+  useEffect(() => {
+    if (status === 'signed_out' && route === '/' && returning) navigate('/login', { replace: true });
+    if (status === 'ready' && route === '/login') navigate('/', { replace: true });
+  }, [status, route, returning]);
 
   if (status === 'loading') {
     return (
@@ -207,6 +214,9 @@ const SessionGate: React.FC = () => {
       </>
     );
   }
+
+  // Logged-in people can reopen the information page from the account menu
+  if (route === '/about') return <LandingPage />;
 
   return <MainApp />;
 };

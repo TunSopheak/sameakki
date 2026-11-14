@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useApp } from '../context/AppContext';
 import { telegramLink } from '../lib/contact';
+import { navigate } from '../lib/route';
 import { Brand } from './Brand';
 import { PreferenceToggles } from './PreferenceToggles';
 import { ArrowLeft, Compass, Loader2, LogIn, Send } from 'lucide-react';
@@ -9,7 +10,7 @@ const inputClass =
   'w-full px-3 py-2 text-sm text-black bg-white border border-neutral-200 rounded-lg focus:outline-none focus:ring-1 focus:ring-brand/40 focus:border-brand';
 
 export const AuthScreen: React.FC = () => {
-  const { login, enterDemo, t, language } = useApp();
+  const { login, enterDemo, t } = useApp();
   const [form, setForm] = useState({ email: '', password: '' });
   const [error, setError] = useState('');
   const [submitting, setSubmitting] = useState(false);
@@ -39,15 +40,15 @@ export const AuthScreen: React.FC = () => {
         </div>
 
         <a
-          href="#"
+          href="/about"
           onClick={e => {
             e.preventDefault();
-            window.location.hash = '';
+            navigate('/about');
           }}
           className="mb-3 inline-flex items-center gap-1.5 text-xs font-semibold text-neutral-600 hover:text-black"
         >
           <ArrowLeft className="size-3.5" />
-          {language === 'km' ? 'ត្រឡប់ទៅទំព័រដើម' : 'Back to home'}
+          {t.authAbout}
         </a>
 
         <div className="animate-rise bg-white rounded-xl border border-neutral-200 shadow-xs p-6">

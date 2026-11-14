@@ -5,6 +5,7 @@ import type { Task, User } from '@shared/types';
 import { useApp } from '../../context/AppContext';
 import { todayLocal } from '../../lib/dates';
 import { downloadBlob } from '../../lib/download';
+import { printPage } from '../../lib/printPage';
 import { useDismiss } from '../../lib/useDismiss';
 import { buildExportLabels, buildXlsxLabels } from './exportLabels';
 import { toDay } from './ganttModel';
@@ -18,8 +19,6 @@ interface ExportMenuProps {
   teamDeadline?: string;
 }
 
-const PRINT_CLASS = 'printing-timeline';
-
 /** The "Export" button: a PDF through the browser's print window, or a CSV file for Excel and Google Sheets. */
 export const ExportMenu: React.FC<ExportMenuProps> = ({ groupName, tasks, users, teamDeadline }) => {
   const { t, language } = useApp();
@@ -28,35 +27,8 @@ export const ExportMenu: React.FC<ExportMenuProps> = ({ groupName, tasks, users,
   const ref = useRef<HTMLDivElement>(null);
   useDismiss(ref, open, () => setOpen(false));
 
-  // Once the paper version is on the page, wait for fonts and layout, then open the print window
-  useEffect(() => {
-    if (!printing) return;
-    let cancelled = false;
-    const finish = () => {
-      document.documentElement.classList.remove(PRINT_CLASS);
-      setPrinting(false);
-    };
-    document.documentElement.classList.add(PRINT_CLASS);
-    window.addEventListener('afterprint', finish, { once: true });
-    const start = async () => {
-      try {
-        await document.fonts?.ready;
-      } catch {
-        // Printing still works without waiting
-      }
-      requestAnimationFrame(() =>
-        requestAnimationFrame(() => {
-          if (!cancelled) window.print();
-        }),
-      );
-    };
-    void start();
-    return () => {
-      cancelled = true;
-      window.removeEventListener('afterprint', finish);
-      document.documentElement.classList.remove(PRINT_CLASS);
-    };
-  }, [printing]);
+  // Once the paper version is on the page, open the print window
+  useEffect(() => (printing ? printPage(() => setPrinting(false)) : undefined), [printing]);
 
   const exportPdf = () => {
     setOpen(false);
