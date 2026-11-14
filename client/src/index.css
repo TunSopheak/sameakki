@@ -241,7 +241,7 @@ button:not(:disabled):active {
   size: A4 portrait;
   margin: 15mm 15mm 18mm;
   @bottom-left {
-    content: 'LeaderSync';
+    content: 'Sameakki';
     font-size: 9pt;
     color: #6f645b;
   }

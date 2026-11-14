@@ -5,6 +5,7 @@ import { useApp } from '../context/AppContext';
 import { localDateOf, todayLocal } from '../lib/dates';
 import { printPage } from '../lib/printPage';
 import { Icons } from './icons';
+import { APP_NAME } from '../lib/brand';
 
 interface AssignmentReportModalProps {
   isOpen: boolean;
@@ -29,7 +30,7 @@ export const AssignmentReportModal: React.FC<AssignmentReportModalProps> = ({ is
   const progressPercent = totalTasks > 0 ? Math.round((approvedTasks / totalTasks) * 100) : 0;
 
   const colon = t.colon;
-  const reference = `LS/${activeGroup.code}/${todayLocal().replaceAll('-', '')}`;
+  const reference = `SM/${activeGroup.code}/${todayLocal().replaceAll('-', '')}`;
   const roleLabel: Record<Role, string> = { super_admin: t.superAdminBadge, team_lead: t.teamLeadBadge, member: t.memberBadge, viewer: t.viewerBadge };
   const taskStatus: Record<Task['status'], string> = {
     todo: t.taskStatusTodo,
@@ -69,7 +70,7 @@ export const AssignmentReportModal: React.FC<AssignmentReportModalProps> = ({ is
 
         <div className="space-y-8 p-8 print:p-0">
           <div className="keep-together text-center">
-            <p className="text-xs font-bold tracking-widest text-brand">LeaderSync</p>
+            <p className="text-xs font-bold tracking-widest text-brand">{APP_NAME}</p>
             <div className="mx-auto mt-2 h-px w-24 bg-brand" />
             <h1 className="mt-4 text-xl font-bold leading-snug text-black">{t.reportOfficial}</h1>
             <p className="mt-1 text-base font-semibold text-black">{km && activeGroup.nameKm ? activeGroup.nameKm : activeGroup.name}</p>

@@ -44,6 +44,8 @@ export interface LandingCopy {
     message: string;
     sponsorsTitle: string;
   };
+  /** The page title and description shown by search engines and the browser tab. */
+  meta: { title: string; description: string };
   faq: { title: string; items: { q: string; a: string }[] };
   final: { title: string; text: string };
   footer: { rights: string; back: string };
@@ -137,7 +139,7 @@ export const landing: Record<'km' | 'en', LandingCopy> = {
     },
     sponsor: {
       eyebrow: 'គម្រោងនៅដំណាក់កាលដំបូង',
-      title: 'ជួយឱ្យ LeaderSync លូតលាស់ ជាមួយនិស្សិតខ្មែរ',
+      title: 'ជួយឱ្យ សាមគ្គី លូតលាស់ ជាមួយនិស្សិតខ្មែរ',
       text: 'យើងកំពុងអភិវឌ្ឍបន្តិចម្តងៗ ហើយចង់ឱ្យវាកាន់តែល្អសម្រាប់និស្សិតទូទាំងប្រទេស។ បើសាលា ក្រុមហ៊ុន ឬអ្នកណាម្នាក់ចង់ជួយឧបត្ថម្ភ ការជួយរបស់អ្នកនឹងជួយឱ្យយើងបន្ថែមមុខងារថ្មី និងរក្សាសេវានេះឱ្យនិស្សិតប្រើបាន។',
       roadmapTitle: 'អ្វីដែលយើងចង់បន្ថែមបន្ទាប់',
       roadmap: [
@@ -153,8 +155,12 @@ export const landing: Record<'km' | 'en', LandingCopy> = {
         'ស្នើមុខងារដែលអ្នកត្រូវការមុនគេ',
       ],
       cta: 'ទាក់ទងដើម្បីឧបត្ថម្ភ',
-      message: 'សួស្តី ខ្ញុំចាប់អារម្មណ៍ចង់ឧបត្ថម្ភគម្រោង LeaderSync។',
+      message: 'សួស្តី ខ្ញុំចាប់អារម្មណ៍ចង់ឧបត្ថម្ភគម្រោង សាមគ្គី។',
       sponsorsTitle: 'ដៃគូឧបត្ថម្ភរបស់យើង',
+    },
+    meta: {
+      title: 'Sameakki សាមគ្គី - ប្រព័ន្ធគ្រប់គ្រងក្រុម និងកិច្ចការសម្រាប់និស្សិត',
+      description: 'សាមគ្គី ជួយប្រធានក្រុមនិស្សិតតាមដានកិច្ចការ ថ្ងៃកំណត់ និងវឌ្ឍនភាពរបស់សមាជិកនៅមួយកន្លែង។ សាកល្បងមើលដោយមិនចាំបាច់ចុះឈ្មោះ។',
     },
     faq: {
       title: 'សំណួរញឹកញាប់',
@@ -283,7 +289,7 @@ export const landing: Record<'km' | 'en', LandingCopy> = {
     },
     sponsor: {
       eyebrow: 'An early-stage project',
-      title: 'Help LeaderSync grow with Khmer students',
+      title: 'Help Sameakki grow with Khmer students',
       text: 'We are building step by step and want it to get better for students across the country. If a school, a company or anyone would like to sponsor, your support helps us add new features and keep this service available to students.',
       roadmapTitle: 'What we want to add next',
       roadmap: [
@@ -299,8 +305,12 @@ export const landing: Record<'km' | 'en', LandingCopy> = {
         'Ask for the features you need first',
       ],
       cta: 'Contact us to sponsor',
-      message: 'Hello, I am interested in sponsoring LeaderSync.',
+      message: 'Hello, I am interested in sponsoring Sameakki.',
       sponsorsTitle: 'Our sponsors',
+    },
+    meta: {
+      title: 'Sameakki - Team and task manager for students',
+      description: 'Sameakki helps student team leaders follow tasks, deadlines and every member’s progress in one place. Try it without signing up.',
     },
     faq: {
       title: 'Frequently asked questions',

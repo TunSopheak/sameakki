@@ -1,6 +1,7 @@
 import React from 'react';
 import { useApp } from '../context/AppContext';
 import { Logo } from './Logo';
+import { APP_NAME } from '../lib/brand';
 
 interface BrandProps {
   short?: boolean;
@@ -14,7 +15,7 @@ export const Brand: React.FC<BrandProps> = ({ short = false, iconOnly = false })
       <Logo className="logo-float size-10 shrink-0 text-black" />
       {!iconOnly && (
         <div className="min-w-0">
-          <p className="truncate text-sm font-bold leading-tight text-black">LeaderSync</p>
+          <p className="truncate text-sm font-bold leading-tight text-black">{APP_NAME}</p>
           <p className={`text-xs text-neutral-500 ${short ? 'truncate' : 'leading-snug'}`}>{short ? t.appTagline : t.appSubtitle}</p>
         </div>
       )}

@@ -113,3 +113,18 @@ export function useLandingPageClass() {
     return () => document.documentElement.classList.remove('landing-page');
   }, []);
 }
+
+/** Sets the browser tab title and the search description in the visitor's language, and puts them back on leaving. */
+export function useLandingMeta() {
+  const { copy } = useLanding();
+  useEffect(() => {
+    const description = document.querySelector<HTMLMetaElement>('meta[name="description"]');
+    const before = { title: document.title, description: description?.content ?? '' };
+    document.title = copy.meta.title;
+    if (description) description.content = copy.meta.description;
+    return () => {
+      document.title = before.title;
+      if (description) description.content = before.description;
+    };
+  }, [copy]);
+}

@@ -7,7 +7,7 @@ import { useLanding } from './hooks';
 const pill =
   'inline-flex items-center gap-1.5 rounded-full bg-neutral-100 px-3 py-1.5 text-xs font-semibold text-neutral-700 transition-colors hover:bg-brand hover:text-[#ffffff]';
 
-/** Who built LeaderSync, with links to reach them. */
+/** Who built the app, with links to reach them. */
 export const CreatorCard: React.FC = () => {
   const { copy, language } = useLanding();
   const name = language === 'km' ? CREATOR.nameKm : CREATOR.name;

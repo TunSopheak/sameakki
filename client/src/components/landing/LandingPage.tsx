@@ -5,16 +5,18 @@ import { FaqSection } from './FaqSection';
 import { FeaturesSection } from './FeaturesSection';
 import { FinalCta } from './FinalCta';
 import { Hero } from './Hero';
-import { useLanding, useLandingPageClass } from './hooks';
+import { useLanding, useLandingMeta, useLandingPageClass } from './hooks';
 import { LandingHeader } from './LandingHeader';
 import { PlansSection } from './PlansSection';
 import { ProblemsSection } from './ProblemsSection';
 import { SponsorSection } from './SponsorSection';
 import { StepsSection } from './StepsSection';
+import { APP_NAME } from '../../lib/brand';
 
 /** The page shown before login. */
 export const LandingPage: React.FC = () => {
   useLandingPageClass();
+  useLandingMeta();
   const { copy } = useLanding();
   const { settings, ready } = useLandingSettings();
 
@@ -35,7 +37,7 @@ export const LandingPage: React.FC = () => {
 
       <footer className="space-y-6 px-4 pb-10 text-center text-xs text-neutral-500">
         <CreatorCard />
-        <p>LeaderSync · {copy.footer.rights}</p>
+        <p>{APP_NAME} · {copy.footer.rights}</p>
       </footer>
     </div>
   );

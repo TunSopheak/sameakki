@@ -2,7 +2,7 @@
   "name": "leadersync",
   "private": true,
   "version": "1.0.0",
-  "description": "LeaderSync - team & assignment progress hub (React + Express + PostgreSQL)",
+  "description": "Sameakki - team & task manager (React + Express + PostgreSQL)",
   "type": "module",
   "engines": {
     "node": ">=20.19"

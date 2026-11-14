@@ -5,6 +5,7 @@ import { todayLocal } from '../../lib/dates';
 import { buildExportLabels } from './exportLabels';
 import { exportHeaders, exportRowCells, exportRows } from './exportModel';
 import { chartRange, clipSpan, fromDay, isLate, isWeekend, monthSegments, spanDays, toDay, toItem, weekday } from './ganttModel';
+import { APP_NAME } from '../../lib/brand';
 
 // Fixed colours: paper is white
 const INK = '#1a1410';
@@ -59,7 +60,7 @@ export const PrintableTimeline: React.FC<PrintableTimelineProps> = ({ groupName,
           </p>
         </div>
         <p style={{ color: MUTED, textAlign: 'right' }}>
-          LeaderSync
+          {APP_NAME}
           <br />
           {t.printGenerated} {fromDay(today)}
         </p>

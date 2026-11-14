@@ -93,7 +93,7 @@ export function buildDemoData(): BootstrapData {
         name: 'Demo Project Team',
         nameKm: 'ក្រុមគម្រោងគំរូ',
         code: 'GRP-DEMO',
-        description: 'A sample team to explore LeaderSync.',
+        description: 'A sample team to explore Sameakki.',
         courseOrProject: 'Website Project',
         leaderId: lead.id,
         memberIds: users.map(u => u.id),

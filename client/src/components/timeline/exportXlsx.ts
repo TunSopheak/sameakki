@@ -2,6 +2,7 @@
 import type { Task } from '../../../../shared/types';
 import { exportHeaders, exportRowCells, type ExportLabels, type ExportRow } from './exportModel';
 import { chartRange, toDay } from './ganttModel';
+import { APP_NAME } from '../../lib/brand';
 
 export interface XlsxLabels {
   total: string;
@@ -19,7 +20,7 @@ const STATUS_ORDER: Task['status'][] = ['todo', 'in_progress', 'ready_for_review
 export async function buildXlsx(rows: ExportRow[], labels: ExportLabels, words: XlsxLabels, groupName: string, today: number): Promise<ArrayBuffer> {
   const { default: ExcelJS } = await import('exceljs');
   const book = new ExcelJS.Workbook();
-  book.creator = 'LeaderSync';
+  book.creator = APP_NAME;
   book.created = new Date();
   const last = rows.length + 1;
 

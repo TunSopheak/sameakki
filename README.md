@@ -1,4 +1,4 @@
-# LeaderSync
+# Sameakki
 
 Team and assignment tracker in Khmer and English. Leaders create groups, assign tasks with deadlines and approve work. Members post daily to-do lists and track progress.
 

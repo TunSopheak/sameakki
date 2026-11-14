@@ -20,6 +20,9 @@ import { notificationsRouter } from './routes/notifications';
 import { commentsRouter } from './routes/comments';
 import { publicRouter } from './routes/public';
 
+// Addresses the app answers itself (older links to the login and about pages still work)
+const APP_PATHS = new Set(['/', '/login', '/about']);
+
 export function createApp() {
   const app = express();
   app.disable('x-powered-by');
@@ -70,6 +73,21 @@ export function createApp() {
 
   const indexHtml = path.join(config.clientDistDir, 'index.html');
   if (fs.existsSync(indexHtml)) {
+    const template = fs.readFileSync(indexHtml, 'utf8');
+    // Addresses in the page (canonical, share image) follow the host the visitor used
+    const originOf = (req: express.Request) => {
+      const host = req.get('host') ?? '';
+      return /^[a-z0-9.-]+(:\d+)?$/i.test(host) ? `${req.protocol}://${host}` : '';
+    };
+
+    app.get('/robots.txt', (req, res) => {
+      res.type('text/plain').send(['User-agent: *', 'Allow: /', 'Disallow: /api/', '', `Sitemap: ${originOf(req)}/sitemap.xml`, ''].join('\n'));
+    });
+    app.get('/sitemap.xml', (req, res) => {
+      const xml = `<?xml version="1.0" encoding="UTF-8"?><urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"><url><loc>${originOf(req)}/</loc></url></urlset>`;
+      res.type('application/xml').send(xml);
+    });
+
     // Hashed assets are cached for a year
     app.use(
       express.static(config.clientDistDir, {
@@ -81,9 +99,11 @@ export function createApp() {
       })
     );
     // Other GET requests return the app (not cached)
-    app.get(/^(?!\/api\/).*/, (_req, res) => {
+    app.get(/^(?!\/api\/).*/, (req, res) => {
       res.setHeader('Cache-Control', 'no-cache');
-      res.sendFile(indexHtml);
+      // Any address the app does not know is a 404 for search engines; people still see the app
+      res.status(APP_PATHS.has(req.path.replace(/\/+$/, '') || '/') ? 200 : 404);
+      res.type('html').send(template.replaceAll('__ORIGIN__', originOf(req)));
     });
   }
 

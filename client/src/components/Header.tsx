@@ -7,6 +7,7 @@ import { Logo } from './Logo';
 import { ThemeToggle } from './ThemeToggle';
 import { NotificationBell } from './NotificationBell';
 import type { Tab } from './sidebar/SidebarNav';
+import { APP_NAME } from '../lib/brand';
 
 interface HeaderProps {
   activeTab: Tab;
@@ -32,7 +33,7 @@ export const Header: React.FC<HeaderProps> = ({ activeTab, onNavigate }) => {
     report: t.tabReport,
     admin: t.tabAdmin,
   };
-  const groupName = activeGroup ? (language === 'km' && activeGroup.nameKm ? activeGroup.nameKm : activeGroup.name) : 'LeaderSync';
+  const groupName = activeGroup ? (language === 'km' && activeGroup.nameKm ? activeGroup.nameKm : activeGroup.name) : APP_NAME;
 
   return (
     <header className="sticky top-0 z-30 border-b border-neutral-200 bg-white/95 backdrop-blur-md">

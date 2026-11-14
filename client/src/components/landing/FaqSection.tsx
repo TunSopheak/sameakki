@@ -34,6 +34,17 @@ export const FaqSection: React.FC = () => {
 
   return (
     <Section id="faq" className="mx-auto max-w-2xl">
+      {/* The questions again for search engines, so they can show them as answers */}
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify({
+            '@context': 'https://schema.org',
+            '@type': 'FAQPage',
+            mainEntity: copy.faq.items.map(item => ({ '@type': 'Question', name: item.q, acceptedAnswer: { '@type': 'Answer', text: item.a } })),
+          }),
+        }}
+      />
       <SectionTitle>{copy.faq.title}</SectionTitle>
       <Reveal delay={120} className="mt-12">
         <div className="divide-y divide-neutral-200 overflow-hidden rounded-2xl border border-neutral-200 bg-white">
