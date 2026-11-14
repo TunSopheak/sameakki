@@ -1,5 +1,4 @@
 import React, { useCallback, useEffect, useState } from 'react';
-import { Plus, RefreshCw, Settings2, ShieldCheck, UserCheck, UserPlus, Users } from 'lucide-react';
 import { ROLES, type AdminOverview as Overview, type AdminGroupRow, type AdminUserRow, type Role } from '@shared/types';
 import { api } from '../lib/api';
 import { useApp } from '../context/AppContext';
@@ -8,7 +7,8 @@ import { GroupsTable } from './admin/GroupsTable';
 import { UsersTable } from './admin/UsersTable';
 import { AccountModal } from './admin/AccountModal';
 import { LandingSettingsModal } from './admin/LandingSettingsModal';
-import { TempPasswordModal } from './TempPasswordModal';
+import { TempPasswordModal } from './TempPasswordModal';
+import { Icons } from './icons';
 
 const ONLINE_MINUTES = 10;
 const ACTIVE_DAYS = 7;
@@ -86,11 +86,11 @@ export const AdminOverview: React.FC = () => {
   };
   const users = data.users.filter(u => u.isActive);
   const stats = [
-    { label: t.adminUsers, value: users.length, icon: Users },
-    { label: t.adminOnline, value: users.filter(u => minutesAgo(u.lastSeenAt) <= ONLINE_MINUTES).length, icon: UserCheck },
-    { label: t.adminActiveWeek, value: users.filter(u => minutesAgo(u.lastSeenAt) <= ACTIVE_DAYS * 24 * 60).length, icon: ShieldCheck },
-    { label: t.adminGroups, value: data.groups.filter(g => g.isActive).length, icon: Users },
-    { label: t.adminPending, value: users.filter(u => !u.registered).length, icon: UserPlus },
+    { label: t.adminUsers, value: users.length, icon: Icons.members },
+    { label: t.adminOnline, value: users.filter(u => minutesAgo(u.lastSeenAt) <= ONLINE_MINUTES).length, icon: Icons.activeUser },
+    { label: t.adminActiveWeek, value: users.filter(u => minutesAgo(u.lastSeenAt) <= ACTIVE_DAYS * 24 * 60).length, icon: Icons.admin },
+    { label: t.adminGroups, value: data.groups.filter(g => g.isActive).length, icon: Icons.members },
+    { label: t.adminPending, value: users.filter(u => !u.registered).length, icon: Icons.addMember },
   ];
 
   return (
@@ -107,14 +107,14 @@ export const AdminOverview: React.FC = () => {
           title={t.adminLandingSettings}
           className="inline-flex items-center gap-1.5 rounded-lg border border-neutral-200 bg-white px-3 py-2 text-xs font-semibold hover:bg-neutral-100"
         >
-          <Settings2 className="size-3.5" />
+          <Icons.pageSettings className="size-3.5" />
           <span className="hidden sm:inline">{t.adminLandingSettings}</span>
         </button>
         <button
           onClick={() => setAccountModal('new')}
           className="inline-flex items-center gap-1.5 rounded-lg bg-brand px-3 py-2 text-xs font-semibold text-white hover:bg-brand-dark"
         >
-          <Plus className="size-3.5" />
+          <Icons.add className="size-3.5" />
           {t.adminCreateLeader}
         </button>
         <button
@@ -124,7 +124,7 @@ export const AdminOverview: React.FC = () => {
           disabled={loading}
           className="inline-flex items-center gap-1.5 rounded-lg border border-neutral-200 bg-white px-3 py-2 text-xs font-semibold hover:bg-neutral-100 disabled:opacity-60"
         >
-          <RefreshCw className={`size-3.5 ${loading ? 'animate-spin' : ''}`} />
+          <Icons.refresh className={`size-3.5 ${loading ? 'animate-spin' : ''}`} />
           <span className="hidden sm:inline">{t.adminRefresh}</span>
         </button>
         </div>

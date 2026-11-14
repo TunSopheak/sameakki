@@ -1,9 +1,9 @@
 import React, { useEffect, useMemo, useRef, useState, type PointerEvent, type ReactNode } from 'react';
-import { AlertTriangle, Check } from 'lucide-react';
 import type { Task, User } from '@shared/types';
 import { useApp } from '../../context/AppContext';
 import { todayLocal } from '../../lib/dates';
 import { Avatar } from '../Avatar';
+import { Icons } from '../icons';
 import {
   DAY_MS,
   buildRows,
@@ -193,8 +193,8 @@ export const GanttChart: React.FC<GanttChartProps> = ({ tasks, members, groupBy,
         } ${shown.start !== span.start ? 'rounded-l-none' : ''} ${shown.end !== span.end ? 'rounded-r-none' : ''}`}
         style={{ left: (shown.start - from) * px + 1, width, height: BAR_HEIGHT, marginTop: -BAR_HEIGHT / 2, touchAction: 'pan-x' }}
       >
-        {late && <AlertTriangle className="size-3 shrink-0" aria-label={t.ganttOverdue} />}
-        {task.status === 'approved' && <Check className="size-3 shrink-0" />}
+        {late && <Icons.warning className="size-3 shrink-0" aria-label={t.ganttOverdue} />}
+        {task.status === 'approved' && <Icons.confirm className="size-3 shrink-0" />}
         {width > 70 && <span className="truncate">{label}</span>}
 
         {editable && (

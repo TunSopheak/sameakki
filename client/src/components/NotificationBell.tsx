@@ -1,18 +1,4 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
-import {
-  AlertTriangle,
-  Award,
-  Bell,
-  CalendarClock,
-  CheckCheck,
-  ClipboardList,
-  Clock,
-  Eye,
-  KeyRound,
-  MessageSquare,
-  Send,
-  Smile,
-} from 'lucide-react';
 import type { AppNotification, NotificationType } from '@shared/types';
 import { api } from '../lib/api';
 import { telegramLink } from '../lib/contact';
@@ -20,22 +6,23 @@ import { buildDemoNotifications } from '../lib/demoData';
 import { describeNotification, timeAgo } from '../lib/notificationText';
 import { useDismiss } from '../lib/useDismiss';
 import { useApp } from '../context/AppContext';
-import type { Tab } from './sidebar/SidebarNav';
+import type { Tab } from './sidebar/SidebarNav';
+import { Icons } from './icons';
 
 const POLL_MS = 30_000;
 
 const ICONS: Record<NotificationType, React.ComponentType<{ className?: string }>> = {
-  task_assigned: ClipboardList,
-  task_ready_for_review: Eye,
-  task_approved: Award,
-  task_due_soon: Clock,
-  task_rescheduled: CalendarClock,
-  task_overdue: AlertTriangle,
-  daily_approved: Award,
-  daily_reaction: Smile,
-  plan_expiring: CalendarClock,
-  comment_added: MessageSquare,
-  password_reset: KeyRound,
+  task_assigned: Icons.tasks,
+  task_ready_for_review: Icons.review,
+  task_approved: Icons.approved,
+  task_due_soon: Icons.time,
+  task_rescheduled: Icons.deadline,
+  task_overdue: Icons.warning,
+  daily_approved: Icons.approved,
+  daily_reaction: Icons.reaction,
+  plan_expiring: Icons.deadline,
+  comment_added: Icons.comments,
+  password_reset: Icons.password,
 };
 
 interface NotificationBellProps {
@@ -123,7 +110,7 @@ export const NotificationBell: React.FC<NotificationBellProps> = ({ onNavigate }
         title={t.notifTitle}
         className="relative flex size-10 shrink-0 items-center justify-center rounded-xl border border-neutral-200 bg-white text-neutral-600 transition-colors hover:bg-neutral-100"
       >
-        <Bell className="size-4" />
+        <Icons.notifications className="size-4" />
         {unreadCount > 0 && (
           <span className="absolute -right-1 -top-1 flex h-4 min-w-4 items-center justify-center rounded-full bg-brand px-1 text-[10px] font-bold leading-none text-white">
             {unreadCount > 9 ? '9+' : unreadCount}
@@ -137,7 +124,7 @@ export const NotificationBell: React.FC<NotificationBellProps> = ({ onNavigate }
             <h3 className="text-sm font-bold text-black">{t.notifTitle}</h3>
             {unreadCount > 0 && (
               <button onClick={markAll} className="inline-flex cursor-pointer items-center gap-1 text-xs font-semibold text-black hover:underline">
-                <CheckCheck className="size-3.5" />
+                <Icons.readAll className="size-3.5" />
                 {t.notifMarkAll}
               </button>
             )}
@@ -145,7 +132,7 @@ export const NotificationBell: React.FC<NotificationBellProps> = ({ onNavigate }
 
           {items.length === 0 ? (
             <div className="px-4 py-10 text-center text-xs text-neutral-500">
-              <Bell className="mx-auto mb-2 size-6 text-neutral-300" />
+              <Icons.notifications className="mx-auto mb-2 size-6 text-neutral-300" />
               {t.notifEmpty}
             </div>
           ) : (
@@ -181,7 +168,7 @@ export const NotificationBell: React.FC<NotificationBellProps> = ({ onNavigate }
                             onClick={e => e.stopPropagation()}
                             className="mt-1.5 inline-flex items-center gap-1 text-[11px] font-semibold text-brand hover:underline"
                           >
-                            <Send className="size-3" />
+                            <Icons.send className="size-3" />
                             {t.contactTelegram}
                           </a>
                         )}

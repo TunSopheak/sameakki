@@ -1,6 +1,6 @@
 import React from 'react';
 import { useApp } from '../context/AppContext';
-import { Trash2, AlertTriangle, X } from 'lucide-react';
+import { Icons } from './icons';
 
 interface DeleteGroupModalProps {
   groupId: string | null;
@@ -28,17 +28,17 @@ export const DeleteGroupModal: React.FC<DeleteGroupModalProps> = ({ groupId, onC
       <div className="modal-panel bg-white rounded-xl max-w-md w-full p-5 sm:p-6 max-h-[92vh] overflow-y-auto shadow-2xl border border-neutral-200">
         <div className="flex items-center justify-between pb-3 border-b border-neutral-200 mb-4">
           <div className="flex items-center gap-2 text-black font-bold">
-            <Trash2 className="w-5 h-5 text-black" />
+            <Icons.remove className="size-5 text-black" />
             <h2 className="text-base font-bold text-black">{t.deleteGroup}</h2>
           </div>
           <button onClick={onClose} className="text-neutral-400 hover:text-black">
-            <X className="w-5 h-5" />
+            <Icons.close className="size-5" />
           </button>
         </div>
 
         <div className="space-y-4">
           <div className="p-4 bg-neutral-100 border border-neutral-200 rounded-lg flex items-start gap-3">
-            <AlertTriangle className="w-5 h-5 text-black shrink-0 mt-0.5" />
+            <Icons.warning className="size-5 text-black shrink-0 mt-0.5" />
             <div className="text-xs text-neutral-800 leading-relaxed">
               <span className="font-bold block mb-1">
                 {t.deleteGroupWarning}

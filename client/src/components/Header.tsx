@@ -1,10 +1,10 @@
 import React, { useRef, useState } from 'react';
-import { ChevronDown, Moon, Sun } from 'lucide-react';
 import { useApp } from '../context/AppContext';
-import { useTheme } from '../lib/theme';
 import { useDismiss } from '../lib/useDismiss';
 import { Flag } from './Flag';
+import { Icons } from './icons';
 import { Logo } from './Logo';
+import { ThemeToggle } from './ThemeToggle';
 import { NotificationBell } from './NotificationBell';
 import type { Tab } from './sidebar/SidebarNav';
 
@@ -21,7 +21,6 @@ const LANGUAGES = [
 
 export const Header: React.FC<HeaderProps> = ({ activeTab, onNavigate }) => {
   const { language, setLanguage, t, activeGroup } = useApp();
-  const { theme, toggle } = useTheme();
   const [langOpen, setLangOpen] = useState(false);
   const langRef = useRef<HTMLDivElement>(null);
   useDismiss(langRef, langOpen, () => setLangOpen(false));
@@ -50,14 +49,7 @@ export const Header: React.FC<HeaderProps> = ({ activeTab, onNavigate }) => {
 
         <div className="flex shrink-0 items-center gap-2">
         <NotificationBell onNavigate={onNavigate} />
-        <button
-          onClick={toggle}
-          className="flex size-10 shrink-0 items-center justify-center rounded-xl border border-neutral-200 bg-white text-neutral-600 transition-colors hover:bg-neutral-100"
-          title={theme === 'dark' ? 'Light mode' : 'Dark mode'}
-          aria-label={theme === 'dark' ? 'Light mode' : 'Dark mode'}
-        >
-          {theme === 'dark' ? <Sun className="size-4" /> : <Moon className="size-4" />}
-        </button>
+        <ThemeToggle className="size-10 rounded-xl border border-neutral-200 bg-white" />
 
         <div ref={langRef} className="relative shrink-0">
           <button
@@ -67,7 +59,7 @@ export const Header: React.FC<HeaderProps> = ({ activeTab, onNavigate }) => {
           >
             <Flag code={language} className="h-4" />
             <span className="hidden font-bold sm:inline">{language === 'km' ? 'ខ្មែរ' : 'EN'}</span>
-            <ChevronDown className="size-3 text-neutral-400" />
+            <Icons.expand className="size-3 text-neutral-400" />
           </button>
           {langOpen && (
             <div className="absolute right-0 z-50 mt-1 w-36 rounded-xl border border-neutral-200 bg-white py-1 text-xs shadow-xl">

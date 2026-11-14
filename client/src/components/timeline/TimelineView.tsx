@@ -1,11 +1,11 @@
 import React, { useState } from 'react';
-import { CalendarCheck, CalendarRange, Plus } from 'lucide-react';
 import type { Task } from '@shared/types';
 import { useApp } from '../../context/AppContext';
 import { ExportMenu } from './ExportMenu';
 import { GanttChart, STATUS_STYLE, type Zoom } from './GanttChart';
 import { Segmented } from './Segmented';
 import { TaskDetailPanel } from './TaskDetailPanel';
+import { Icons } from '../icons';
 
 const LEGEND: Task['status'][] = ['todo', 'in_progress', 'ready_for_review', 'approved'];
 
@@ -34,14 +34,14 @@ export const TimelineView: React.FC<{ onOpenAssignTask: () => void }> = ({ onOpe
   if (activeGroupTasks.length === 0) {
     return (
       <div className="rounded-xl border border-neutral-200 bg-white p-12 text-center">
-        <CalendarRange className="mx-auto mb-2 size-10 text-neutral-300" />
+        <Icons.timeline className="mx-auto mb-2 size-10 text-neutral-300" />
         <p className="text-sm font-medium">{t.ganttEmpty}</p>
         {isTeamLead && (
           <button
             onClick={onOpenAssignTask}
             className="mt-4 inline-flex cursor-pointer items-center gap-1.5 rounded-lg bg-brand px-4 py-2 text-xs font-semibold text-white transition-colors hover:bg-brand-dark"
           >
-            <Plus className="size-3.5" />
+            <Icons.add className="size-3.5" />
             {t.assignNewTask}
           </button>
         )}
@@ -77,7 +77,7 @@ export const TimelineView: React.FC<{ onOpenAssignTask: () => void }> = ({ onOpe
           title={t.ganttToday}
           className="inline-flex cursor-pointer items-center gap-1.5 rounded-lg border border-neutral-200 bg-white px-3 py-1.5 text-xs font-semibold transition-colors hover:bg-neutral-100"
         >
-          <CalendarCheck className="size-3.5" />
+          <Icons.today className="size-3.5" />
           {t.ganttToday}
         </button>
         <label className="ml-auto inline-flex cursor-pointer items-center gap-2 text-xs font-medium text-neutral-700">

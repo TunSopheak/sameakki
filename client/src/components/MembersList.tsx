@@ -2,21 +2,12 @@ import React, { useState } from 'react';
 import { useApp } from '../context/AppContext';
 import { todayLocal } from '../lib/dates';
 import { Role } from '../types';
-import {
-  KeyRound,
-  Shield,
-  ShieldCheck,
-  Trash2,
-  CheckCircle2,
-  Clock,
-  UserCheck,
-  Users,
-} from 'lucide-react';
 import { Avatar } from './Avatar';
 import { Pager, SearchBox, SortHeader } from './TableParts';
 import { TempPasswordModal } from './TempPasswordModal';
 import { api } from '../lib/api';
 import { useTableView } from '../lib/useTableView';
+import { Icons } from './icons';
 
 interface MembersListProps {
   onOpenLeaveGroup: (groupId: string) => void;
@@ -72,25 +63,25 @@ export const MembersList: React.FC<MembersListProps> = () => {
         return {
           label: t.superAdminBadge,
           color: 'bg-brand text-white',
-          icon: <ShieldCheck className="w-3 h-3 text-white" />,
+          icon: <Icons.admin className="size-3 text-white" />,
         };
       case 'team_lead':
         return {
           label: t.teamLeadBadge,
           color: 'bg-neutral-200 text-black border border-neutral-200',
-          icon: <Shield className="w-3 h-3 text-black" />,
+          icon: <Icons.role className="size-3 text-black" />,
         };
       case 'member':
         return {
           label: t.memberBadge,
           color: 'bg-white text-black border border-neutral-200',
-          icon: <UserCheck className="w-3 h-3 text-neutral-500" />,
+          icon: <Icons.activeUser className="size-3 text-neutral-500" />,
         };
       default:
         return {
           label: t.viewerBadge,
           color: 'bg-neutral-50 text-neutral-600 border border-neutral-200',
-          icon: <Users className="w-3 h-3 text-neutral-400" />,
+          icon: <Icons.members className="size-3 text-neutral-400" />,
         };
     }
   };
@@ -116,7 +107,7 @@ export const MembersList: React.FC<MembersListProps> = () => {
 
       {isSuperAdmin && (
         <div className="hidden items-center gap-2 border-b border-neutral-200 bg-neutral-50 px-4 py-2.5 text-xs text-neutral-700 sm:flex sm:px-6">
-          <ShieldCheck className="w-4 h-4 text-black shrink-0" />
+          <Icons.admin className="size-4 text-black shrink-0" />
           <span>
             {t.membersAdminNote}
           </span>
@@ -185,7 +176,7 @@ export const MembersList: React.FC<MembersListProps> = () => {
                     title={t.resetPasswordAction}
                     className="shrink-0 rounded-lg p-2 text-neutral-500 hover:bg-neutral-100 hover:text-black"
                   >
-                    <KeyRound className="size-4" />
+                    <Icons.password className="size-4" />
                   </button>
                 )}
                 {canManageGroup && !isCurrentUser && (
@@ -196,7 +187,7 @@ export const MembersList: React.FC<MembersListProps> = () => {
                     aria-label={t.removeMember}
                     className="shrink-0 rounded-lg p-2 text-neutral-500 hover:bg-neutral-100 hover:text-black"
                   >
-                    <Trash2 className="size-4" />
+                    <Icons.remove className="size-4" />
                   </button>
                 )}
               </div>
@@ -335,12 +326,12 @@ export const MembersList: React.FC<MembersListProps> = () => {
                     <td className="py-4 px-4 text-center">
                       {hasSubmittedToday ? (
                         <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-black bg-neutral-100 border border-neutral-200 px-2 py-0.5 rounded-lg">
-                          <CheckCircle2 className="w-3 h-3 text-black" />
+                          <Icons.done className="size-3 text-black" />
                           <span>{t.postedLabel}</span>
                         </span>
                       ) : (
                         <span className="inline-flex items-center gap-1 text-[11px] font-medium text-neutral-500 bg-neutral-100 px-2 py-0.5 rounded-lg">
-                          <Clock className="w-3 h-3 text-neutral-400" />
+                          <Icons.time className="size-3 text-neutral-400" />
                           <span>{t.notYet}</span>
                         </span>
                       )}
@@ -362,7 +353,7 @@ export const MembersList: React.FC<MembersListProps> = () => {
                               className="mr-1 text-neutral-500 hover:text-black hover:bg-neutral-100 p-1.5 rounded-lg transition-colors cursor-pointer inline-flex items-center gap-1"
                               title={t.resetPasswordAction}
                             >
-                              <KeyRound className="w-3.5 h-3.5" />
+                              <Icons.password className="size-3.5" />
                               <span className="text-[11px]">{t.resetPasswordAction}</span>
                             </button>
                           )}
@@ -375,7 +366,7 @@ export const MembersList: React.FC<MembersListProps> = () => {
                             className="text-neutral-500 hover:text-black hover:bg-neutral-100 p-1.5 rounded-lg transition-colors cursor-pointer inline-flex items-center gap-1"
                             title={t.removeMember}
                           >
-                            <Trash2 className="w-3.5 h-3.5" />
+                            <Icons.remove className="size-3.5" />
                             <span className="text-[11px]">{t.removeMember}</span>
                           </button>
                           </>

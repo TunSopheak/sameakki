@@ -4,7 +4,7 @@ import { telegramLink } from '../lib/contact';
 import { navigate } from '../lib/route';
 import { Brand } from './Brand';
 import { PreferenceToggles } from './PreferenceToggles';
-import { ArrowLeft, Compass, Loader2, LogIn, Send } from 'lucide-react';
+import { Icons } from './icons';
 
 const inputClass =
   'w-full px-3 py-2 text-sm text-black bg-white border border-neutral-200 rounded-lg focus:outline-none focus:ring-1 focus:ring-brand/40 focus:border-brand';
@@ -47,7 +47,7 @@ export const AuthScreen: React.FC = () => {
           }}
           className="mb-3 inline-flex items-center gap-1.5 text-xs font-semibold text-neutral-600 hover:text-black"
         >
-          <ArrowLeft className="size-3.5" />
+          <Icons.back className="size-3.5" />
           {t.authAbout}
         </a>
 
@@ -91,7 +91,7 @@ export const AuthScreen: React.FC = () => {
               disabled={submitting}
               className="w-full inline-flex items-center justify-center gap-2 py-2.5 bg-brand hover:bg-brand-dark disabled:opacity-60 text-white text-sm font-semibold rounded-lg cursor-pointer"
             >
-              {submitting ? <Loader2 className="w-4 h-4 animate-spin" /> : <LogIn className="w-4 h-4" />}
+              {submitting ? <Icons.loading className="size-4 animate-spin" /> : <Icons.login className="size-4" />}
               <span>{t.signIn}</span>
             </button>
           </form>
@@ -102,7 +102,7 @@ export const AuthScreen: React.FC = () => {
               onClick={enterDemo}
               className="w-full inline-flex items-center justify-center gap-2 py-2.5 border border-neutral-200 bg-white hover:bg-neutral-100 text-black text-sm font-semibold rounded-lg cursor-pointer"
             >
-              <Compass className="w-4 h-4" />
+              <Icons.demo className="size-4" />
               <span>{t.exploreDemo}</span>
             </button>
             <p className="text-center text-[11px] text-neutral-500">{t.exploreHint}</p>
@@ -114,7 +114,7 @@ export const AuthScreen: React.FC = () => {
               rel="noopener noreferrer"
               className="w-full inline-flex items-center justify-center gap-2 py-2.5 bg-neutral-900 hover:bg-neutral-800 text-white text-sm font-semibold rounded-lg"
             >
-              <Send className="w-4 h-4" />
+              <Icons.send className="size-4" />
               <span>{t.contactTelegram}</span>
             </a>
           </div>

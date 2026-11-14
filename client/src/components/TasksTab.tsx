@@ -1,9 +1,9 @@
 import React, { useState } from 'react';
-import { CalendarRange, LayoutGrid } from 'lucide-react';
 import { useApp } from '../context/AppContext';
 import { Segmented } from './timeline/Segmented';
 import { TimelineView } from './timeline/TimelineView';
 import { TaskBoard } from './TaskBoard';
+import { Icons } from './icons';
 
 type View = 'list' | 'timeline';
 const STORAGE_KEY = 'leadersync_tasks_view';
@@ -37,8 +37,8 @@ export const TasksTab: React.FC<{ onOpenAssignTask: () => void }> = ({ onOpenAss
         value={view}
         onChange={choose}
         options={[
-          { value: 'list', label: t.viewList, icon: LayoutGrid },
-          { value: 'timeline', label: t.viewTimeline, icon: CalendarRange },
+          { value: 'list', label: t.viewList, icon: Icons.list },
+          { value: 'timeline', label: t.viewTimeline, icon: Icons.timeline },
         ]}
       />
       {view === 'list' ? <TaskBoard onOpenAssignTask={onOpenAssignTask} /> : <TimelineView onOpenAssignTask={onOpenAssignTask} />}

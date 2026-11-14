@@ -1,9 +1,10 @@
 import React from 'react';
-import { BellRing, Heart, QrCode, Rocket, Send, Smartphone, Users } from 'lucide-react';
+import { BellRing, Heart, QrCode, Rocket, Smartphone, Users } from 'lucide-react';
 import type { LandingSettings, Sponsor } from '@shared/landing';
 import { telegramLink } from '../../lib/contact';
 import { useLanding } from './hooks';
 import { Button, Reveal, Section } from './ui';
+import { Icons } from '../icons';
 
 const ROADMAP_ICONS = [BellRing, QrCode, Smartphone, Users];
 
@@ -46,7 +47,7 @@ export const SponsorSection: React.FC<{ settings: LandingSettings; ready: boolea
               </ul>
 
               <div className="mt-8">
-                <Button icon={Send} href={telegramLink(sponsor.message)}>
+                <Button icon={Icons.send} href={telegramLink(sponsor.message)}>
                   {sponsor.cta}
                 </Button>
               </div>

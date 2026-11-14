@@ -1,8 +1,8 @@
 import React from 'react';
-import { Send } from 'lucide-react';
 import { useApp } from '../context/AppContext';
 import { telegramLink } from '../lib/contact';
 import { navigate } from '../lib/route';
+import { Icons } from './icons';
 
 /** Shown on top of the sample workspace so nobody mistakes it for a real account. */
 export const DemoBanner: React.FC = () => {
@@ -18,7 +18,7 @@ export const DemoBanner: React.FC = () => {
         rel="noopener noreferrer"
         className="inline-flex items-center gap-1.5 rounded-lg bg-brand px-3 py-1.5 font-semibold text-white hover:bg-brand-dark"
       >
-        <Send className="size-3.5" />
+        <Icons.send className="size-3.5" />
         {t.contactTelegram}
       </a>
       <button

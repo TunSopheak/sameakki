@@ -1,9 +1,9 @@
 import React, { useEffect, useState } from 'react';
 import { createPortal } from 'react-dom';
-import { Loader2, Plus, Trash2, X } from 'lucide-react';
 import { LANDING_LIMITS, PRICE_TERMS, type PriceTerm } from '@shared/landing';
 import { api } from '../../lib/api';
 import { useApp } from '../../context/AppContext';
+import { Icons } from '../icons';
 
 const fieldClass =
   'w-full rounded-lg border border-neutral-200 bg-white px-3 py-2 text-sm text-black focus:outline-none focus:ring-1 focus:ring-brand/40';
@@ -80,7 +80,7 @@ export const LandingSettingsModal: React.FC<{ onClose: () => void }> = ({ onClos
             <p className="text-xs text-neutral-500">{t.landingHint}</p>
           </div>
           <button onClick={onClose} className="cursor-pointer rounded-lg p-1 text-neutral-400 hover:text-black" aria-label={t.cancel}>
-            <X className="size-5" />
+            <Icons.close className="size-5" />
           </button>
         </div>
 
@@ -91,7 +91,7 @@ export const LandingSettingsModal: React.FC<{ onClose: () => void }> = ({ onClos
         )}
 
         {!form ? (
-          <div className="flex justify-center py-10 text-neutral-400">{error ? null : <Loader2 className="size-5 animate-spin" />}</div>
+          <div className="flex justify-center py-10 text-neutral-400">{error ? null : <Icons.loading className="size-5 animate-spin" />}</div>
         ) : (
           <form onSubmit={submit} className="space-y-5">
             <fieldset className="space-y-4">
@@ -174,7 +174,7 @@ export const LandingSettingsModal: React.FC<{ onClose: () => void }> = ({ onClos
                     aria-label={t.delete}
                     className="mt-2 shrink-0 cursor-pointer text-neutral-400 hover:text-black"
                   >
-                    <Trash2 className="size-4" />
+                    <Icons.remove className="size-4" />
                   </button>
                 </div>
               ))}
@@ -185,7 +185,7 @@ export const LandingSettingsModal: React.FC<{ onClose: () => void }> = ({ onClos
                   onClick={() => set('sponsors', [...form.sponsors, { name: '', url: '' }])}
                   className="inline-flex cursor-pointer items-center gap-1.5 text-xs font-semibold text-black hover:underline"
                 >
-                  <Plus className="size-3.5" />
+                  <Icons.add className="size-3.5" />
                   {t.landingAddSponsor}
                 </button>
               )}

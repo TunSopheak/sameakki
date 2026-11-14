@@ -1,8 +1,8 @@
 import React, { useRef, useState } from 'react';
-import { Loader2, ShieldCheck, ShieldOff } from 'lucide-react';
 import { api } from '../lib/api';
 import { useDismiss } from '../lib/useDismiss';
 import { useApp } from '../context/AppContext';
+import { Icons } from './icons';
 
 const OPTIONS = [24, 72] as const;
 
@@ -44,7 +44,7 @@ export const SupportAccessControl: React.FC = () => {
           on ? 'border-brand bg-brand-soft text-brand' : 'border-neutral-200 bg-white text-neutral-700 hover:bg-neutral-100 hover:text-black'
         }`}
       >
-        {on ? <ShieldCheck className="size-3.5" /> : <ShieldOff className="size-3.5 text-neutral-500" />}
+        {on ? <Icons.supportOn className="size-3.5" /> : <Icons.support className="size-3.5 text-neutral-500" />}
         <span className="hidden sm:inline">{on ? `${t.supportOn} · ${hoursText(hoursLeft)}` : t.supportOff}</span>
       </button>
 
@@ -60,7 +60,7 @@ export const SupportAccessControl: React.FC = () => {
                 disabled={busy}
                 className="inline-flex w-full cursor-pointer items-center justify-center gap-2 rounded-lg bg-brand px-3 py-2 text-xs font-semibold text-white hover:bg-brand-dark disabled:opacity-60"
               >
-                {busy && <Loader2 className="size-3.5 animate-spin" />}
+                {busy && <Icons.loading className="size-3.5 animate-spin" />}
                 {t.supportTurnOff}
               </button>
             ) : (
@@ -71,7 +71,7 @@ export const SupportAccessControl: React.FC = () => {
                   disabled={busy}
                   className="inline-flex w-full cursor-pointer items-center justify-center gap-2 rounded-lg border border-neutral-200 bg-white px-3 py-2 text-xs font-semibold text-black hover:bg-neutral-100 disabled:opacity-60"
                 >
-                  {busy && <Loader2 className="size-3.5 animate-spin" />}
+                  {busy && <Icons.loading className="size-3.5 animate-spin" />}
                   {t.supportAllow} {hoursText(h)}
                 </button>
               ))

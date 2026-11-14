@@ -1,20 +1,11 @@
 import React, { useState } from 'react';
 import { useApp } from '../context/AppContext';
 import { formatDateTime } from '../lib/dates';
-import {
-  CheckCircle2,
-  Clock,
-  CheckSquare,
-  Square,
-  Award,
-  Trash2,
-  Calendar,
-  Check
-} from 'lucide-react';
 import { Avatar } from './Avatar';
 import { Pager, SearchBox } from './TableParts';
 import { useTableView } from '../lib/useTableView';
 import { CommentThread } from './CommentThread';
+import { Icons } from './icons';
 
 export const DailyFeed: React.FC = () => {
   const {
@@ -117,7 +108,7 @@ export const DailyFeed: React.FC = () => {
 
       {filteredLogs.length === 0 ? (
         <div className="bg-white rounded-xl border border-neutral-200 p-12 text-center">
-          <Clock className="w-10 h-10 text-neutral-300 mx-auto mb-2" />
+          <Icons.time className="size-10 text-neutral-300 mx-auto mb-2" />
           <p className="text-sm font-medium text-black">{t.noDailyLogsFound}</p>
           <p className="text-xs text-neutral-500 mt-1 max-w-sm mx-auto">
             {t.dailyFeedEmptyHint}
@@ -168,7 +159,7 @@ export const DailyFeed: React.FC = () => {
                         </span>
                         <span>·</span>
                         <span className="flex items-center gap-1 text-neutral-500">
-                          <Calendar className="w-3 h-3 text-neutral-400" />
+                          <Icons.date className="size-3 text-neutral-400" />
                           <span>{formatDateTime(log.timestamp)}</span>
                         </span>
                       </div>
@@ -178,13 +169,13 @@ export const DailyFeed: React.FC = () => {
                   <div className="flex items-center gap-2 self-start sm:self-auto">
                     {log.status === 'approved' && (
                       <span className="inline-flex items-center gap-1 text-xs font-semibold text-white bg-brand px-2.5 py-0.5 rounded-lg">
-                        <CheckCircle2 className="w-3.5 h-3.5 text-white" />
+                        <Icons.done className="size-3.5 text-white" />
                         <span>{t.logApprovedVerified}</span>
                       </span>
                     )}
                     {log.status === 'completed' && (
                       <span className="inline-flex items-center gap-1 text-xs font-semibold text-black bg-neutral-200 px-2.5 py-0.5 rounded-lg border border-neutral-200">
-                        <Clock className="w-3.5 h-3.5 text-black" />
+                        <Icons.time className="size-3.5 text-black" />
                         <span>{t.logDonePendingLong}</span>
                       </span>
                     )}
@@ -205,7 +196,7 @@ export const DailyFeed: React.FC = () => {
                         className="text-neutral-400 hover:text-black p-1 rounded-lg transition-colors cursor-pointer"
                         title={t.delete}
                       >
-                        <Trash2 className="w-3.5 h-3.5" />
+                        <Icons.remove className="size-3.5" />
                       </button>
                     )}
                   </div>
@@ -228,9 +219,9 @@ export const DailyFeed: React.FC = () => {
                         >
                           <div className="mt-0.5 text-black shrink-0">
                             {item.done ? (
-                              <CheckSquare className="w-4 h-4 text-black" />
+                              <Icons.daily className="size-4 text-black" />
                             ) : (
-                              <Square className="w-4 h-4 text-neutral-400" />
+                              <Icons.todoOpen className="size-4 text-neutral-400" />
                             )}
                           </div>
                           <div className="flex-1 flex items-center justify-between gap-2">
@@ -261,7 +252,7 @@ export const DailyFeed: React.FC = () => {
 
                 {log.leaderChecked && log.leaderNote && (
                   <div className="p-3 mb-3 bg-neutral-50 border border-neutral-200 rounded-lg text-xs flex items-start gap-2.5 text-black">
-                    <Award className="w-4 h-4 text-black shrink-0 mt-0.5" />
+                    <Icons.approved className="size-4 text-black shrink-0 mt-0.5" />
                     <div className="flex-1">
                       <div className="font-bold text-black mb-0.5">
                         {t.leaderFeedbackLabel}
@@ -299,7 +290,7 @@ export const DailyFeed: React.FC = () => {
                             onClick={() => handleApproveWithNote(log.id)}
                             className="px-3.5 py-1.5 bg-brand hover:bg-brand-dark text-white text-xs font-semibold rounded-lg flex items-center gap-1 cursor-pointer"
                           >
-                            <Check className="w-3.5 h-3.5" />
+                            <Icons.confirm className="size-3.5" />
                             <span>{t.approveButton}</span>
                           </button>
                         </div>
@@ -315,7 +306,7 @@ export const DailyFeed: React.FC = () => {
                         onClick={() => markDailyLogDone(log.id)}
                         className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-white hover:bg-neutral-100 text-black border border-neutral-200 rounded-lg font-semibold text-xs transition-colors cursor-pointer"
                       >
-                        <Check className="w-3.5 h-3.5" />
+                        <Icons.confirm className="size-3.5" />
                         <span>{t.btnMarkDone}</span>
                       </button>
                     )}
@@ -325,7 +316,7 @@ export const DailyFeed: React.FC = () => {
                         onClick={() => setActiveLeaderNoteId(log.id)}
                         className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-brand hover:bg-brand-dark text-white rounded-lg font-semibold text-xs transition-colors cursor-pointer shadow-xs"
                       >
-                        <Award className="w-3.5 h-3.5" />
+                        <Icons.approved className="size-3.5" />
                         <span>{t.btnApproveTask}</span>
                       </button>
                     )}

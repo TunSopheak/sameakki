@@ -1,10 +1,11 @@
 import React from 'react';
-import { PanelLeft, PanelLeftClose, X } from 'lucide-react';
+import { PanelLeft, PanelLeftClose } from 'lucide-react';
 import { useApp } from '../context/AppContext';
 import { Brand } from './Brand';
 import { GroupSwitcher } from './sidebar/GroupSwitcher';
 import { SidebarNav, type Tab } from './sidebar/SidebarNav';
 import { UserMenu } from './sidebar/UserMenu';
+import { Icons } from './icons';
 
 interface SidebarProps {
   activeTab: Tab;
@@ -65,7 +66,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
             {isCollapsed ? <PanelLeft className="size-4" /> : <PanelLeftClose className="size-4" />}
           </button>
           <button type="button" onClick={() => setIsMobileOpen(false)} aria-label={t.close} className={`lg:hidden ${iconButton}`}>
-            <X className="size-4" />
+            <Icons.close className="size-4" />
           </button>
         </header>
 

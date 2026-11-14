@@ -1,7 +1,7 @@
 import React from 'react';
-import { CheckSquare, FileText, FolderKanban, LayoutDashboard, Plus, ShieldCheck, Users } from 'lucide-react';
 import { useApp } from '../../context/AppContext';
 import { todayLocal } from '../../lib/dates';
+import { Icons } from '../icons';
 
 export type Tab = 'dashboard' | 'tasks' | 'daily' | 'members' | 'report' | 'admin';
 
@@ -30,22 +30,22 @@ export const SidebarNav: React.FC<SidebarNavProps> = ({ activeTab, onSelect, isC
   const pendingReview = activeGroupTasks.filter(task => task.status === 'ready_for_review').length;
 
   const items: { id: Tab; label: string; icon: React.ElementType; badge?: { text: string; strong?: boolean } }[] = [
-    { id: 'dashboard', label: t.tabDashboard, icon: LayoutDashboard },
+    { id: 'dashboard', label: t.tabDashboard, icon: Icons.home },
     {
       id: 'daily',
       label: t.tabDailyLogs,
-      icon: CheckSquare,
+      icon: Icons.daily,
       badge: { text: `${postedToday.size}/${activeGroupMembers.length}`, strong: !postedToday.has(currentUser.id) },
     },
     {
       id: 'tasks',
       label: t.tabTasks,
-      icon: FolderKanban,
+      icon: Icons.tasks,
       badge: pendingReview > 0 ? { text: String(pendingReview), strong: true } : undefined,
     },
-    { id: 'members', label: t.tabMembers, icon: Users, badge: { text: String(activeGroupMembers.length) } },
-    { id: 'report', label: t.tabReport, icon: FileText },
-    ...(isSuperAdmin ? [{ id: 'admin' as const, label: t.tabAdmin, icon: ShieldCheck }] : []),
+    { id: 'members', label: t.tabMembers, icon: Icons.members, badge: { text: String(activeGroupMembers.length) } },
+    { id: 'report', label: t.tabReport, icon: Icons.report },
+    ...(isSuperAdmin ? [{ id: 'admin' as const, label: t.tabAdmin, icon: Icons.admin }] : []),
   ];
 
   return (
@@ -95,7 +95,7 @@ export const SidebarNav: React.FC<SidebarNavProps> = ({ activeTab, onSelect, isC
           title={isCollapsed ? t.assignNewTask : undefined}
           className="mt-4 flex w-full items-center justify-center gap-2 rounded-xl border border-brand/30 bg-brand-soft px-3 py-2.5 text-sm font-semibold text-brand transition-colors hover:bg-brand hover:text-white focus-visible:outline-2 focus-visible:outline-brand"
         >
-          <Plus className="size-4 shrink-0" />
+          <Icons.add className="size-4 shrink-0" />
           {!isCollapsed && <span className="truncate">{t.assignNewTask}</span>}
         </button>
       )}

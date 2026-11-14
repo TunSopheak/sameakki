@@ -1,9 +1,9 @@
 import { createPortal } from 'react-dom';
 import React from 'react';
-import { Check, X } from 'lucide-react';
 import { BOY_AVATARS, GIRL_AVATARS, type AvatarKey } from '@shared/avatars';
 import { useApp } from '../context/AppContext';
 import { Avatar } from './Avatar';
+import { Icons } from './icons';
 
 interface AvatarPickerModalProps {
   isOpen: boolean;
@@ -42,7 +42,7 @@ export const AvatarPickerModal: React.FC<AvatarPickerModalProps> = ({ isOpen, on
               <Avatar name={currentUser.name} avatar={key} className="aspect-square w-full" />
               {selected && (
                 <span className="absolute -right-1 -top-1 grid size-4 place-items-center rounded-full bg-brand text-white">
-                  <Check className="size-3" />
+                  <Icons.confirm className="size-3" />
                 </span>
               )}
             </button>
@@ -59,7 +59,7 @@ export const AvatarPickerModal: React.FC<AvatarPickerModalProps> = ({ isOpen, on
           <div className="mb-4 flex items-center justify-between">
             <h2 className="text-base font-bold text-black">{t.chooseAvatar}</h2>
             <button onClick={onClose} aria-label={t.cancel} className="rounded p-1 text-neutral-400 hover:text-black">
-              <X className="size-5" />
+              <Icons.close className="size-5" />
             </button>
           </div>
           <div className="space-y-4">

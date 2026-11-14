@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { createPortal } from 'react-dom';
-import { Check, Copy, KeyRound, X } from 'lucide-react';
 import { useApp } from '../context/AppContext';
+import { Icons } from './icons';
 
 interface TempPasswordModalProps {
   name: string;
@@ -31,12 +31,12 @@ export const TempPasswordModal: React.FC<TempPasswordModalProps> = ({ name, emai
         <div className="mb-4 flex items-center justify-between">
           <div className="flex items-center gap-2">
             <div className="flex size-8 items-center justify-center rounded-lg bg-brand text-white">
-              <KeyRound className="size-4" />
+              <Icons.password className="size-4" />
             </div>
             <h2 className="text-base font-bold text-black">{t.tempPasswordTitle}</h2>
           </div>
           <button onClick={onClose} className="cursor-pointer rounded-lg p-1 text-neutral-400 hover:text-black" aria-label={t.cancel}>
-            <X className="size-5" />
+            <Icons.close className="size-5" />
           </button>
         </div>
 
@@ -49,7 +49,7 @@ export const TempPasswordModal: React.FC<TempPasswordModalProps> = ({ name, emai
             onClick={copy}
             className="inline-flex shrink-0 cursor-pointer items-center gap-1.5 rounded-lg border border-neutral-200 bg-white px-3 py-2 text-xs font-semibold text-black hover:bg-neutral-100"
           >
-            {copied ? <Check className="size-3.5" /> : <Copy className="size-3.5" />}
+            {copied ? <Icons.confirm className="size-3.5" /> : <Icons.copy className="size-3.5" />}
             {copied ? t.copiedText : t.copyText}
           </button>
         </div>

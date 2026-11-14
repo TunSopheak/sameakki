@@ -1,10 +1,10 @@
 import React from 'react';
 import { createPortal } from 'react-dom';
-import { FileText, Printer, X } from 'lucide-react';
 import type { DailyLogStatus, Role, Task, User } from '@shared/types';
 import { useApp } from '../context/AppContext';
 import { localDateOf, todayLocal } from '../lib/dates';
 import { printPage } from '../lib/printPage';
+import { Icons } from './icons';
 
 interface AssignmentReportModalProps {
   isOpen: boolean;
@@ -45,7 +45,7 @@ export const AssignmentReportModal: React.FC<AssignmentReportModalProps> = ({ is
       <div className="modal-panel max-h-[90vh] w-full max-w-4xl overflow-y-auto rounded-xl border border-neutral-200 bg-white shadow-2xl">
         <div className="sticky top-0 z-10 flex items-center justify-between border-b border-neutral-200 bg-white px-6 py-4 print:hidden">
           <div className="flex items-center gap-2 text-base font-bold text-black">
-            <FileText className="size-5" />
+            <Icons.report className="size-5" />
             <span>{t.tabReport}</span>
           </div>
           <div className="flex items-center gap-3">
@@ -55,7 +55,7 @@ export const AssignmentReportModal: React.FC<AssignmentReportModalProps> = ({ is
               title={t.printReport}
               className="inline-flex cursor-pointer items-center gap-1.5 rounded-lg bg-brand px-3.5 py-2 text-xs font-semibold text-white shadow-xs transition-colors hover:bg-brand-dark"
             >
-              <Printer className="size-4" />
+              <Icons.print className="size-4" />
               <span className="hidden sm:inline">{t.printReport}</span>
             </button>
             <button
@@ -63,7 +63,7 @@ export const AssignmentReportModal: React.FC<AssignmentReportModalProps> = ({ is
               aria-label={t.close}
               className="cursor-pointer rounded-lg p-1.5 text-neutral-400 transition-colors hover:bg-neutral-100 hover:text-black"
             >
-              <X className="size-5" />
+              <Icons.close className="size-5" />
             </button>
           </div>
         </div>

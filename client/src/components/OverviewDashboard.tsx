@@ -3,17 +3,8 @@ import { useApp } from '../context/AppContext';
 import { formatDateTime, todayLocal } from '../lib/dates';
 import { AnimatedNumber } from './AnimatedNumber';
 import { Avatar } from './Avatar';
-import {
-  Users,
-  CheckCircle2,
-  Clock,
-  Calendar,
-  Plus,
-  ArrowRight,
-  Award,
-  Sparkles
-} from 'lucide-react';
 import { ActivityLog } from './ActivityLog';
+import { Icons } from './icons';
 
 interface OverviewDashboardProps {
   onGoToTab: (tab: 'dashboard' | 'tasks' | 'daily' | 'members' | 'report') => void;
@@ -63,7 +54,7 @@ export const OverviewDashboard: React.FC<OverviewDashboardProps> = ({
             <span className="text-[11px] sm:text-xs font-semibold text-neutral-500 uppercase tracking-wider">
               {t.completion}
             </span>
-            <CheckCircle2 className="w-4 h-4 text-black" />
+            <Icons.done className="size-4 text-black" />
           </div>
           <div className="mt-3">
             <div className="flex flex-wrap items-baseline gap-x-2">
@@ -88,7 +79,7 @@ export const OverviewDashboard: React.FC<OverviewDashboardProps> = ({
             <span className="text-[11px] sm:text-xs font-semibold text-neutral-500 uppercase tracking-wider">
               {t.todayStandupReport}
             </span>
-            <Clock className="w-4 h-4 text-black" />
+            <Icons.time className="size-4 text-black" />
           </div>
           <div className="mt-3">
             <div className="flex flex-wrap items-baseline gap-x-2">
@@ -100,9 +91,10 @@ export const OverviewDashboard: React.FC<OverviewDashboardProps> = ({
               </span>
             </div>
             <p className="text-xs text-neutral-600 mt-2 truncate">
-              {hasUserSubmittedToday
-                ? (t.standupPostedYes)
-                : (t.standupPostedNo)}
+              <span className="inline-flex items-center gap-1">
+                {hasUserSubmittedToday ? <Icons.done className="size-3.5 shrink-0" /> : <Icons.warning className="size-3.5 shrink-0" />}
+                {hasUserSubmittedToday ? t.standupPostedYes : t.standupPostedNo}
+              </span>
             </p>
           </div>
         </div>
@@ -112,7 +104,7 @@ export const OverviewDashboard: React.FC<OverviewDashboardProps> = ({
             <span className="text-[11px] sm:text-xs font-semibold text-neutral-500 uppercase tracking-wider">
               {t.pendingVerification}
             </span>
-            <Award className="w-4 h-4 text-black" />
+            <Icons.approved className="size-4 text-black" />
           </div>
           <div className="mt-3">
             <div className="flex flex-wrap items-baseline gap-x-2">
@@ -136,7 +128,7 @@ export const OverviewDashboard: React.FC<OverviewDashboardProps> = ({
             <span className="text-[11px] sm:text-xs font-semibold text-neutral-500 uppercase tracking-wider">
               {t.tabMembers}
             </span>
-            <Users className="w-4 h-4 text-black" />
+            <Icons.members className="size-4 text-black" />
           </div>
           <div className="mt-3">
             <div className="flex flex-wrap items-baseline gap-x-2">
@@ -167,7 +159,7 @@ export const OverviewDashboard: React.FC<OverviewDashboardProps> = ({
             <div className="flex items-center justify-between mb-4">
               <div>
                 <h3 className="text-base font-bold text-black tracking-tight flex items-center gap-2">
-                  <Sparkles className="w-4 h-4 text-black" />
+                  <Icons.daily className="size-4 text-black" />
                   <span>{t.recentDailyUpdates}</span>
                 </h3>
                 <p className="hidden text-xs text-neutral-500 sm:block">
@@ -180,13 +172,13 @@ export const OverviewDashboard: React.FC<OverviewDashboardProps> = ({
                 className="shrink-0 whitespace-nowrap text-xs font-semibold text-black hover:underline flex items-center gap-1 cursor-pointer"
               >
                 <span>{t.viewAll}</span>
-                <ArrowRight className="w-3.5 h-3.5" />
+                <Icons.forward className="size-3.5" />
               </button>
             </div>
 
             {submittedTodayLogs.length === 0 ? (
               <div className="p-8 text-center bg-neutral-50 rounded-xl border border-dashed border-neutral-200">
-                <Clock className="w-8 h-8 text-neutral-400 mx-auto mb-2" />
+                <Icons.time className="size-8 text-neutral-400 mx-auto mb-2" />
                 <p className="text-xs font-medium text-neutral-700">
                   {t.overviewNoPosts}
                 </p>
@@ -236,7 +228,7 @@ export const OverviewDashboard: React.FC<OverviewDashboardProps> = ({
           <div className="bg-white rounded-xl border border-neutral-200 p-5 shadow-xs">
             <div className="flex items-center justify-between mb-4">
               <h3 className="text-base font-bold text-black tracking-tight flex items-center gap-1.5">
-                <Calendar className="w-4 h-4 text-black" />
+                <Icons.date className="size-4 text-black" />
                 <span>{t.upcomingTasks}</span>
               </h3>
 
@@ -245,7 +237,7 @@ export const OverviewDashboard: React.FC<OverviewDashboardProps> = ({
                 className="shrink-0 whitespace-nowrap text-xs font-semibold text-black hover:underline flex items-center gap-1 cursor-pointer"
               >
                 <span>{t.viewAll}</span>
-                <ArrowRight className="w-3.5 h-3.5" />
+                <Icons.forward className="size-3.5" />
               </button>
             </div>
 
@@ -290,7 +282,7 @@ export const OverviewDashboard: React.FC<OverviewDashboardProps> = ({
                 onClick={onOpenAssignTask}
                 className="w-full mt-4 py-2 px-3 bg-neutral-100 hover:bg-neutral-200 text-black text-xs font-semibold rounded-lg transition-colors flex items-center justify-center gap-1.5 cursor-pointer border border-neutral-200"
               >
-                <Plus className="w-3.5 h-3.5" />
+                <Icons.add className="size-3.5" />
                 <span>{t.assignNewTask}</span>
               </button>
             )}

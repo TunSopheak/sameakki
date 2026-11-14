@@ -2,19 +2,9 @@ import { SupportAccessControl } from './SupportAccessControl';
 import React, { useState } from 'react';
 import { useApp } from '../context/AppContext';
 import { daysUntil } from '../lib/dates';
-import {
-  FolderKanban,
-  Calendar,
-  Users,
-  CheckCircle2,
-  Trash2,
-  LogOut,
-  Plus,
-  ChevronDown,
-  UserPlus,
-  Clock,
-  Layers
-} from 'lucide-react';
+import { ChevronDown } from 'lucide-react';
+import { EditableDate } from './EditableDate';
+import { Icons } from './icons';
 
 interface GroupBannerProps {
   onOpenCreateGroup: () => void;
@@ -48,14 +38,12 @@ export const GroupBanner: React.FC<GroupBannerProps> = ({
   } = useApp();
 
   const [showGroupSwitcher, setShowGroupSwitcher] = useState(false);
-  const [isEditingDeadline, setIsEditingDeadline] = useState(false);
-  const [newDeadlineInput, setNewDeadlineInput] = useState(activeGroup?.deadline || '');
 
   if (!activeGroup) {
     return (
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
       <div className="bg-white rounded-xl border border-neutral-200 p-8 text-center">
-        <FolderKanban className="w-10 h-10 text-neutral-400 mx-auto mb-3" />
+        <Icons.group className="size-10 text-neutral-400 mx-auto mb-3" />
         <p className="text-neutral-700 mb-4 font-medium max-w-md mx-auto">
           {canCreateGroup ? t.noGroupSelected : t.noGroupsMember}
         </p>
@@ -109,9 +97,9 @@ export const GroupBanner: React.FC<GroupBannerProps> = ({
                   onClick={() => setShowGroupSwitcher(!showGroupSwitcher)}
                   className="inline-flex items-center gap-1.5 px-3 py-1 bg-brand text-white rounded-lg text-xs font-semibold tracking-wide transition-colors cursor-pointer hover:bg-brand-dark"
                 >
-                  <Layers className="w-3.5 h-3.5" />
+                  <Icons.group className="size-3.5" />
                   <span>{activeGroup.code}</span>
-                  <ChevronDown className="w-3.5 h-3.5 text-neutral-400" />
+                  <ChevronDown className="size-3.5 text-neutral-400" />
                 </button>
 
                 {showGroupSwitcher && (
@@ -131,7 +119,7 @@ export const GroupBanner: React.FC<GroupBannerProps> = ({
                           }}
                           className="text-[11px] text-black hover:underline font-semibold flex items-center gap-1"
                         >
-                          <Plus className="w-3 h-3" />
+                          <Icons.add className="size-3" />
                           <span>{t.createGroup}</span>
                         </button>
                       )}
@@ -180,54 +168,12 @@ export const GroupBanner: React.FC<GroupBannerProps> = ({
                 {activeGroup.status === 'completed' ? t.groupCompleted : t.activeGroups}
               </span>
 
-              {isEditingDeadline && canManageGroup ? (
-                <div className="flex items-center gap-1 bg-white border border-brand rounded-lg px-2 py-0.5 text-xs">
-                  <input
-                    type="date"
-                    value={newDeadlineInput}
-                    onChange={e => setNewDeadlineInput(e.target.value)}
-                    className="text-xs bg-white text-black focus:outline-none"
-                  />
-                  <button
-                    onClick={() => {
-                      if (newDeadlineInput) {
-                        updateGroupDeadline(activeGroup.id, newDeadlineInput);
-                      }
-                      setIsEditingDeadline(false);
-                    }}
-                    className="px-1.5 py-0.5 bg-brand text-white rounded-lg text-[11px] font-bold cursor-pointer"
-                  >
-                    ✓ Save
-                  </button>
-                  <button
-                    onClick={() => setIsEditingDeadline(false)}
-                    className="text-neutral-400 hover:text-black text-xs cursor-pointer"
-                  >
-                    ✕
-                  </button>
-                </div>
-              ) : (
-                <div
-                  onClick={() => {
-                    if (canManageGroup) {
-                      setNewDeadlineInput(activeGroup.deadline || '');
-                      setIsEditingDeadline(true);
-                    }
-                  }}
-                  className={`flex items-center gap-1 text-xs px-2.5 py-0.5 rounded-lg font-medium border bg-white border-neutral-200 text-neutral-800 ${
-                    canManageGroup ? 'hover:border-brand cursor-pointer' : ''
-                  }`}
-                  title={canManageGroup ? 'Click to change deadline' : undefined}
-                >
-                  <Calendar className="w-3 h-3 text-black" />
-                  <span>
-                    {activeGroup.deadline ? `${activeGroup.deadline} (${deadlineInfo?.text})` : 'No Deadline'}
-                  </span>
-                  {canManageGroup && (
-                    <span className="text-[11px] text-neutral-400 ml-1">✎</span>
-                  )}
-                </div>
-              )}
+              <EditableDate value={activeGroup.deadline || ''} canEdit={canManageGroup} onSave={date => updateGroupDeadline(activeGroup.id, date)}>
+                <span className="inline-flex items-center gap-1 rounded-lg border border-neutral-200 bg-white px-2.5 py-0.5 text-xs font-medium text-neutral-800 group-hover/edit:border-brand">
+                  <Icons.date className="size-3 text-black" />
+                  {activeGroup.deadline ? `${activeGroup.deadline} (${deadlineInfo?.text})` : t.noDeadline}
+                </span>
+              </EditableDate>
             </div>
 
             <div>
@@ -245,7 +191,7 @@ export const GroupBanner: React.FC<GroupBannerProps> = ({
           <div className="flex flex-col sm:flex-row lg:flex-col items-start lg:items-end justify-between gap-4">
             <div className="hidden items-center gap-3 text-xs sm:flex">
               <div className="flex items-center gap-1 text-neutral-700">
-                <Users className="w-4 h-4 text-neutral-500" />
+                <Icons.members className="size-4 text-neutral-500" />
                 <span className="font-bold text-black font-mono-numbers">
                   {activeGroupMembers.length}
                 </span>
@@ -253,7 +199,7 @@ export const GroupBanner: React.FC<GroupBannerProps> = ({
               </div>
               <span className="text-neutral-300">|</span>
               <div className="flex items-center gap-1 text-neutral-700">
-                <CheckCircle2 className="w-4 h-4 text-black" />
+                <Icons.done className="size-4 text-black" />
                 <span className="font-bold text-black font-mono-numbers">
                   {approvedTasks}/{totalTasks}
                 </span>
@@ -266,7 +212,7 @@ export const GroupBanner: React.FC<GroupBannerProps> = ({
                 <>
                   <span className="text-neutral-300">|</span>
                   <div className="flex items-center gap-1 text-neutral-900 font-medium">
-                    <Clock className="w-4 h-4 text-neutral-500" />
+                    <Icons.time className="size-4 text-neutral-500" />
                     <span className="font-mono-numbers font-bold">{reviewTasks}</span>
                     <span>{t.pendingLabel}</span>
                   </div>
@@ -282,7 +228,7 @@ export const GroupBanner: React.FC<GroupBannerProps> = ({
                   onClick={onOpenAddMember}
                   className="inline-flex items-center gap-1 px-3 py-1.5 text-xs font-semibold text-white bg-brand hover:bg-brand-dark rounded-lg transition-colors cursor-pointer shadow-xs"
                 >
-                  <UserPlus className="w-3.5 h-3.5" />
+                  <Icons.addMember className="size-3.5" />
                   <span>{t.addMember}</span>
                 </button>
               )}
@@ -293,7 +239,7 @@ export const GroupBanner: React.FC<GroupBannerProps> = ({
                 className="inline-flex items-center gap-1 px-3 py-1.5 text-xs font-medium text-neutral-700 hover:text-black bg-white hover:bg-neutral-100 rounded-lg transition-colors cursor-pointer border border-neutral-200"
                 title={t.leaveGroup}
               >
-                <LogOut className="w-3.5 h-3.5 text-neutral-500" />
+                <Icons.logout className="size-3.5 text-neutral-500" />
                 <span className="hidden sm:inline">{t.leaveGroup}</span>
               </button>
               )}
@@ -304,7 +250,7 @@ export const GroupBanner: React.FC<GroupBannerProps> = ({
                   className="inline-flex items-center gap-1 px-2.5 py-1.5 text-xs font-medium text-neutral-700 hover:text-black hover:bg-neutral-100 rounded-lg transition-colors cursor-pointer border border-neutral-200"
                   title={t.deleteGroup}
                 >
-                  <Trash2 className="w-3.5 h-3.5" />
+                  <Icons.remove className="size-3.5" />
                   <span className="hidden sm:inline">{t.deleteGroup}</span>
                 </button>
               )}

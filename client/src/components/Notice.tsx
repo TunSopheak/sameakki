@@ -1,6 +1,6 @@
 import React from 'react';
 import { useApp } from '../context/AppContext';
-import { AlertCircle, CheckCircle2, X } from 'lucide-react';
+import { Icons } from './icons';
 
 /** Toast for errors and confirmations. */
 export const Notice: React.FC = () => {
@@ -15,10 +15,10 @@ export const Notice: React.FC = () => {
           isError ? 'bg-brand text-white border-brand' : 'bg-white text-black border-neutral-200'
         }`}
       >
-        {isError ? <AlertCircle className="w-4 h-4 shrink-0 mt-0.5" /> : <CheckCircle2 className="w-4 h-4 shrink-0 mt-0.5" />}
+        {isError ? <Icons.error className="size-4 shrink-0 mt-0.5" /> : <Icons.done className="size-4 shrink-0 mt-0.5" />}
         <span className="flex-1 font-medium leading-relaxed">{notice.message}</span>
         <button onClick={dismissNotice} className="opacity-70 hover:opacity-100 cursor-pointer" aria-label={t.close}>
-          <X className="w-4 h-4" />
+          <Icons.close className="size-4" />
         </button>
       </div>
     </div>

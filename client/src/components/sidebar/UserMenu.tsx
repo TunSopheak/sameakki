@@ -1,11 +1,11 @@
 import React, { useRef, useState } from 'react';
-import { ChevronsUpDown, Info, LogOut, Settings, Smile } from 'lucide-react';
 import { useApp } from '../../context/AppContext';
 import { navigate } from '../../lib/route';
 import { useDismiss } from '../../lib/useDismiss';
 import { Avatar } from '../Avatar';
 import { AvatarPickerModal } from '../AvatarPickerModal';
 import { ProfileModal } from '../ProfileModal';
+import { Icons } from '../icons';
 
 export const UserMenu: React.FC<{ isCollapsed: boolean }> = ({ isCollapsed }) => {
   const { currentUser, logout, language, t } = useApp();
@@ -39,7 +39,7 @@ export const UserMenu: React.FC<{ isCollapsed: boolean }> = ({ isCollapsed }) =>
                 {roleLabel[currentUser.role]}
               </span>
             </span>
-            <ChevronsUpDown className="size-4 shrink-0 text-neutral-400" />
+            <Icons.switcher className="size-4 shrink-0 text-neutral-400" />
           </>
         )}
       </button>
@@ -62,7 +62,7 @@ export const UserMenu: React.FC<{ isCollapsed: boolean }> = ({ isCollapsed }) =>
             }}
             className="mt-1 flex w-full items-center gap-2 rounded-lg px-2.5 py-2 text-sm font-medium text-black transition-colors hover:bg-neutral-100"
           >
-            <Settings className="size-4 text-neutral-500" />
+            <Icons.settings className="size-4 text-neutral-500" />
             {t.mySettings}
           </button>
           <button
@@ -74,7 +74,7 @@ export const UserMenu: React.FC<{ isCollapsed: boolean }> = ({ isCollapsed }) =>
             }}
             className="flex w-full items-center gap-2 rounded-lg px-2.5 py-2 text-sm font-medium text-black transition-colors hover:bg-neutral-100"
           >
-            <Smile className="size-4 text-neutral-500" />
+            <Icons.avatar className="size-4 text-neutral-500" />
             {t.changeAvatar}
           </button>
           <button
@@ -86,7 +86,7 @@ export const UserMenu: React.FC<{ isCollapsed: boolean }> = ({ isCollapsed }) =>
             }}
             className="flex w-full items-center gap-2 rounded-lg px-2.5 py-2 text-sm font-medium text-black transition-colors hover:bg-neutral-100"
           >
-            <Info className="size-4 text-neutral-500" />
+            <Icons.info className="size-4 text-neutral-500" />
             {t.authAbout}
           </button>
           <button
@@ -98,7 +98,7 @@ export const UserMenu: React.FC<{ isCollapsed: boolean }> = ({ isCollapsed }) =>
             }}
             className="flex w-full items-center gap-2 rounded-lg px-2.5 py-2 text-sm font-medium text-black transition-colors hover:bg-neutral-100"
           >
-            <LogOut className="size-4 text-neutral-500" />
+            <Icons.logout className="size-4 text-neutral-500" />
             {t.signOut}
           </button>
         </div>

@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useApp } from '../context/AppContext';
-import { Send, CheckCircle2 } from 'lucide-react';
+import { Icons } from './icons';
 
 export const DailyStandupBox: React.FC = () => {
   const {
@@ -46,7 +46,7 @@ export const DailyStandupBox: React.FC = () => {
     <div className="bg-white rounded-xl border border-neutral-200 shadow-xs overflow-hidden mb-6">
       <div className="px-5 py-3.5 bg-brand text-white flex flex-wrap items-center justify-between gap-2 border-b border-neutral-800">
         <div className="flex items-center gap-2">
-          <div className="w-2 h-2 rounded-full bg-white" />
+          <div className="size-2 rounded-full bg-white" />
           <h2 className="text-sm font-bold tracking-tight">
             {t.standupTitle}
           </h2>
@@ -65,7 +65,7 @@ export const DailyStandupBox: React.FC = () => {
       <div className="p-5">
         {justSubmitted && (
           <div className="mb-4 p-3 bg-neutral-100 border border-neutral-200 rounded-lg flex items-center gap-2 text-black text-xs">
-            <CheckCircle2 className="w-4 h-4 text-black shrink-0" />
+            <Icons.done className="size-4 text-black shrink-0" />
             <span>
               {t.standupPosted}
             </span>
@@ -87,7 +87,8 @@ export const DailyStandupBox: React.FC = () => {
 
           <div className="flex flex-wrap items-center justify-between gap-3 text-xs">
             <div className="hidden items-center gap-1.5 text-neutral-600 sm:flex">
-              <span className="text-[11px]">
+              <span className="inline-flex items-center gap-1.5 text-[11px]">
+                <Icons.tip className="size-3.5 shrink-0" />
                 {t.standupTip}
               </span>
             </div>
@@ -101,7 +102,7 @@ export const DailyStandupBox: React.FC = () => {
                 disabled={submitting}
                 className="disabled:opacity-60 inline-flex items-center gap-1.5 px-4 py-2 bg-brand hover:bg-brand-dark text-white font-semibold text-xs rounded-lg shadow-xs transition-colors cursor-pointer"
               >
-                <Send className="w-3.5 h-3.5" />
+                <Icons.send className="size-3.5" />
                 <span>{t.standupSubmit}</span>
               </button>
             </div>

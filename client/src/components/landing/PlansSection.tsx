@@ -1,8 +1,9 @@
 import React from 'react';
-import { Check, Compass, Send, Users } from 'lucide-react';
+import { Check, Users } from 'lucide-react';
 import type { LandingSettings, PriceTerm } from '@shared/landing';
 import { useLanding } from './hooks';
-import { Button, Reveal, Section, SectionTitle } from './ui';
+import { Button, Reveal, Section, SectionTitle } from './ui';
+import { Icons } from '../icons';
 
 interface Plan {
   id: 'demo' | 'student';
@@ -64,12 +65,12 @@ const PlanCard: React.FC<{ plan: Plan }> = ({ plan }) => {
       <div className="mt-8">
         {isDemo ? (
           !signedIn && (
-            <Button variant="secondary" icon={Compass} onClick={enterDemo} fullWidth>
+            <Button variant="secondary" icon={Icons.demo} onClick={enterDemo} fullWidth>
               {text.cta}
             </Button>
           )
         ) : (
-          <Button icon={Send} href={contactHref} fullWidth>
+          <Button icon={Icons.send} href={contactHref} fullWidth>
             {text.cta}
           </Button>
         )}

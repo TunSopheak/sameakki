@@ -1,7 +1,8 @@
 import React from 'react';
-import { ArrowDown, ArrowUp, ChevronLeft, ChevronRight, RotateCcw, Search, Trash2 } from 'lucide-react';
+import { ArrowDown, ArrowUp, ChevronLeft, ChevronRight, RotateCcw, Trash2 } from 'lucide-react';
 import { useApp } from '../context/AppContext';
-import type { SortDir } from '../lib/useTableView';
+import type { SortDir } from '../lib/useTableView';
+import { Icons } from './icons';
 
 interface SortHeaderProps {
   label: string;
@@ -32,7 +33,7 @@ interface SearchBoxProps {
 
 export const SearchBox: React.FC<SearchBoxProps> = ({ value, onChange, placeholder }) => (
   <div className="relative min-w-0 flex-1 sm:max-w-xs">
-    <Search className="pointer-events-none absolute left-3 top-1/2 size-3.5 -translate-y-1/2 text-neutral-400" />
+    <Icons.search className="pointer-events-none absolute left-3 top-1/2 size-3.5 -translate-y-1/2 text-neutral-400" />
     <input
       type="text"
       value={value}

@@ -3,19 +3,7 @@ import { useApp } from '../context/AppContext';
 import { formatDateTime } from '../lib/dates';
 import { ActivityEventType } from '../types';
 import { SearchBox } from './TableParts';
-import {
-  History,
-  CheckCircle2,
-  Award,
-  UserPlus,
-  UserMinus,
-  Calendar,
-  Clock,
-  Sparkles,
-  CheckSquare,
-  Shield,
-  Layers
-} from 'lucide-react';
+import { Icons } from './icons';
 
 const PAGE_SIZE = 8;
 
@@ -46,66 +34,66 @@ export const ActivityLog: React.FC<ActivityLogProps> = ({
     switch (type) {
       case 'task_completed':
         return {
-          icon: <CheckSquare className="w-3.5 h-3.5 text-black" />,
+          icon: <Icons.done className="size-3.5 text-black" />,
           label: t.logTaskCompleted,
         };
       case 'task_approved':
         return {
-          icon: <Award className="w-3.5 h-3.5 text-white" />,
+          icon: <Icons.approved className="size-3.5 text-white" />,
           label: t.logTaskApproved,
           isBlack: true,
         };
       case 'task_assigned':
         return {
-          icon: <CheckCircle2 className="w-3.5 h-3.5 text-black" />,
+          icon: <Icons.tasks className="size-3.5 text-black" />,
           label: t.logTaskAssigned,
         };
       case 'task_deadline_changed':
       case 'group_deadline_changed':
         return {
-          icon: <Calendar className="w-3.5 h-3.5 text-black" />,
+          icon: <Icons.deadline className="size-3.5 text-black" />,
           label: t.logDeadlineChange,
         };
       case 'member_added':
         return {
-          icon: <UserPlus className="w-3.5 h-3.5 text-black" />,
+          icon: <Icons.addMember className="size-3.5 text-black" />,
           label: t.logMemberAdded,
         };
       case 'member_removed':
         return {
-          icon: <UserMinus className="w-3.5 h-3.5 text-black" />,
+          icon: <Icons.removeMember className="size-3.5 text-black" />,
           label: t.logMemberRemoved,
         };
       case 'member_role_changed':
         return {
-          icon: <Shield className="w-3.5 h-3.5 text-black" />,
+          icon: <Icons.role className="size-3.5 text-black" />,
           label: t.logRoleUpdated,
         };
       case 'daily_todo_posted':
         return {
-          icon: <Sparkles className="w-3.5 h-3.5 text-black" />,
+          icon: <Icons.daily className="size-3.5 text-black" />,
           label: t.logDailyTodo,
         };
       case 'daily_todo_completed':
         return {
-          icon: <CheckCircle2 className="w-3.5 h-3.5 text-black" />,
+          icon: <Icons.done className="size-3.5 text-black" />,
           label: t.logStandupDone,
         };
       case 'daily_todo_approved':
         return {
-          icon: <Award className="w-3.5 h-3.5 text-white" />,
+          icon: <Icons.approved className="size-3.5 text-white" />,
           label: t.logStandupApproved,
           isBlack: true,
         };
       case 'support_access_changed':
         return {
-          icon: <Shield className="w-3.5 h-3.5 text-black" />,
+          icon: <Icons.role className="size-3.5 text-black" />,
           label: t.supportTitle,
         };
       case 'group_created':
       default:
         return {
-          icon: <Layers className="w-3.5 h-3.5 text-black" />,
+          icon: <Icons.group className="size-3.5 text-black" />,
           label: t.logGroupCreated,
         };
     }
@@ -141,8 +129,8 @@ export const ActivityLog: React.FC<ActivityLogProps> = ({
     <div className="bg-white rounded-xl border border-neutral-200 p-5 shadow-xs">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-4 border-b border-neutral-100">
         <div className="flex items-center gap-2">
-          <div className="w-8 h-8 rounded-lg bg-brand text-white flex items-center justify-center">
-            <History className="w-4 h-4" />
+          <div className="size-8 rounded-lg bg-brand text-white flex items-center justify-center">
+            <Icons.activity className="size-4" />
           </div>
           <div>
             <div className="flex items-center gap-2">
@@ -235,7 +223,7 @@ export const ActivityLog: React.FC<ActivityLogProps> = ({
       <div className="pt-4">
         {displayedEvents.length === 0 ? (
           <div className="py-8 text-center text-xs text-neutral-500 bg-neutral-50 rounded-lg border border-neutral-200">
-            <Clock className="w-6 h-6 text-neutral-400 mx-auto mb-1.5" />
+            <Icons.time className="size-6 text-neutral-400 mx-auto mb-1.5" />
             <span className="font-semibold block text-neutral-700">
               {t.activityEmpty}
             </span>
@@ -251,7 +239,7 @@ export const ActivityLog: React.FC<ActivityLogProps> = ({
               return (
                 <div key={event.id} className="relative group">
                   <div
-                    className={`absolute -left-6 top-1 w-5 h-5 rounded-lg flex items-center justify-center border shadow-2xs ${
+                    className={`absolute -left-6 top-1 size-5 rounded-lg flex items-center justify-center border shadow-2xs ${
                       badge.isBlack
                         ? 'bg-brand border-brand text-white'
                         : 'bg-white border-neutral-200 text-black'

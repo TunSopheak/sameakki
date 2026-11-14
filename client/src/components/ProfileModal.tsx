@@ -1,9 +1,9 @@
 import { createPortal } from 'react-dom';
 import React, { useEffect, useState } from 'react';
-import { ChevronDown, KeyRound, X } from 'lucide-react';
 import { api } from '../lib/api';
 import { useApp } from '../context/AppContext';
 import { Avatar } from './Avatar';
+import { Icons } from './icons';
 
 interface ProfileModalProps {
   isOpen: boolean;
@@ -78,7 +78,7 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({ isOpen, onClose }) =
               <p className="truncate text-xs text-neutral-500">{currentUser.email}</p>
             </div>
             <button type="button" onClick={onClose} aria-label={t.cancel} className="-mr-1 rounded-lg p-1.5 text-neutral-400 hover:bg-neutral-100 hover:text-black">
-              <X className="size-5" />
+              <Icons.close className="size-5" />
             </button>
           </div>
 
@@ -97,10 +97,10 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({ isOpen, onClose }) =
                 className="flex w-full items-center justify-between px-3.5 py-3 text-left text-sm font-semibold text-black"
               >
                 <span className="flex items-center gap-2">
-                  <KeyRound className="size-4 text-neutral-500" />
+                  <Icons.password className="size-4 text-neutral-500" />
                   {t.changePassword}
                 </span>
-                <ChevronDown className={`size-4 text-neutral-400 transition-transform ${showPassword ? 'rotate-180' : ''}`} />
+                <Icons.expand className={`size-4 text-neutral-400 transition-transform ${showPassword ? 'rotate-180' : ''}`} />
               </button>
               {showPassword && (
                 <div className="animate-rise space-y-4 border-t border-neutral-200 px-3.5 pb-4 pt-4">

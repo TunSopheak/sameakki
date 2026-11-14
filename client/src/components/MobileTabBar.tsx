@@ -1,7 +1,7 @@
 import React from 'react';
-import { CheckSquare, FolderKanban, LayoutDashboard, Menu, Users } from 'lucide-react';
 import { useApp } from '../context/AppContext';
 import type { Tab } from './sidebar/SidebarNav';
+import { Icons } from './icons';
 
 interface MobileTabBarProps {
   activeTab: Tab;
@@ -14,10 +14,10 @@ export const MobileTabBar: React.FC<MobileTabBarProps> = ({ activeTab, onSelect,
   const { t } = useApp();
 
   const tabs: { id: Tab; label: string; icon: React.ElementType }[] = [
-    { id: 'dashboard', label: t.navHome, icon: LayoutDashboard },
-    { id: 'daily', label: t.navDaily, icon: CheckSquare },
-    { id: 'tasks', label: t.navTasks, icon: FolderKanban },
-    { id: 'members', label: t.navMembers, icon: Users },
+    { id: 'dashboard', label: t.navHome, icon: Icons.home },
+    { id: 'daily', label: t.navDaily, icon: Icons.daily },
+    { id: 'tasks', label: t.navTasks, icon: Icons.tasks },
+    { id: 'members', label: t.navMembers, icon: Icons.members },
   ];
 
   const item = 'relative flex min-w-0 flex-col items-center gap-0.5 px-1 pb-1.5 pt-2 text-[11px] font-medium transition-colors';
@@ -43,7 +43,7 @@ export const MobileTabBar: React.FC<MobileTabBarProps> = ({ activeTab, onSelect,
         );
       })}
       <button onClick={onOpenMenu} className={`${item} text-neutral-500`}>
-        <Menu className="size-5" />
+        <Icons.menu className="size-5" />
         <span className="w-full truncate text-center">{t.navMenu}</span>
       </button>
     </nav>

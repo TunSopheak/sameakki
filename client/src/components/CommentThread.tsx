@@ -1,10 +1,10 @@
 import React, { useCallback, useEffect, useState } from 'react';
-import { Loader2, MessageSquare, Send, Trash2 } from 'lucide-react';
 import type { Comment, CommentKind } from '@shared/types';
 import { api } from '../lib/api';
 import { timeAgo } from '../lib/notificationText';
 import { useApp } from '../context/AppContext';
 import { Avatar } from './Avatar';
+import { Icons } from './icons';
 
 interface CommentThreadProps {
   kind: CommentKind;
@@ -81,7 +81,7 @@ export const CommentThread: React.FC<CommentThreadProps> = ({ kind, targetId, co
         aria-expanded={open}
         className="inline-flex cursor-pointer items-center gap-1.5 font-semibold text-neutral-600 hover:text-black"
       >
-        <MessageSquare className="size-3.5" />
+        <Icons.comments className="size-3.5" />
         {t.commentsLabel}
         {shown > 0 && <span className="rounded-full bg-neutral-100 px-1.5 py-px font-mono text-[11px] text-black">{shown}</span>}
       </button>
@@ -90,7 +90,7 @@ export const CommentThread: React.FC<CommentThreadProps> = ({ kind, targetId, co
         <div className="animate-rise mt-2 space-y-3 rounded-lg bg-neutral-50 p-3">
           {loading && items === null ? (
             <div className="flex justify-center py-2 text-neutral-400">
-              <Loader2 className="size-4 animate-spin" />
+              <Icons.loading className="size-4 animate-spin" />
             </div>
           ) : items && items.length > 0 ? (
             <ul className="space-y-3">
@@ -111,7 +111,7 @@ export const CommentThread: React.FC<CommentThreadProps> = ({ kind, targetId, co
                             title={t.delete}
                             className="ml-auto shrink-0 cursor-pointer text-neutral-400 hover:text-black"
                           >
-                            <Trash2 className="size-3" />
+                            <Icons.remove className="size-3" />
                           </button>
                         )}
                       </div>
@@ -145,7 +145,7 @@ export const CommentThread: React.FC<CommentThreadProps> = ({ kind, targetId, co
                 title={`${t.commentSend} (Ctrl+Enter)`}
                 className="inline-flex h-9 shrink-0 cursor-pointer items-center gap-1.5 rounded-lg bg-brand px-3 text-xs font-semibold text-white shadow-xs hover:bg-brand-dark disabled:opacity-50"
               >
-                {sending ? <Loader2 className="size-3.5 animate-spin" /> : <Send className="size-3.5" />}
+                {sending ? <Icons.loading className="size-3.5 animate-spin" /> : <Icons.send className="size-3.5" />}
                 <span className="hidden sm:inline">{t.commentSend}</span>
               </button>
             </form>

@@ -4,7 +4,7 @@ import { api } from '../lib/api';
 import { Role } from '../types';
 import { Avatar } from './Avatar';
 import { TempPasswordModal } from './TempPasswordModal';
-import { UserPlus, X, Mail, Search } from 'lucide-react';
+import { Icons } from './icons';
 
 const fieldClass =
   'w-full rounded-lg border border-neutral-200 bg-white px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-brand/40';
@@ -112,13 +112,13 @@ export const AddMemberModal: React.FC<AddMemberModalProps> = ({ isOpen, onClose 
       <div className="modal-panel bg-white rounded-xl max-w-lg w-full p-5 sm:p-6 max-h-[92vh] overflow-y-auto shadow-2xl border border-neutral-200">
         <div className="flex items-center justify-between pb-4 border-b border-neutral-200 mb-5">
           <div className="flex items-center gap-2">
-            <div className="w-8 h-8 rounded-lg bg-brand text-white flex items-center justify-center">
-              <UserPlus className="w-4 h-4" />
+            <div className="size-8 rounded-lg bg-brand text-white flex items-center justify-center">
+              <Icons.addMember className="size-4" />
             </div>
             <h2 className="text-base font-bold text-black">{t.addMember}</h2>
           </div>
           <button onClick={onClose} className="text-neutral-400 hover:text-black p-1 rounded-lg" aria-label={t.cancel}>
-            <X className="w-5 h-5" />
+            <Icons.close className="size-5" />
           </button>
         </div>
 
@@ -126,7 +126,7 @@ export const AddMemberModal: React.FC<AddMemberModalProps> = ({ isOpen, onClose 
           {/* 1. Pick someone who already has an account */}
           <div>
             <label className="mb-1 flex items-center gap-1 text-xs font-bold text-black">
-              <Search className="size-3.5 text-neutral-400" />
+              <Icons.search className="size-3.5 text-neutral-400" />
               {t.searchExisting}
             </label>
 
@@ -197,7 +197,7 @@ export const AddMemberModal: React.FC<AddMemberModalProps> = ({ isOpen, onClose 
 
               <div>
                 <label className="mb-1 flex items-center gap-1 text-xs font-bold text-black">
-                  <Mail className="size-3.5 text-neutral-400" />
+                  <Icons.email className="size-3.5 text-neutral-400" />
                   {t.memberEmail}
                 </label>
                 <input

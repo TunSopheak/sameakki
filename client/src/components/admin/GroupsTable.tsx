@@ -3,8 +3,8 @@ import type { AdminGroupRow } from '@shared/types';
 import { formatDateTime } from '../../lib/dates';
 import { useTableView } from '../../lib/useTableView';
 import { useApp } from '../../context/AppContext';
-import { ShieldCheck } from 'lucide-react';
-import { FilterSelect, Pager, RowAction, SearchBox, SortHeader } from '../TableParts';
+import { FilterSelect, Pager, RowAction, SearchBox, SortHeader } from '../TableParts';
+import { Icons } from '../icons';
 
 interface GroupsTableProps {
   groups: AdminGroupRow[];
@@ -71,7 +71,7 @@ export const GroupsTable: React.FC<GroupsTableProps> = ({ groups, onDelete }) =>
                       title={t.supportOpenBadge}
                       className="ml-2 inline-flex items-center gap-1 rounded-full bg-brand-soft px-2 py-0.5 text-[11px] font-semibold text-brand"
                     >
-                      <ShieldCheck className="size-3" />
+                      <Icons.admin className="size-3" />
                       {t.supportOpenBadge}
                     </span>
                   )}

@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
-import { useApp } from '../context/AppContext';
-import { KeyRound, X } from 'lucide-react';
+import { useApp } from '../context/AppContext';
+import { Icons } from './icons';
 
 interface JoinGroupModalProps {
   isOpen: boolean;
@@ -38,8 +38,8 @@ export const JoinGroupModal: React.FC<JoinGroupModalProps> = ({ isOpen, onClose 
       <div className="modal-panel bg-white rounded-xl max-w-sm w-full p-5 sm:p-6 max-h-[92vh] overflow-y-auto shadow-2xl border border-neutral-200">
         <div className="flex items-center justify-between pb-4 border-b border-neutral-200 mb-5">
           <div className="flex items-center gap-2">
-            <div className="w-8 h-8 rounded-lg bg-brand text-white flex items-center justify-center">
-              <KeyRound className="w-4 h-4" />
+            <div className="size-8 rounded-lg bg-brand text-white flex items-center justify-center">
+              <Icons.password className="size-4" />
             </div>
             <div>
               <h2 className="text-base font-bold text-black">{t.joinGroup}</h2>
@@ -47,7 +47,7 @@ export const JoinGroupModal: React.FC<JoinGroupModalProps> = ({ isOpen, onClose 
             </div>
           </div>
           <button onClick={onClose} className="text-neutral-400 hover:text-black p-1 rounded-lg">
-            <X className="w-5 h-5" />
+            <Icons.close className="size-5" />
           </button>
         </div>
 

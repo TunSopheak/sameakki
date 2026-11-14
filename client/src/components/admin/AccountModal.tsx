@@ -1,10 +1,10 @@
 import React, { useState } from 'react';
 import { createPortal } from 'react-dom';
-import { UserPlus, X } from 'lucide-react';
 import type { AdminUserRow } from '@shared/types';
 import { api } from '../../lib/api';
 import { useApp } from '../../context/AppContext';
-import { TempPasswordModal } from '../TempPasswordModal';
+import { TempPasswordModal } from '../TempPasswordModal';
+import { Icons } from '../icons';
 
 const fieldClass =
   'w-full rounded-lg border border-neutral-200 bg-white px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-brand/40';
@@ -85,12 +85,12 @@ export const AccountModal: React.FC<AccountModalProps> = ({ user, onClose, onSav
         <div className="mb-5 flex items-center justify-between border-b border-neutral-200 pb-4">
           <div className="flex items-center gap-2">
             <div className="flex size-8 items-center justify-center rounded-lg bg-brand text-white">
-              <UserPlus className="size-4" />
+              <Icons.addMember className="size-4" />
             </div>
             <h2 className="text-base font-bold text-black">{editing ? `${t.adminEditPlan}: ${user.name}` : t.adminCreateLeader}</h2>
           </div>
           <button onClick={onClose} className="cursor-pointer rounded-lg p-1 text-neutral-400 hover:text-black" aria-label={t.cancel}>
-            <X className="size-5" />
+            <Icons.close className="size-5" />
           </button>
         </div>
 

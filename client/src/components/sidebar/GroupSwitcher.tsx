@@ -1,7 +1,7 @@
 import React, { useRef, useState } from 'react';
-import { Check, ChevronsUpDown, KeyRound, Plus } from 'lucide-react';
 import { useApp } from '../../context/AppContext';
-import { useDismiss } from '../../lib/useDismiss';
+import { useDismiss } from '../../lib/useDismiss';
+import { Icons } from '../icons';
 
 interface GroupSwitcherProps {
   isCollapsed: boolean;
@@ -34,7 +34,7 @@ export const GroupSwitcher: React.FC<GroupSwitcherProps> = ({ isCollapsed, onOpe
         }`}
       >
         <span className="grid size-8 shrink-0 place-items-center rounded-lg bg-brand text-xs font-bold text-white">
-          {activeGroup ? activeGroup.name.charAt(0).toUpperCase() : <Plus className="size-4" />}
+          {activeGroup ? activeGroup.name.charAt(0).toUpperCase() : <Icons.add className="size-4" />}
         </span>
         {!isCollapsed && (
           <>
@@ -48,7 +48,7 @@ export const GroupSwitcher: React.FC<GroupSwitcherProps> = ({ isCollapsed, onOpe
                 </span>
               )}
             </span>
-            <ChevronsUpDown className="size-4 shrink-0 text-neutral-400" />
+            <Icons.switcher className="size-4 shrink-0 text-neutral-400" />
           </>
         )}
       </button>
@@ -75,7 +75,7 @@ export const GroupSwitcher: React.FC<GroupSwitcherProps> = ({ isCollapsed, onOpe
                       <span className="block truncate font-medium text-black">{groupName(group)}</span>
                       <span className="block truncate text-xs text-neutral-500">{group.courseOrProject}</span>
                     </span>
-                    {selected && <Check className="size-4 shrink-0 text-brand" />}
+                    {selected && <Icons.confirm className="size-4 shrink-0 text-brand" />}
                   </button>
                 </li>
               );
@@ -87,7 +87,7 @@ export const GroupSwitcher: React.FC<GroupSwitcherProps> = ({ isCollapsed, onOpe
               onClick={run(onOpenJoinGroup)}
               className="flex w-full items-center gap-2 rounded-lg px-2.5 py-2 text-sm font-medium text-black transition-colors hover:bg-neutral-100"
             >
-              <KeyRound className="size-4 text-neutral-500" />
+              <Icons.password className="size-4 text-neutral-500" />
               {t.joinGroup}
             </button>
             {canCreateGroup && (
@@ -96,7 +96,7 @@ export const GroupSwitcher: React.FC<GroupSwitcherProps> = ({ isCollapsed, onOpe
                 onClick={run(onOpenCreateGroup)}
                 className="flex w-full items-center gap-2 rounded-lg px-2.5 py-2 text-sm font-medium text-brand transition-colors hover:bg-brand-soft"
               >
-                <Plus className="size-4" />
+                <Icons.add className="size-4" />
                 {t.createGroup}
               </button>
             )}

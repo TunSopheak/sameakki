@@ -1,6 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
-import { ChevronDown, Download, FileSpreadsheet, FileText, Printer } from 'lucide-react';
 import type { Task, User } from '@shared/types';
 import { useApp } from '../../context/AppContext';
 import { todayLocal } from '../../lib/dates';
@@ -10,7 +9,8 @@ import { useDismiss } from '../../lib/useDismiss';
 import { buildExportLabels, buildXlsxLabels } from './exportLabels';
 import { toDay } from './ganttModel';
 import { exportFileName, exportHeaders, exportRowCells, exportRows, toCsv } from './exportModel';
-import { PrintableTimeline } from './PrintableTimeline';
+import { PrintableTimeline } from './PrintableTimeline';
+import { Icons } from '../icons';
 
 interface ExportMenuProps {
   groupName: string;
@@ -64,9 +64,9 @@ export const ExportMenu: React.FC<ExportMenuProps> = ({ groupName, tasks, users,
         aria-expanded={open}
         className="inline-flex cursor-pointer items-center gap-1.5 rounded-lg border border-neutral-200 bg-white px-3 py-1.5 text-xs font-semibold transition-colors hover:bg-neutral-100 disabled:cursor-not-allowed disabled:opacity-50"
       >
-        <Download className="size-3.5" />
+        <Icons.export className="size-3.5" />
         <span className="hidden sm:inline">{t.exportLabel}</span>
-        <ChevronDown className={`hidden size-3.5 transition-transform sm:block ${open ? 'rotate-180' : ''}`} />
+        <Icons.expand className={`hidden size-3.5 transition-transform sm:block ${open ? 'rotate-180' : ''}`} />
       </button>
       {open && (
         <>
@@ -77,15 +77,15 @@ export const ExportMenu: React.FC<ExportMenuProps> = ({ groupName, tasks, users,
           className="fixed inset-x-3 bottom-[calc(4.5rem+env(safe-area-inset-bottom))] z-50 rounded-xl border border-neutral-200 bg-white p-1.5 shadow-xl sm:absolute sm:inset-x-auto sm:bottom-auto sm:right-0 sm:top-full sm:z-30 sm:mt-1.5 sm:w-64 sm:shadow-lg"
         >
           <button role="menuitem" onClick={exportPdf} className={item}>
-            <Printer className="size-4 text-brand" />
+            <Icons.print className="size-4 text-brand" />
             {t.exportPdf}
           </button>
           <button role="menuitem" onClick={() => void exportXlsx()} className={item}>
-            <FileSpreadsheet className="size-4 text-brand" />
+            <Icons.excel className="size-4 text-brand" />
             {t.exportXlsx}
           </button>
           <button role="menuitem" onClick={exportCsv} className={item}>
-            <FileText className="size-4 text-brand" />
+            <Icons.csv className="size-4 text-brand" />
             {t.exportCsv}
           </button>
           <p className="px-3 pb-1.5 pt-1 text-[11px] leading-relaxed text-neutral-500">{t.exportHint}</p>

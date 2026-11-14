@@ -1,9 +1,9 @@
 import React, { useEffect, useState } from 'react';
-import { Loader2, X } from 'lucide-react';
 import type { Task, User } from '@shared/types';
 import { useApp } from '../../context/AppContext';
 import { Avatar } from '../Avatar';
 import { fromDay, spanDays, toDay } from './ganttModel';
+import { Icons } from '../icons';
 
 const dateField =
   'w-full rounded-lg border border-neutral-200 bg-white px-3 py-2 text-sm text-black focus:border-brand focus:outline-none focus:ring-1 focus:ring-brand/40 disabled:opacity-60';
@@ -72,7 +72,7 @@ export const TaskDetailPanel: React.FC<TaskDetailPanelProps> = ({ task, assignee
           </div>
         </div>
         <button onClick={onClose} aria-label={t.close} className="shrink-0 cursor-pointer rounded-lg p-1 text-neutral-400 transition-colors hover:text-black">
-          <X className="size-5" />
+          <Icons.close className="size-5" />
         </button>
       </div>
 
@@ -93,7 +93,7 @@ export const TaskDetailPanel: React.FC<TaskDetailPanelProps> = ({ task, assignee
             disabled={!changed || !start || !due || saving}
             className="inline-flex h-[38px] cursor-pointer items-center justify-center gap-2 rounded-lg bg-brand px-4 text-xs font-semibold text-white transition-all hover:bg-brand-dark disabled:cursor-default disabled:opacity-40"
           >
-            {saving && <Loader2 className="size-3.5 animate-spin" />}
+            {saving && <Icons.loading className="size-3.5 animate-spin" />}
             {t.ganttSaveSchedule}
           </button>
         ) : (

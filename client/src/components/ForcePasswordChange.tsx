@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
 import { createPortal } from 'react-dom';
-import { KeyRound, Loader2 } from 'lucide-react';
 import { api } from '../lib/api';
-import { useApp } from '../context/AppContext';
+import { useApp } from '../context/AppContext';
+import { Icons } from './icons';
 
 const inputClass =
   'h-10 w-full rounded-lg border border-neutral-200 bg-white px-3 text-sm text-black transition-colors focus:border-brand focus:outline-none focus:ring-1 focus:ring-brand/40';
@@ -43,7 +43,7 @@ export const ForcePasswordChange: React.FC = () => {
       <form onSubmit={submit} className="modal-panel w-full max-w-md rounded-xl border border-neutral-200 bg-white p-5 shadow-2xl sm:p-6">
         <div className="mb-4 flex items-center gap-2">
           <div className="flex size-9 items-center justify-center rounded-lg bg-brand text-white">
-            <KeyRound className="size-4" />
+            <Icons.password className="size-4" />
           </div>
           <div>
             <h2 className="text-base font-bold text-black">{t.forceChangeTitle}</h2>
@@ -84,7 +84,7 @@ export const ForcePasswordChange: React.FC = () => {
             disabled={saving}
             className="inline-flex cursor-pointer items-center gap-2 rounded-lg bg-brand px-4 py-2 text-xs font-semibold text-white shadow-xs hover:bg-brand-dark disabled:opacity-60"
           >
-            {saving && <Loader2 className="size-3.5 animate-spin" />}
+            {saving && <Icons.loading className="size-3.5 animate-spin" />}
             {t.save}
           </button>
         </div>

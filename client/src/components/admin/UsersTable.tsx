@@ -1,11 +1,11 @@
 import React, { useMemo, useState } from 'react';
-import { CalendarClock, KeyRound, Users } from 'lucide-react';
 import type { AdminUserRow, Role } from '@shared/types';
 import { formatDateTime } from '../../lib/dates';
 import { useTableView } from '../../lib/useTableView';
 import { useApp } from '../../context/AppContext';
 import { Avatar } from '../Avatar';
 import { FilterSelect, IconAction, Pager, RowAction, SearchBox, SortHeader } from '../TableParts';
+import { Icons } from '../icons';
 
 const ONLINE_MINUTES = 10;
 const ACTIVE_DAYS = 7;
@@ -73,7 +73,7 @@ export const UsersTable: React.FC<UsersTableProps> = ({ users, onDelete, onChang
         </p>
         {user.role === 'team_lead' && (
           <p className="flex items-center gap-1 text-neutral-500" title={`${t.adminMaxMembers}: ${user.maxMembers ?? t.adminUnlimited}`}>
-            <Users className="size-3" />
+            <Icons.members className="size-3" />
             {user.maxMembers ?? '∞'}
           </p>
         )}
@@ -174,8 +174,8 @@ export const UsersTable: React.FC<UsersTableProps> = ({ users, onDelete, onChang
                   <td className="px-4 py-3 text-neutral-700">{planLabel(user)}</td>
                   <td className="sticky right-0 bg-white px-4 py-3">
                     <div className="flex items-center justify-end gap-0.5">
-                      {canEdit && <IconAction icon={CalendarClock} label={t.adminEditPlan} onClick={() => onEditPlan(user)} />}
-                      {canEdit && user.registered && <IconAction icon={KeyRound} label={t.resetPasswordAction} onClick={() => onResetPassword(user)} />}
+                      {canEdit && <IconAction icon={Icons.deadline} label={t.adminEditPlan} onClick={() => onEditPlan(user)} />}
+                      {canEdit && user.registered && <IconAction icon={Icons.password} label={t.resetPasswordAction} onClick={() => onResetPassword(user)} />}
                       {user.role !== 'super_admin' && (
                         <RowAction active={user.isActive} onClick={() => onDelete(user, !user.isActive)} deleteLabel={t.adminDelete} restoreLabel={t.adminRestore} />
                       )}
