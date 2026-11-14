@@ -37,6 +37,7 @@ export const api = {
   me: () => get<{ user: User }>('/auth/me'),
   login: (email: string, password: string) => post<{ user: User }>('/auth/login', { email, password }),
   logout: () => post('/auth/logout'),
+  resetPassword: (userId: string) => post<{ password: string }>(`/users/${userId}/reset-password`),
   changePassword: (currentPassword: string, newPassword: string) =>
     post('/auth/change-password', { currentPassword, newPassword }),
 
@@ -57,7 +58,7 @@ export const api = {
   addMember: (
     groupId: string,
     data: { name: string; nameKm?: string; email: string; role: Role; specialty?: string; department?: string; password?: string }
-  ) => post<{ id: string }>(`/groups/${groupId}/members`, data),
+  ) => post<{ id: string; password?: string }>(`/groups/${groupId}/members`, data),
   memberCandidates: (groupId: string, q: string) =>
     get<Pick<User, 'id' | 'name' | 'nameKm' | 'email' | 'avatar' | 'role'>[]>(
       `/groups/${groupId}/member-candidates?q=${encodeURIComponent(q)}`
@@ -71,10 +72,10 @@ export const api = {
     nameKm?: string;
     email: string;
     username?: string;
-    password: string;
+    password?: string;
     expiresAt?: string | null;
     maxMembers?: number | null;
-  }) => post<{ id: string }>('/admin/users', data),
+  }) => post<{ id: string; password?: string }>('/admin/users', data),
   setUserPlan: (userId: string, data: { expiresAt?: string | null; maxMembers?: number | null }) =>
     post(`/admin/users/${userId}/plan`, data),
   setGroupActive: (groupId: string, active: boolean) => post(`/admin/groups/${groupId}/active`, { active }),

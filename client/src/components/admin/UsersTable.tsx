@@ -18,9 +18,10 @@ interface UsersTableProps {
   onDelete: (user: AdminUserRow, active: boolean) => void;
   onChangeRole: (user: AdminUserRow, role: Role) => void;
   onEditPlan: (user: AdminUserRow) => void;
+  onResetPassword: (user: AdminUserRow) => void;
 }
 
-export const UsersTable: React.FC<UsersTableProps> = ({ users, onDelete, onChangeRole, onEditPlan }) => {
+export const UsersTable: React.FC<UsersTableProps> = ({ users, onDelete, onChangeRole, onEditPlan, onResetPassword }) => {
   const { t, language } = useApp();
   const [role, setRole] = useState<'all' | Role>('all');
   const [status, setStatus] = useState<StatusFilter>('all');
@@ -171,6 +172,14 @@ export const UsersTable: React.FC<UsersTableProps> = ({ users, onDelete, onChang
                         className="mr-3 cursor-pointer text-xs font-semibold text-black hover:underline"
                       >
                         {t.adminEditPlan}
+                      </button>
+                    )}
+                    {canEdit && user.registered && (
+                      <button
+                        onClick={() => onResetPassword(user)}
+                        className="mr-3 cursor-pointer text-xs font-semibold text-black hover:underline"
+                      >
+                        {t.resetPasswordAction}
                       </button>
                     )}
                     {user.role !== 'super_admin' && (

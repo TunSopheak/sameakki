@@ -62,7 +62,8 @@ authRouter.post('/change-password', requireAuth, authLimiter, async (req, res) =
   const { rows } = await db.query('SELECT password_hash FROM users WHERE id = $1', [req.user!.id]);
   const ok = rows[0]?.password_hash && (await bcrypt.compare(input.currentPassword, rows[0].password_hash));
   if (!ok) throw badRequest('Current password is incorrect.');
-  await db.query('UPDATE users SET password_hash = $2 WHERE id = $1', [
+  if (input.newPassword === input.currentPassword) throw badRequest('Choose a different password from the current one.');
+  await db.query('UPDATE users SET password_hash = $2, must_change_password = false WHERE id = $1', [
     req.user!.id,
     await hashPassword(input.newPassword),
   ]);

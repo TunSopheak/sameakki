@@ -23,6 +23,7 @@ import { AssignmentReportModal } from './components/AssignmentReportModal';
 import { AuthScreen } from './components/AuthScreen';
 import { Notice } from './components/Notice';
 import { DemoBanner } from './components/DemoBanner';
+import { ForcePasswordChange } from './components/ForcePasswordChange';
 
 const MainApp: React.FC = () => {
   const { currentUser, language } = useApp();
@@ -173,6 +174,7 @@ const MainApp: React.FC = () => {
         onClose={() => setIsReportModalOpen(false)}
       />
 
+      <ForcePasswordChange />
       <Notice />
     </div>
   );

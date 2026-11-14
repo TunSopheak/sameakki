@@ -3,6 +3,7 @@ import { useApp } from '../context/AppContext';
 import { api } from '../lib/api';
 import { Role } from '../types';
 import { Avatar } from './Avatar';
+import { TempPasswordModal } from './TempPasswordModal';
 import { UserPlus, X, Mail, Search } from 'lucide-react';
 
 const fieldClass =
@@ -29,6 +30,7 @@ export const AddMemberModal: React.FC<AddMemberModalProps> = ({ isOpen, onClose 
   const [email, setEmail] = useState('');
   const [role, setRole] = useState<Role>('member');
   const [submitting, setSubmitting] = useState(false);
+  const [created, setCreated] = useState<{ name: string; email: string; password: string } | null>(null);
 
   useEffect(() => {
     if (!isOpen) return;
@@ -40,6 +42,7 @@ export const AddMemberModal: React.FC<AddMemberModalProps> = ({ isOpen, onClose 
     setPassword('');
     setEmail('');
     setRole('member');
+    setCreated(null);
   }, [isOpen]);
 
   // Search existing accounts while typing (waits a moment after the last key)
@@ -64,6 +67,7 @@ export const AddMemberModal: React.FC<AddMemberModalProps> = ({ isOpen, onClose 
   }, [isOpen, query, selected, isDemo, activeGroup]);
 
   if (!isOpen) return null;
+  if (created) return <TempPasswordModal {...created} onClose={onClose} />;
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -72,14 +76,20 @@ export const AddMemberModal: React.FC<AddMemberModalProps> = ({ isOpen, onClose 
 
     setSubmitting(true);
     try {
-      await addMemberToGroup({
-        name: selected ? selected.name : name.trim() || address.split('@')[0],
+      const memberName = selected ? selected.name : name.trim() || address.split('@')[0];
+      const result = await addMemberToGroup({
+        name: memberName,
         email: address,
         role,
         password: selected ? undefined : password || undefined,
         groupId: activeGroup?.id,
       });
-      onClose();
+      // A new account without a typed password gets a generated one, shown once
+      if (result?.password) {
+        setCreated({ name: memberName, email: address, password: result.password });
+      } else {
+        onClose();
+      }
     } catch {
       // Error is shown as a notice; keep the form open.
     } finally {
@@ -204,8 +214,6 @@ export const AddMemberModal: React.FC<AddMemberModalProps> = ({ isOpen, onClose 
                 <label className="mb-1 block text-xs font-bold text-black">{t.newMemberPassword}</label>
                 <input
                   type="password"
-                  required
-                  minLength={6}
                   value={password}
                   onChange={e => setPassword(e.target.value)}
                   autoComplete="new-password"

@@ -160,4 +160,9 @@ export const migrations: { id: string; sql: string }[] = [
       ALTER TABLE users ADD COLUMN created_by UUID REFERENCES users(id) ON DELETE SET NULL;
     `,
   },
+  {
+    // Set when someone else chose the password (new account or reset); cleared when the person changes it
+    id: '008_must_change_password',
+    sql: `ALTER TABLE users ADD COLUMN must_change_password BOOLEAN NOT NULL DEFAULT false`,
+  },
 ];

@@ -26,6 +26,8 @@ export interface User {
   role: Role;
   specialty?: string;
   department?: string;
+  /** Only set on the signed-in user: someone else chose this password, so it must be changed first. */
+  mustChangePassword?: boolean;
 }
 
 export interface DailyTodoItem {

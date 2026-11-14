@@ -56,13 +56,13 @@ export const requireAuth: RequestHandler = async (req, _res, next) => {
   }
 
   const db = await getDb();
-  const { rows } = await db.query(`SELECT ${USER_COLUMNS}, expires_at FROM users WHERE id = $1 AND is_active = 1`, [userId]);
+  const { rows } = await db.query(`SELECT ${USER_COLUMNS}, expires_at, must_change_password FROM users WHERE id = $1 AND is_active = 1`, [userId]);
   if (!rows[0]) return next(unauthorized());
   try {
     assertNotExpired(rows[0]);
   } catch (err) {
     return next(err);
   }
-  req.user = toUser(rows[0]);
+  req.user = { ...toUser(rows[0]), mustChangePassword: rows[0].must_change_password === true };
   next();
 };

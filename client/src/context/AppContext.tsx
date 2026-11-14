@@ -23,6 +23,8 @@ interface AppContextType {
 
   notice: { type: 'error' | 'success'; message: string } | null;
   dismissNotice: () => void;
+  /** Show an error toast for a call a component made itself. */
+  showError: (message: string) => void;
 
   isSuperAdmin: boolean;
   /** Can create groups: the Super Admin and Team Leaders. */
@@ -56,7 +58,8 @@ interface AppContextType {
     department?: string;
     password?: string;
     groupId?: string;
-  }) => Promise<void>;
+    // Resolves with the temporary password when one was generated for a new account
+  }) => Promise<{ password?: string } | undefined>;
   removeMemberFromGroup: (userId: string, groupId?: string) => Promise<void>;
   updateAvatar: (avatar: string) => Promise<void>;
   updateProfile: (data: { name: string; nameKm?: string; specialty?: string }) => Promise<void>;
@@ -282,6 +285,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
     notice,
     dismissNotice: () => setNotice(null),
+    showError: message => showNotice('error', message),
 
     isSuperAdmin,
     canCreateGroup,
@@ -299,8 +303,13 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     dailyLogs,
     activityEvents,
 
-    addMemberToGroup: ({ groupId, ...member }) =>
-      run(() => api.addMember(groupId || resolvedGroupId, member)),
+    addMemberToGroup: async ({ groupId, ...member }) => {
+      let created: { password?: string } | undefined;
+      await run(async () => {
+        created = await api.addMember(groupId || resolvedGroupId, member);
+      });
+      return created;
+    },
     removeMemberFromGroup: (userId, groupId) =>
       quiet(run(() => api.removeMember(groupId || resolvedGroupId, userId))),
     updateAvatar: avatar => run(() => api.updateAvatar(avatar)),

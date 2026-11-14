@@ -4,6 +4,7 @@ import { UserPlus, X } from 'lucide-react';
 import type { AdminUserRow } from '@shared/types';
 import { api } from '../../lib/api';
 import { useApp } from '../../context/AppContext';
+import { TempPasswordModal } from '../TempPasswordModal';
 
 const fieldClass =
   'w-full rounded-lg border border-neutral-200 bg-white px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-brand/40';
@@ -29,6 +30,8 @@ export const AccountModal: React.FC<AccountModalProps> = ({ user, onClose, onSav
   });
   const [error, setError] = useState('');
   const [submitting, setSubmitting] = useState(false);
+  // Set after creating an account with a generated password, so it can be shown once
+  const [created, setCreated] = useState<{ name: string; email: string; password: string } | null>(null);
 
   const update = (field: keyof typeof form) => (e: React.ChangeEvent<HTMLInputElement>) =>
     setForm(prev => ({ ...prev, [field]: e.target.value }));
@@ -46,13 +49,20 @@ export const AccountModal: React.FC<AccountModalProps> = ({ user, onClose, onSav
       if (user) {
         await api.setUserPlan(user.id, plan);
       } else {
-        await api.createLeader({
+        const result = await api.createLeader({
           name: form.name.trim(),
           email: form.email.trim(),
           username: form.username.trim() || undefined,
-          password: form.password,
+          password: form.password || undefined,
           ...plan,
         });
+        onSaved();
+        if (result.password) {
+          setCreated({ name: form.name.trim(), email: form.email.trim(), password: result.password });
+          return;
+        }
+        onClose();
+        return;
       }
       onSaved();
       onClose();
@@ -62,6 +72,8 @@ export const AccountModal: React.FC<AccountModalProps> = ({ user, onClose, onSav
       setSubmitting(false);
     }
   };
+
+  if (created) return <TempPasswordModal {...created} onClose={onClose} />;
 
   // Rendered on document.body: an animated parent would otherwise break position: fixed
   return createPortal(
@@ -102,8 +114,8 @@ export const AccountModal: React.FC<AccountModalProps> = ({ user, onClose, onSav
                 <span className="mt-1 block text-[11px] text-neutral-500">{t.accUsernameHint}</span>
               </label>
               <label className="block">
-                <span className="mb-1 block text-xs font-bold text-black">{t.adminStartPassword} *</span>
-                <input required type="password" minLength={6} value={form.password} onChange={update('password')} autoComplete="new-password" className={fieldClass} />
+                <span className="mb-1 block text-xs font-bold text-black">{t.adminStartPassword}</span>
+                <input type="password" value={form.password} onChange={update('password')} autoComplete="new-password" className={fieldClass} />
                 <span className="mt-1 block text-[11px] text-neutral-500">{t.accPasswordHint}</span>
               </label>
             </>

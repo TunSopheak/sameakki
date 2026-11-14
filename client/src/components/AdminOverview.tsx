@@ -7,6 +7,7 @@ import { AnimatedNumber } from './AnimatedNumber';
 import { GroupsTable } from './admin/GroupsTable';
 import { UsersTable } from './admin/UsersTable';
 import { AccountModal } from './admin/AccountModal';
+import { TempPasswordModal } from './TempPasswordModal';
 
 const ONLINE_MINUTES = 10;
 const ACTIVE_DAYS = 7;
@@ -20,6 +21,7 @@ export const AdminOverview: React.FC = () => {
   const [loading, setLoading] = useState(false);
   // 'new' = create a Team Leader; a user = edit that leader's plan
   const [accountModal, setAccountModal] = useState<'new' | AdminUserRow | null>(null);
+  const [tempPassword, setTempPassword] = useState<{ name: string; email: string; password: string } | null>(null);
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -54,6 +56,15 @@ export const AdminOverview: React.FC = () => {
   const deleteGroup = (group: AdminGroupRow, active: boolean) => {
     if (!active && !confirm(t.adminDeleteGroupConfirm)) return;
     change(() => api.setGroupActive(group.id, active));
+  };
+  const resetPassword = async (user: AdminUserRow) => {
+    if (!confirm(t.resetPasswordConfirm)) return;
+    try {
+      const { password } = await api.resetPassword(user.id);
+      setTempPassword({ name: user.name, email: user.email, password });
+    } catch (err) {
+      setError(err instanceof Error ? err.message : String(err));
+    }
   };
   const changeRole = (user: AdminUserRow, role: Role) => change(() => api.updateUserRole(user.id, role));
 
@@ -134,8 +145,10 @@ export const AdminOverview: React.FC = () => {
         ))}
       </div>
 
-      <UsersTable users={data.users} onDelete={deleteUser} onChangeRole={changeRole} onEditPlan={setAccountModal} />
+      <UsersTable users={data.users} onDelete={deleteUser} onChangeRole={changeRole} onEditPlan={setAccountModal} onResetPassword={resetPassword} />
       <GroupsTable groups={data.groups} onDelete={deleteGroup} />
+
+      {tempPassword && <TempPasswordModal {...tempPassword} onClose={() => setTempPassword(null)} />}
 
       {accountModal && (
         <AccountModal

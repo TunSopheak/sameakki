@@ -3,6 +3,7 @@ import { useApp } from '../context/AppContext';
 import { todayLocal } from '../lib/dates';
 import { Role } from '../types';
 import {
+  KeyRound,
   Shield,
   ShieldCheck,
   Trash2,
@@ -13,6 +14,8 @@ import {
 } from 'lucide-react';
 import { Avatar } from './Avatar';
 import { Pager, SearchBox, SortHeader } from './TableParts';
+import { TempPasswordModal } from './TempPasswordModal';
+import { api } from '../lib/api';
 import { useTableView } from '../lib/useTableView';
 
 interface MembersListProps {
@@ -31,7 +34,21 @@ export const MembersList: React.FC<MembersListProps> = () => {
     activeGroupDailyLogs,
     t,
     language,
+    isDemo,
+    showError,
   } = useApp();
+
+  const [tempPassword, setTempPassword] = useState<{ name: string; email: string; password: string } | null>(null);
+  const resetPassword = async (member: { id: string; name: string; email: string }) => {
+    if (!confirm(t.resetPasswordConfirm)) return;
+    try {
+      const { password } = await api.resetPassword(member.id);
+      setTempPassword({ name: member.name, email: member.email, password });
+    } catch (err) {
+      showError(err instanceof Error ? err.message : String(err));
+    }
+  };
+  const canReset = (role: Role, isSelf: boolean) => canManageGroup && !isDemo && !isSelf && role !== 'super_admin';
 
   const [roleFilter, setRoleFilter] = useState<'all' | Role>('all');
   const todayStr = todayLocal();
@@ -179,6 +196,16 @@ export const MembersList: React.FC<MembersListProps> = () => {
                   {member.nameKm && <p className="text-xs text-neutral-500 truncate">{member.nameKm}</p>}
                   <p className="text-xs text-neutral-500 truncate">{member.email}</p>
                 </div>
+                {canReset(member.role, isCurrentUser) && (
+                  <button
+                    onClick={() => resetPassword(member)}
+                    aria-label={t.resetPasswordAction}
+                    title={t.resetPasswordAction}
+                    className="shrink-0 rounded-lg p-2 text-neutral-500 hover:bg-neutral-100 hover:text-black"
+                  >
+                    <KeyRound className="size-4" />
+                  </button>
+                )}
                 {canManageGroup && !isCurrentUser && (
                   <button
                     onClick={() => {
@@ -348,6 +375,17 @@ export const MembersList: React.FC<MembersListProps> = () => {
                     {canManageGroup && (
                       <td className="py-4 px-6 text-right">
                         {!isCurrentUser ? (
+                          <>
+                          {canReset(member.role, isCurrentUser) && (
+                            <button
+                              onClick={() => resetPassword(member)}
+                              className="mr-1 text-neutral-500 hover:text-black hover:bg-neutral-100 p-1.5 rounded-lg transition-colors cursor-pointer inline-flex items-center gap-1"
+                              title={t.resetPasswordAction}
+                            >
+                              <KeyRound className="w-3.5 h-3.5" />
+                              <span className="text-[11px]">{t.resetPasswordAction}</span>
+                            </button>
+                          )}
                           <button
                             onClick={() => {
                               if (confirm(t.removeMemberConfirm)) {
@@ -360,6 +398,7 @@ export const MembersList: React.FC<MembersListProps> = () => {
                             <Trash2 className="w-3.5 h-3.5" />
                             <span className="text-[11px]">{t.removeMember}</span>
                           </button>
+                          </>
                         ) : (
                           <span className="text-neutral-400 text-[11px] italic">
                             {language === 'km' ? 'អ្នក' : 'You'}
@@ -375,6 +414,8 @@ export const MembersList: React.FC<MembersListProps> = () => {
         </table>
       </div>
       <Pager page={view.page} pageCount={view.pageCount} total={view.total} onPage={view.setPage} />
+
+      {tempPassword && <TempPasswordModal {...tempPassword} onClose={() => setTempPassword(null)} />}
     </div>
   );
 };

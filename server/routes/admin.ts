@@ -3,9 +3,9 @@ import { z } from 'zod';
 import type { AdminOverview } from '../../shared/types';
 import { getDb } from '../db';
 import { badRequest, conflict, notFound } from '../middleware/errors';
-import { requireSuperAdmin } from '../services/access';
+import { assert, isSuperAdmin, requireSuperAdmin } from '../services/access';
 import { USER_COLUMNS } from '../services/mappers';
-import { hashPassword } from '../services/password';
+import { generatePassword, hashPassword } from '../services/password';
 import { endOfDay } from '../services/plan';
 
 export const adminRouter = Router();
@@ -114,7 +114,8 @@ const createUserSchema = z.object({
     .toLowerCase()
     .regex(/^[a-z0-9._-]{3,40}$/, 'Username: 3-40 letters, numbers, dot, dash or underscore.')
     .optional(),
-  password: z.string().min(6).max(200),
+  // Leave out to have one generated; it is returned once so it can be passed on
+  password: z.string().min(1).max(200).optional(),
   ...planFields,
 });
 
@@ -122,7 +123,8 @@ const createUserSchema = z.object({
 adminRouter.post('/admin/users', async (req, res) => {
   requireSuperAdmin(req.user!);
   const input = createUserSchema.parse(req.body);
-  const passwordHash = await hashPassword(input.password);
+  const plainPassword = input.password ?? generatePassword();
+  const passwordHash = await hashPassword(plainPassword);
   const db = await getDb();
 
   const user = await db.transaction(async tx => {
@@ -133,8 +135,8 @@ adminRouter.post('/admin/users', async (req, res) => {
       if (dupName[0]) throw conflict('That username is already taken.');
     }
     const { rows } = await tx.query(
-      `INSERT INTO users (name, name_km, email, username, password_hash, role, department, expires_at, max_members, created_by)
-       VALUES ($1, $2, $3, $4, $5, 'team_lead', 'Team Leader', $6, $7, $8) RETURNING ${USER_COLUMNS}`,
+      `INSERT INTO users (name, name_km, email, username, password_hash, role, department, expires_at, max_members, created_by, must_change_password)
+       VALUES ($1, $2, $3, $4, $5, 'team_lead', 'Team Leader', $6, $7, $8, true) RETURNING ${USER_COLUMNS}`,
       [
         input.name,
         input.nameKm || null,
@@ -149,7 +151,7 @@ adminRouter.post('/admin/users', async (req, res) => {
     return rows[0];
   });
 
-  res.status(201).json({ id: user.id });
+  res.status(201).json({ id: user.id, password: input.password ? undefined : plainPassword });
 });
 
 const planSchema = z.object(planFields);
@@ -176,4 +178,26 @@ adminRouter.post('/admin/users/:userId/plan', async (req, res) => {
     }
   });
   res.status(204).end();
+});
+
+/**
+ * Sets a new temporary password and returns it once. The person must change it at their next sign-in.
+ * The Super Admin can do this for anyone; a leader only for accounts they created.
+ */
+adminRouter.post('/users/:userId/reset-password', async (req, res) => {
+  const me = req.user!;
+  const db = await getDb();
+  const { rows } = await db.query('SELECT id, role, created_by FROM users WHERE id = $1 AND is_active = 1', [req.params.userId]);
+  const target = rows[0];
+  if (!target) throw notFound('User not found.');
+  if (target.id === me.id) throw badRequest('Use "Change password" in your own settings.');
+  if (target.role === 'super_admin') throw badRequest('The Super Admin password cannot be reset here.');
+  assert(isSuperAdmin(me) || target.created_by === me.id, 'You can only reset the password of accounts you created.');
+
+  const password = generatePassword();
+  await db.query('UPDATE users SET password_hash = $2, must_change_password = true WHERE id = $1', [
+    target.id,
+    await hashPassword(password),
+  ]);
+  res.json({ password });
 });

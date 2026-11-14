@@ -8,7 +8,7 @@ import { assert, getGroupAccess, isSuperAdmin, requireSuperAdmin } from '../serv
 import { logActivity } from '../services/activity';
 import { badRequest, conflict, notFound } from '../middleware/errors';
 import { USER_COLUMNS } from '../services/mappers';
-import { hashPassword } from '../services/password';
+import { generatePassword, hashPassword } from '../services/password';
 import { assertCapacity } from '../services/plan';
 
 export const groupsRouter = Router();
@@ -190,7 +190,7 @@ const addMemberSchema = z.object({
   specialty: optionalText(200),
   department: optionalText(120),
   // Starting password for a new account. The person can change it after signing in.
-  password: z.string().min(6).max(200).optional(),
+  password: z.string().min(1).max(200).optional(),
 });
 
 /** Existing accounts the caller may add to this group (search by name, email or username). */
@@ -235,7 +235,10 @@ groupsRouter.post('/groups/:groupId/members', async (req, res) => {
   assert(admin || access.leaderId === user.id, 'Only a Super Admin or the group leader can add members.');
   const input = addMemberSchema.parse(req.body);
   if (!admin && input.role === 'team_lead') throw badRequest('Only a Super Admin can create a Team Leader.');
-  const passwordHash = input.password ? await hashPassword(input.password) : null;
+  // Only used when a new account is created; without one, a temporary password is generated
+  const plainPassword = input.password ?? generatePassword();
+  const passwordHash = await hashPassword(plainPassword);
+  let issuedPassword: string | undefined;
 
   const member = await db.transaction(async tx => {
     const { rows: matches } = await tx.query(
@@ -257,14 +260,14 @@ groupsRouter.post('/groups/:groupId/members', async (req, res) => {
       );
       target = rows[0];
     } else {
-      if (!passwordHash) throw badRequest('Set a starting password for the new account.');
+      if (!input.password) issuedPassword = plainPassword;
       // The new account follows the leader's plan expiry, so a renewal reaches it too
       const { rows: plan } = access.leaderId
         ? await tx.query('SELECT expires_at FROM users WHERE id = $1', [access.leaderId])
         : { rows: [] as any[] };
       const { rows } = await tx.query(
-        `INSERT INTO users (name, name_km, email, password_hash, role, specialty, department, expires_at, created_by)
-         VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9) RETURNING ${USER_COLUMNS}`,
+        `INSERT INTO users (name, name_km, email, password_hash, role, specialty, department, expires_at, created_by, must_change_password)
+         VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, true) RETURNING ${USER_COLUMNS}`,
         [
           input.name,
           input.nameKm || null,
@@ -302,7 +305,7 @@ groupsRouter.post('/groups/:groupId/members', async (req, res) => {
     return target;
   });
 
-  res.status(201).json({ id: member.id });
+  res.status(201).json({ id: member.id, password: issuedPassword });
 });
 
 /** Super Admin removes a member, or a member leaves. */
