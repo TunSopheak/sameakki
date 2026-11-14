@@ -36,8 +36,6 @@ const del = (path: string) => request('DELETE', path);
 export const api = {
   me: () => get<{ user: User }>('/auth/me'),
   login: (email: string, password: string) => post<{ user: User }>('/auth/login', { email, password }),
-  register: (data: { name: string; nameKm?: string; email: string; password: string }) =>
-    post<{ user: User }>('/auth/register', data),
   logout: () => post('/auth/logout'),
   changePassword: (currentPassword: string, newPassword: string) =>
     post('/auth/change-password', { currentPassword, newPassword }),
@@ -58,12 +56,27 @@ export const api = {
   deleteGroup: (groupId: string) => del(`/groups/${groupId}`),
   addMember: (
     groupId: string,
-    data: { name: string; nameKm?: string; email: string; role: Role; specialty?: string; department?: string }
+    data: { name: string; nameKm?: string; email: string; role: Role; specialty?: string; department?: string; password?: string }
   ) => post<{ id: string }>(`/groups/${groupId}/members`, data),
+  memberCandidates: (groupId: string, q: string) =>
+    get<Pick<User, 'id' | 'name' | 'nameKm' | 'email' | 'avatar' | 'role'>[]>(
+      `/groups/${groupId}/member-candidates?q=${encodeURIComponent(q)}`
+    ),
   removeMember: (groupId: string, userId: string) => del(`/groups/${groupId}/members/${userId}`),
   clearActivity: (groupId: string) => del(`/groups/${groupId}/activity`),
   adminOverview: () => get<AdminOverview>('/admin/overview'),
   setUserActive: (userId: string, active: boolean) => post(`/admin/users/${userId}/active`, { active }),
+  createLeader: (data: {
+    name: string;
+    nameKm?: string;
+    email: string;
+    username?: string;
+    password: string;
+    expiresAt?: string | null;
+    maxMembers?: number | null;
+  }) => post<{ id: string }>('/admin/users', data),
+  setUserPlan: (userId: string, data: { expiresAt?: string | null; maxMembers?: number | null }) =>
+    post(`/admin/users/${userId}/plan`, data),
   setGroupActive: (groupId: string, active: boolean) => post(`/admin/groups/${groupId}/active`, { active }),
   updateProfile: (data: { name: string; nameKm?: string; specialty?: string }) => patch('/users/me', data),
   updateAvatar: (avatar: string) => patch('/users/me/avatar', { avatar }),

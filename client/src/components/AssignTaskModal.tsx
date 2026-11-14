@@ -184,7 +184,7 @@ export const AssignTaskModal: React.FC<AssignTaskModalProps> = ({ isOpen, onClos
             />
           </div>
 
-          <div className="flex items-center justify-end gap-2 pt-3 border-t border-neutral-200">
+          <div className="flex items-center justify-end gap-2 pt-3">
             <button
               type="button"
               onClick={onClose}

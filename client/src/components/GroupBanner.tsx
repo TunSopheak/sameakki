@@ -38,6 +38,8 @@ export const GroupBanner: React.FC<GroupBannerProps> = ({
     activeGroupMembers,
     activeGroupTasks,
     isSuperAdmin,
+    canCreateGroup,
+    canManageGroup,
     updateGroupDeadline,
     t,
     language,
@@ -53,7 +55,7 @@ export const GroupBanner: React.FC<GroupBannerProps> = ({
       <div className="bg-white rounded-xl border border-neutral-200 p-8 text-center">
         <FolderKanban className="w-10 h-10 text-neutral-400 mx-auto mb-3" />
         <p className="text-neutral-700 mb-4 font-medium max-w-md mx-auto">
-          {isSuperAdmin ? t.noGroupSelected : t.noGroupsMember}
+          {canCreateGroup ? t.noGroupSelected : t.noGroupsMember}
         </p>
         <button
           onClick={onOpenJoinGroup}
@@ -61,7 +63,7 @@ export const GroupBanner: React.FC<GroupBannerProps> = ({
         >
           {t.joinGroup}
         </button>
-        {isSuperAdmin && (
+        {canCreateGroup && (
           <button
             onClick={onOpenCreateGroup}
             className="px-4 py-2 bg-brand text-white rounded-lg text-xs font-semibold hover:bg-brand-dark transition-colors"
@@ -119,7 +121,7 @@ export const GroupBanner: React.FC<GroupBannerProps> = ({
                       <span className="text-[11px] font-semibold text-neutral-500 uppercase tracking-wider">
                         {t.switchGroup} ({groups.length})
                       </span>
-                      {isSuperAdmin && (
+                      {canCreateGroup && (
                         <button
                           onClick={() => {
                             setShowGroupSwitcher(false);
@@ -176,7 +178,7 @@ export const GroupBanner: React.FC<GroupBannerProps> = ({
                 {activeGroup.status === 'completed' ? t.groupCompleted : t.activeGroups}
               </span>
 
-              {isEditingDeadline && isSuperAdmin ? (
+              {isEditingDeadline && canManageGroup ? (
                 <div className="flex items-center gap-1 bg-white border border-brand rounded-lg px-2 py-0.5 text-xs">
                   <input
                     type="date"
@@ -205,21 +207,21 @@ export const GroupBanner: React.FC<GroupBannerProps> = ({
               ) : (
                 <div
                   onClick={() => {
-                    if (isSuperAdmin) {
+                    if (canManageGroup) {
                       setNewDeadlineInput(activeGroup.deadline || '');
                       setIsEditingDeadline(true);
                     }
                   }}
                   className={`flex items-center gap-1 text-xs px-2.5 py-0.5 rounded-lg font-medium border bg-white border-neutral-200 text-neutral-800 ${
-                    isSuperAdmin ? 'hover:border-brand cursor-pointer' : ''
+                    canManageGroup ? 'hover:border-brand cursor-pointer' : ''
                   }`}
-                  title={isSuperAdmin ? 'Click to change deadline' : undefined}
+                  title={canManageGroup ? 'Click to change deadline' : undefined}
                 >
                   <Calendar className="w-3 h-3 text-black" />
                   <span>
                     {activeGroup.deadline ? `${activeGroup.deadline} (${deadlineInfo?.text})` : 'No Deadline'}
                   </span>
-                  {isSuperAdmin && (
+                  {canManageGroup && (
                     <span className="text-[11px] text-neutral-400 ml-1">✎</span>
                   )}
                 </div>
@@ -271,7 +273,7 @@ export const GroupBanner: React.FC<GroupBannerProps> = ({
             </div>
 
             <div className="flex flex-wrap items-center gap-2">
-              {isSuperAdmin && (
+              {canManageGroup && (
                 <button
                   onClick={onOpenAddMember}
                   className="inline-flex items-center gap-1 px-3 py-1.5 text-xs font-semibold text-white bg-brand hover:bg-brand-dark rounded-lg transition-colors cursor-pointer shadow-xs"

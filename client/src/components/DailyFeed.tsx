@@ -12,7 +12,7 @@ import {
   Check
 } from 'lucide-react';
 import { Avatar } from './Avatar';
-import { Pager } from './TableParts';
+import { Pager, SearchBox } from './TableParts';
 import { useTableView } from '../lib/useTableView';
 
 export const DailyFeed: React.FC = () => {
@@ -29,8 +29,9 @@ export const DailyFeed: React.FC = () => {
     addReactionToDailyLog,
     t,
     language,
-    searchQuery,
   } = useApp();
+
+  const [searchQuery, setSearchQuery] = useState('');
 
   const [filterMode, setFilterMode] = useState<'all' | 'in_progress' | 'completed' | 'approved'>('all');
   const [activeLeaderNoteId, setActiveLeaderNoteId] = useState<string | null>(null);
@@ -111,6 +112,7 @@ export const DailyFeed: React.FC = () => {
           </button>
         </div>
 
+        <SearchBox value={searchQuery} onChange={setSearchQuery} placeholder={t.searchDaily} />
       </div>
 
       {filteredLogs.length === 0 ? (

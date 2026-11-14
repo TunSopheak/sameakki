@@ -15,7 +15,7 @@ import {
   User as UserIcon
 } from 'lucide-react';
 import { Avatar } from './Avatar';
-import { FilterSelect, Pager } from './TableParts';
+import { FilterSelect, Pager, SearchBox } from './TableParts';
 import { useTableView } from '../lib/useTableView';
 
 interface TaskBoardProps {
@@ -38,9 +38,9 @@ export const TaskBoard: React.FC<TaskBoardProps> = ({
     deleteTask,
     t,
     language,
-    searchQuery,
-    setSearchQuery,
   } = useApp();
+
+  const [searchQuery, setSearchQuery] = useState('');
 
   const [statusFilter, setStatusFilter] = useState<'all' | TaskStatus>('all');
   const [assigneeFilter, setAssigneeFilter] = useState<string>('all');
@@ -153,7 +153,8 @@ export const TaskBoard: React.FC<TaskBoardProps> = ({
   return (
     <div className="space-y-4">
       <div className="bg-white p-4 rounded-xl border border-neutral-200 space-y-3">
-        <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-end gap-3">
+        <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
+          <SearchBox value={searchQuery} onChange={setSearchQuery} placeholder={t.searchTasks} />
           <div className="flex flex-wrap items-center gap-2">
             <div className="flex items-center gap-1 bg-white border border-neutral-200 rounded-lg px-2 py-1.5 text-xs">
               <Layers className="w-3 h-3 text-neutral-500" />

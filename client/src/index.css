@@ -47,6 +47,10 @@ html.dark {
   --color-neutral-900: #f5efe9;
   --shadow-xs: 0 1px 2px rgb(0 0 0 / 0.4);
 }
+/* Anything without an explicit text colour (inputs, plain buttons) inherits this */
+html.dark body {
+  color: #f5efe9;
+}
 html.dark :is(.text-black, .hover\:text-black:hover) {
   color: #f5efe9;
 }
@@ -104,7 +108,8 @@ html[lang='km'] :is(.tracking-wide, .tracking-wider) {
   position: fixed;
   bottom: 0;
   left: 50%;
-  z-index: 5;
+  /* Behind cards and modals, above the page background */
+  z-index: -1;
   width: min(34rem, 92vw);
   aspect-ratio: 1000 / 616.5;
   translate: -50% 0;

@@ -2,12 +2,12 @@ import { Router } from 'express';
 import bcrypt from 'bcryptjs';
 import rateLimit from 'express-rate-limit';
 import { z } from 'zod';
-import { config } from '../config';
 import { getDb } from '../db';
 import { clearAuthCookie, requireAuth, setAuthCookie } from '../middleware/auth';
-import { badRequest, conflict, forbidden, unauthorized } from '../middleware/errors';
+import { badRequest, unauthorized } from '../middleware/errors';
 import { toUser, USER_COLUMNS } from '../services/mappers';
 import { hashPassword } from '../services/password';
+import { assertNotExpired } from '../services/plan';
 
 export const authRouter = Router();
 
@@ -19,80 +19,24 @@ const authLimiter = rateLimit({
   message: { error: 'Too many attempts. Please wait a few minutes and try again.' },
 });
 
-const registerSchema = z.object({
-  name: z.string().trim().min(1).max(120),
-  nameKm: z.string().trim().max(120).optional(),
-  email: z.string().trim().toLowerCase().email().max(200),
-  password: z.string().min(1).max(200),
-});
-
 const loginSchema = z.object({
   email: z.string().trim().toLowerCase().min(1).max(200),
   password: z.string().min(1).max(200),
 });
 
-authRouter.post('/register', authLimiter, async (req, res) => {
-  const input = registerSchema.parse(req.body);
-  const db = await getDb();
-  const passwordHash = await hashPassword(input.password);
-
-  const user = await db.transaction(async tx => {
-    const { rows: countRows } = await tx.query<{ n: number }>('SELECT count(*)::int AS n FROM users');
-    const isFirstUser = countRows[0].n === 0;
-
-    const { rows: existing } = await tx.query(
-      'SELECT id, password_hash FROM users WHERE lower(email) = $1 AND is_active = 1',
-      [input.email]
-    );
-
-    if (existing[0]) {
-      // An admin may have added this email already; registering claims that account
-      const row = existing[0];
-      if (row.password_hash) {
-        throw conflict('An account with this email already exists. Please sign in instead.');
-      }
-      const { rows } = await tx.query(
-        `UPDATE users SET password_hash = $2, name = $3, name_km = COALESCE($4, name_km)
-          WHERE id = $1 RETURNING ${USER_COLUMNS}`,
-        [row.id, passwordHash, input.name, input.nameKm || null]
-      );
-      return rows[0];
-    }
-
-    if (!isFirstUser && !config.allowRegistration) {
-      throw forbidden('Registration is closed. Ask your team admin to add you to a group first.');
-    }
-
-    const { rows } = await tx.query(
-      `INSERT INTO users (name, name_km, email, password_hash, role, department)
-       VALUES ($1, $2, $3, $4, $5, $6) RETURNING ${USER_COLUMNS}`,
-      [
-        input.name,
-        input.nameKm || null,
-        input.email,
-        passwordHash,
-        // The first account becomes the Super Admin
-        isFirstUser ? 'super_admin' : 'member',
-        isFirstUser ? 'Team Leader' : 'Member',
-      ]
-    );
-    return rows[0];
-  });
-
-  setAuthCookie(res, user.id);
-  res.status(201).json({ user: toUser(user) });
-});
+// There is no public sign-up: the Super Admin creates every account.
 
 authRouter.post('/login', authLimiter, async (req, res) => {
   const input = loginSchema.parse(req.body);
   const db = await getDb();
   const { rows } = await db.query(
-    `SELECT ${USER_COLUMNS}, password_hash FROM users WHERE (lower(email) = $1 OR lower(username) = $1) AND is_active = 1`,
+    `SELECT ${USER_COLUMNS}, password_hash, expires_at FROM users WHERE (lower(email) = $1 OR lower(username) = $1) AND is_active = 1`,
     [input.email]
   );
   const row = rows[0];
   const ok = row?.password_hash ? await bcrypt.compare(input.password, row.password_hash) : false;
   if (!ok) throw unauthorized('Incorrect email/username or password.');
+  assertNotExpired(row);
 
   setAuthCookie(res, row.id);
   res.json({ user: toUser(row) });

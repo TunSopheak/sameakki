@@ -143,6 +143,10 @@ export interface AdminUserRow {
   registered: boolean;
   /** false = deleted (kept in the database, can be restored) */
   isActive: boolean;
+  /** Last moment the account works (ISO). Missing = never expires. */
+  expiresAt?: string;
+  /** Most people allowed in each of this leader's groups. Missing = unlimited. */
+  maxMembers?: number;
   groupCount: number;
 }
 

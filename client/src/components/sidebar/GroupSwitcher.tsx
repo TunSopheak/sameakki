@@ -10,7 +10,7 @@ interface GroupSwitcherProps {
 }
 
 export const GroupSwitcher: React.FC<GroupSwitcherProps> = ({ isCollapsed, onOpenCreateGroup, onOpenJoinGroup }) => {
-  const { groups, activeGroup, activeGroupMembers, setActiveGroupId, isSuperAdmin, language, t } = useApp();
+  const { groups, activeGroup, activeGroupMembers, setActiveGroupId, canCreateGroup, language, t } = useApp();
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
   useDismiss(ref, open, () => setOpen(false));
@@ -90,7 +90,7 @@ export const GroupSwitcher: React.FC<GroupSwitcherProps> = ({ isCollapsed, onOpe
               <KeyRound className="size-4 text-neutral-500" />
               {t.joinGroup}
             </button>
-            {isSuperAdmin && (
+            {canCreateGroup && (
               <button
                 type="button"
                 onClick={run(onOpenCreateGroup)}

@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useApp } from '../context/AppContext';
 import { formatDateTime } from '../lib/dates';
 import { ActivityEventType } from '../types';
+import { SearchBox } from './TableParts';
 import {
   History,
   CheckCircle2,
@@ -30,8 +31,10 @@ export const ActivityLog: React.FC<ActivityLogProps> = ({
     language,
     isSuperAdmin,
     clearActivityLogs,
-    searchQuery,
+    t,
   } = useApp();
+
+  const [searchQuery, setSearchQuery] = useState('');
 
   const [filterType, setFilterType] = useState<'all' | 'tasks' | 'members' | 'deadlines' | 'standups'>('all');
 
@@ -229,6 +232,7 @@ export const ActivityLog: React.FC<ActivityLogProps> = ({
             </button>
           </div>
 
+          <SearchBox value={searchQuery} onChange={setSearchQuery} placeholder={t.searchActivity} />
         </div>
       )}
 

@@ -3,6 +3,7 @@ import type { ActivityEvent, BootstrapData, DailyLog, Group, Role, Task, TaskSta
 import { translations, Language } from '../locales/translations';
 import { api, ApiError } from '../lib/api';
 import { todayLocal } from '../lib/dates';
+import { buildDemoData } from '../lib/demoData';
 
 type SessionStatus = 'loading' | 'signed_out' | 'ready';
 
@@ -14,18 +15,20 @@ interface AppContextType {
   status: SessionStatus;
   currentUser: User;
   login: (email: string, password: string) => Promise<void>;
-  register: (data: { name: string; nameKm?: string; email: string; password: string }) => Promise<void>;
+  /** Open the read-only sample workspace (no account needed). */
+  enterDemo: () => void;
+  isDemo: boolean;
   logout: () => Promise<void>;
   refresh: () => Promise<void>;
-
-  // The header search filters the list on screen
-  searchQuery: string;
-  setSearchQuery: (q: string) => void;
 
   notice: { type: 'error' | 'success'; message: string } | null;
   dismissNotice: () => void;
 
   isSuperAdmin: boolean;
+  /** Can create groups: the Super Admin and Team Leaders. */
+  canCreateGroup: boolean;
+  /** Can add and remove members and set the deadline of the active group: the Super Admin or that group's leader. */
+  canManageGroup: boolean;
   /** Can assign/approve tasks and approve standups in the active group. */
   isTeamLead: boolean;
   /** Can post standups and work on tasks in the active group (not a viewer). */
@@ -51,6 +54,7 @@ interface AppContextType {
     role: Role;
     specialty?: string;
     department?: string;
+    password?: string;
     groupId?: string;
   }) => Promise<void>;
   removeMemberFromGroup: (userId: string, groupId?: string) => Promise<void>;
@@ -128,9 +132,10 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     readStorage(STORAGE_KEYS.LANGUAGE) === 'en' ? 'en' : 'km'
   );
   const [status, setStatus] = useState<SessionStatus>('loading');
+  const [isDemo, setIsDemo] = useState(false);
+  const demoRef = useRef(false);
   const [data, setData] = useState<BootstrapData | null>(null);
   const [activeGroupId, setActiveGroupIdState] = useState<string>(() => readStorage(STORAGE_KEYS.ACTIVE_GROUP) || '');
-  const [searchQuery, setSearchQuery] = useState('');
   const [notice, setNotice] = useState<AppContextType['notice']>(null);
   const noticeTimer = useRef<number | undefined>(undefined);
 
@@ -143,6 +148,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   }, []);
 
   const refresh = useCallback(async () => {
+    if (demoRef.current) return;
     try {
       const next = await api.bootstrap();
       setData(next);
@@ -166,7 +172,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
   // Refresh while the tab is open and when it regains focus
   useEffect(() => {
-    if (status !== 'ready') return;
+    if (status !== 'ready' || isDemo) return;
     const tick = () => {
       if (document.visibilityState === 'visible') refresh().catch(() => undefined);
     };
@@ -176,15 +182,15 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       window.clearInterval(id);
       document.removeEventListener('visibilitychange', tick);
     };
-  }, [status, refresh]);
+  }, [status, isDemo, refresh]);
 
   useEffect(() => {
     writeStorage(STORAGE_KEYS.LANGUAGE, language);
     document.documentElement.lang = language;
   }, [language]);
   useEffect(() => {
-    if (activeGroupId) writeStorage(STORAGE_KEYS.ACTIVE_GROUP, activeGroupId);
-  }, [activeGroupId]);
+    if (activeGroupId && !isDemo) writeStorage(STORAGE_KEYS.ACTIVE_GROUP, activeGroupId);
+  }, [activeGroupId, isDemo]);
 
   const currentUser = data?.currentUser ?? EMPTY_USER;
   const users = data?.users ?? [];
@@ -207,6 +213,8 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   }, [activeGroup, users, tasks, dailyLogs, activityEvents, resolvedGroupId]);
 
   const isSuperAdmin = currentUser.role === 'super_admin';
+  const canCreateGroup = isSuperAdmin || currentUser.role === 'team_lead';
+  const canManageGroup = isSuperAdmin || (!!activeGroup && activeGroup.leaderId === currentUser.id);
   const isMemberOfActive = !!activeGroup?.memberIds.includes(currentUser.id);
   const isTeamLead =
     isSuperAdmin ||
@@ -216,6 +224,11 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   // Call the API, show any error, then reload the data
   const run = useCallback(
     async (action: () => Promise<unknown>, successMessage?: string) => {
+      // The demo workspace is sample data only, so nothing is sent or saved
+      if (demoRef.current) {
+        showNotice('error', t.demoReadOnly);
+        return;
+      }
       try {
         await action();
         if (successMessage) showNotice('success', successMessage);
@@ -230,7 +243,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         await refresh().catch(() => undefined);
       }
     },
-    [refresh, showNotice]
+    [refresh, showNotice, t]
   );
   // For handlers that ignore the result; the error is already shown
   const quiet = (p: Promise<unknown>) => p.then(() => undefined, () => undefined);
@@ -239,8 +252,6 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     language,
     setLanguage: setLanguageState,
     t,
-    searchQuery,
-    setSearchQuery,
 
     status,
     currentUser,
@@ -248,12 +259,22 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       await api.login(email, password);
       await refresh();
     },
-    async register(input) {
-      await api.register(input);
-      await refresh();
+    enterDemo() {
+      demoRef.current = true;
+      setIsDemo(true);
+      const demo = buildDemoData();
+      setData(demo);
+      setActiveGroupIdState(demo.groups[0].id);
+      setStatus('ready');
     },
+    isDemo,
     async logout() {
-      await api.logout().catch(() => undefined);
+      if (demoRef.current) {
+        demoRef.current = false;
+        setIsDemo(false);
+      } else {
+        await api.logout().catch(() => undefined);
+      }
       setData(null);
       setStatus('signed_out');
     },
@@ -263,6 +284,8 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     dismissNotice: () => setNotice(null),
 
     isSuperAdmin,
+    canCreateGroup,
+    canManageGroup,
     isTeamLead,
     canContribute,
 

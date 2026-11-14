@@ -1,16 +1,18 @@
 import React, { useState } from 'react';
 import { useApp } from '../context/AppContext';
+import { telegramLink } from '../lib/contact';
+import { useTheme } from '../lib/theme';
 import { Brand } from './Brand';
 import { Flag } from './Flag';
-import { Loader2, LogIn, UserPlus } from 'lucide-react';
+import { Compass, Loader2, LogIn, Moon, Send, Sun } from 'lucide-react';
 
 const inputClass =
-  'w-full px-3 py-2 text-sm bg-white border border-neutral-200 rounded-lg focus:outline-none focus:ring-1 focus:ring-brand/40 focus:border-brand';
+  'w-full px-3 py-2 text-sm text-black bg-white border border-neutral-200 rounded-lg focus:outline-none focus:ring-1 focus:ring-brand/40 focus:border-brand';
 
 export const AuthScreen: React.FC = () => {
-  const { login, register, t, language, setLanguage } = useApp();
-  const [mode, setMode] = useState<'login' | 'register'>('login');
-  const [form, setForm] = useState({ name: '', nameKm: '', email: '', password: '' });
+  const { login, enterDemo, t, language, setLanguage } = useApp();
+  const { theme, toggle } = useTheme();
+  const [form, setForm] = useState({ email: '', password: '' });
   const [error, setError] = useState('');
   const [submitting, setSubmitting] = useState(false);
 
@@ -22,16 +24,7 @@ export const AuthScreen: React.FC = () => {
     setError('');
     setSubmitting(true);
     try {
-      if (mode === 'login') {
-        await login(form.email.trim(), form.password);
-      } else {
-        await register({
-          name: form.name.trim(),
-          nameKm: form.nameKm.trim() || undefined,
-          email: form.email.trim(),
-          password: form.password,
-        });
-      }
+      await login(form.email.trim(), form.password);
     } catch (err) {
       setError(err instanceof Error ? err.message : String(err));
     } finally {
@@ -39,28 +32,33 @@ export const AuthScreen: React.FC = () => {
     }
   };
 
-  const switchMode = () => {
-    setMode(mode === 'login' ? 'register' : 'login');
-    setError('');
-  };
-
   return (
-    <div className="min-h-screen bg-neutral-50 flex items-start sm:items-center justify-center px-4 pb-8 pt-10 sm:p-4">
+    <div className="min-h-screen flex items-start sm:items-center justify-center px-4 pb-8 pt-10 sm:p-4">
       <div className="w-full max-w-md">
         <div className="flex items-center justify-between mb-6">
           <Brand />
-          <button
-            onClick={() => setLanguage(language === 'km' ? 'en' : 'km')}
-            className="inline-flex items-center gap-1.5 text-xs font-bold px-3 py-2 rounded-lg border border-neutral-200 bg-white hover:bg-neutral-100 cursor-pointer shrink-0"
-          >
-            <Flag code={language === 'km' ? 'en' : 'km'} className="h-3.5" />
-            {language === 'km' ? 'EN' : 'ខ្មែរ'}
-          </button>
+          <div className="flex shrink-0 items-center gap-2">
+            <button
+              onClick={toggle}
+              className="inline-flex size-9 items-center justify-center rounded-lg border border-neutral-200 bg-white text-neutral-600 hover:bg-neutral-100 cursor-pointer"
+              title={theme === 'dark' ? 'Light mode' : 'Dark mode'}
+              aria-label={theme === 'dark' ? 'Light mode' : 'Dark mode'}
+            >
+              {theme === 'dark' ? <Sun className="size-4" /> : <Moon className="size-4" />}
+            </button>
+            <button
+              onClick={() => setLanguage(language === 'km' ? 'en' : 'km')}
+              className="inline-flex items-center gap-1.5 text-xs font-bold px-3 py-2 rounded-lg border border-neutral-200 bg-white text-black hover:bg-neutral-100 cursor-pointer"
+            >
+              <Flag code={language === 'km' ? 'en' : 'km'} className="h-3.5" />
+              {language === 'km' ? 'EN' : 'ខ្មែរ'}
+            </button>
+          </div>
         </div>
 
         <div className="animate-rise bg-white rounded-xl border border-neutral-200 shadow-xs p-6">
-          <h1 className="text-lg font-bold text-black">{mode === 'login' ? t.authWelcome : t.signUp}</h1>
-          <p className="text-xs text-neutral-500 mt-1 mb-5 min-h-4">{mode === 'login' ? t.authSubtitle : ''}</p>
+          <h1 className="text-lg font-bold text-black">{t.authWelcome}</h1>
+          <p className="text-xs text-neutral-500 mt-1 mb-5">{t.authSubtitle}</p>
 
           {error && (
             <div role="alert" className="mb-4 p-3 text-xs rounded-lg border border-brand bg-neutral-100 text-black font-medium">
@@ -69,33 +67,14 @@ export const AuthScreen: React.FC = () => {
           )}
 
           <form onSubmit={handleSubmit} className="space-y-3">
-            {mode === 'register' && (
-              <>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                  <label className="block">
-                    <span className="block text-xs font-bold text-black mb-1">{t.memberName} *</span>
-                    <input required value={form.name} onChange={update('name')} autoComplete="name" className={inputClass} />
-                  </label>
-                  <label className="block">
-                    <span className="block text-xs font-bold text-black mb-1">
-                      {language === 'km' ? 'ឈ្មោះជាភាសាខ្មែរ' : 'Khmer name'}
-                    </span>
-                    <input value={form.nameKm} onChange={update('nameKm')} className={inputClass} />
-                  </label>
-                </div>
-              </>
-            )}
-
             <label className="block">
-              <span className="block text-xs font-bold text-black mb-1">
-                {mode === 'login' ? t.emailOrUsername : t.memberEmail} *
-              </span>
+              <span className="block text-xs font-bold text-black mb-1">{t.emailOrUsername} *</span>
               <input
-                type={mode === 'login' ? 'text' : 'email'}
+                type="text"
                 required
                 value={form.email}
                 onChange={update('email')}
-                autoComplete={mode === 'login' ? 'username' : 'email'}
+                autoComplete="username"
                 className={inputClass}
               />
             </label>
@@ -107,7 +86,7 @@ export const AuthScreen: React.FC = () => {
                 required
                 value={form.password}
                 onChange={update('password')}
-                autoComplete={mode === 'login' ? 'current-password' : 'new-password'}
+                autoComplete="current-password"
                 className={inputClass}
               />
             </label>
@@ -117,23 +96,33 @@ export const AuthScreen: React.FC = () => {
               disabled={submitting}
               className="w-full inline-flex items-center justify-center gap-2 py-2.5 bg-brand hover:bg-brand-dark disabled:opacity-60 text-white text-sm font-semibold rounded-lg cursor-pointer"
             >
-              {submitting ? (
-                <Loader2 className="w-4 h-4 animate-spin" />
-              ) : mode === 'login' ? (
-                <LogIn className="w-4 h-4" />
-              ) : (
-                <UserPlus className="w-4 h-4" />
-              )}
-              <span>{mode === 'login' ? t.signIn : t.signUp}</span>
+              {submitting ? <Loader2 className="w-4 h-4 animate-spin" /> : <LogIn className="w-4 h-4" />}
+              <span>{t.signIn}</span>
             </button>
           </form>
 
-          <p className="text-xs text-neutral-600 text-center mt-5">
-            {mode === 'login' ? t.noAccount : t.haveAccount}{' '}
-            <button onClick={switchMode} className="font-bold text-black hover:underline cursor-pointer">
-              {mode === 'login' ? t.signUp : t.signIn}
+          <div className="mt-6 space-y-3">
+            <button
+              type="button"
+              onClick={enterDemo}
+              className="w-full inline-flex items-center justify-center gap-2 py-2.5 border border-neutral-200 bg-white hover:bg-neutral-100 text-black text-sm font-semibold rounded-lg cursor-pointer"
+            >
+              <Compass className="w-4 h-4" />
+              <span>{t.exploreDemo}</span>
             </button>
-          </p>
+            <p className="text-center text-[11px] text-neutral-500">{t.exploreHint}</p>
+
+            <p className="pt-2 text-center text-xs text-neutral-600">{t.authNoSignup}</p>
+            <a
+              href={telegramLink(t.telegramMessage)}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="w-full inline-flex items-center justify-center gap-2 py-2.5 bg-neutral-900 hover:bg-neutral-800 text-white text-sm font-semibold rounded-lg"
+            >
+              <Send className="w-4 h-4" />
+              <span>{t.contactTelegram}</span>
+            </a>
+          </div>
         </div>
       </div>
     </div>

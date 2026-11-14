@@ -8,6 +8,8 @@ import { assert, getGroupAccess, isSuperAdmin, requireSuperAdmin } from '../serv
 import { logActivity } from '../services/activity';
 import { badRequest, conflict, notFound } from '../middleware/errors';
 import { USER_COLUMNS } from '../services/mappers';
+import { hashPassword } from '../services/password';
+import { assertCapacity } from '../services/plan';
 
 export const groupsRouter = Router();
 
@@ -39,7 +41,7 @@ const createGroupSchema = z.object({
 
 groupsRouter.post('/groups', async (req, res) => {
   const user = req.user!;
-  requireSuperAdmin(user);
+  assert(isSuperAdmin(user) || user.role === 'team_lead', 'Only a Super Admin or a Team Leader can create a group.');
   const input = createGroupSchema.parse(req.body);
   const code = (input.code || generateGroupCode()).toUpperCase();
 
@@ -91,6 +93,9 @@ groupsRouter.post('/groups/join', joinLimiter, async (req, res) => {
     const g = rows[0];
     if (!g) throw notFound('No group matches that code.');
     if (g.status === 'archived') throw badRequest('This group is archived and no longer accepts members.');
+
+    const { rows: already } = await tx.query('SELECT 1 FROM group_members WHERE group_id = $1 AND user_id = $2', [g.id, user.id]);
+    if (!already[0]) await assertCapacity(tx, g.id);
 
     const { rows: inserted } = await tx.query(
       `INSERT INTO group_members (group_id, user_id) VALUES ($1, $2)
@@ -184,23 +189,65 @@ const addMemberSchema = z.object({
   role: z.enum(['team_lead', 'member', 'viewer']).default('member'),
   specialty: optionalText(200),
   department: optionalText(120),
+  // Starting password for a new account. The person can change it after signing in.
+  password: z.string().min(6).max(200).optional(),
+});
+
+/** Existing accounts the caller may add to this group (search by name, email or username). */
+groupsRouter.get('/groups/:groupId/member-candidates', async (req, res) => {
+  const user = req.user!;
+  const db = await getDb();
+  const access = await getGroupAccess(db, user, req.params.groupId);
+  const admin = isSuperAdmin(user);
+  assert(admin || access.leaderId === user.id, 'Only a Super Admin or the group leader can add members.');
+
+  const q = String(req.query.q ?? '').trim().toLowerCase().slice(0, 100);
+  // Escape LIKE wildcards so the search text is matched literally
+  const like = `%${q.replace(/[\\%_]/g, m => '\\' + m)}%`;
+  const { rows } = await db.query(
+    `SELECT id, name, name_km, email, username, avatar, role
+       FROM users u
+      WHERE u.is_active = 1 AND u.role <> 'super_admin' AND u.id <> $1
+        AND ($2 OR u.created_by = $1)
+        AND NOT EXISTS (SELECT 1 FROM group_members m WHERE m.group_id = $3 AND m.user_id = u.id)
+        AND ($4 = '' OR lower(u.name) LIKE $5 OR lower(u.email) LIKE $5 OR lower(coalesce(u.username, '')) LIKE $5)
+      ORDER BY u.name
+      LIMIT 8`,
+    [user.id, admin, access.groupId, q, like]
+  );
+  res.json(
+    rows.map(r => ({
+      id: r.id,
+      name: r.name,
+      nameKm: r.name_km ?? undefined,
+      email: r.email,
+      avatar: r.avatar ?? undefined,
+      role: r.role,
+    }))
+  );
 });
 
 groupsRouter.post('/groups/:groupId/members', async (req, res) => {
   const user = req.user!;
-  requireSuperAdmin(user);
   const db = await getDb();
   const access = await getGroupAccess(db, user, req.params.groupId);
+  const admin = isSuperAdmin(user);
+  assert(admin || access.leaderId === user.id, 'Only a Super Admin or the group leader can add members.');
   const input = addMemberSchema.parse(req.body);
+  if (!admin && input.role === 'team_lead') throw badRequest('Only a Super Admin can create a Team Leader.');
+  const passwordHash = input.password ? await hashPassword(input.password) : null;
 
   const member = await db.transaction(async tx => {
     const { rows: matches } = await tx.query(
-      `SELECT ${USER_COLUMNS} FROM users WHERE lower(email) = $1 AND is_active = 1`,
+      `SELECT ${USER_COLUMNS}, created_by FROM users WHERE lower(email) = $1 AND is_active = 1`,
       [input.email]
     );
 
     let target = matches[0];
-    if (target) {
+    if (target && !admin) {
+      // A leader can only reuse accounts that they (or the Super Admin on their behalf) created
+      if (target.created_by !== user.id) throw conflict('That email already has an account that you cannot add.');
+    } else if (target) {
       if (target.id === user.id && input.role !== target.role) {
         throw badRequest('You cannot change your own role.');
       }
@@ -210,21 +257,31 @@ groupsRouter.post('/groups/:groupId/members', async (req, res) => {
       );
       target = rows[0];
     } else {
-      // No password yet; the person claims the account by registering with this email
+      if (!passwordHash) throw badRequest('Set a starting password for the new account.');
+      // The new account follows the leader's plan expiry, so a renewal reaches it too
+      const { rows: plan } = access.leaderId
+        ? await tx.query('SELECT expires_at FROM users WHERE id = $1', [access.leaderId])
+        : { rows: [] as any[] };
       const { rows } = await tx.query(
-        `INSERT INTO users (name, name_km, email, role, specialty, department)
-         VALUES ($1, $2, $3, $4, $5, $6) RETURNING ${USER_COLUMNS}`,
+        `INSERT INTO users (name, name_km, email, password_hash, role, specialty, department, expires_at, created_by)
+         VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9) RETURNING ${USER_COLUMNS}`,
         [
           input.name,
           input.nameKm || null,
           input.email,
+          passwordHash,
           input.role,
           input.specialty || null,
           input.department || 'Member',
+          plan[0]?.expires_at ?? null,
+          access.leaderId ?? user.id,
         ]
       );
       target = rows[0];
     }
+
+    const { rows: already } = await tx.query('SELECT 1 FROM group_members WHERE group_id = $1 AND user_id = $2', [access.groupId, target.id]);
+    if (!already[0]) await assertCapacity(tx, access.groupId);
 
     const { rows: inserted } = await tx.query(
       `INSERT INTO group_members (group_id, user_id) VALUES ($1, $2)
@@ -255,7 +312,7 @@ groupsRouter.delete('/groups/:groupId/members/:userId', async (req, res) => {
   const access = await getGroupAccess(db, user, req.params.groupId);
   const targetId = req.params.userId;
   const isSelf = targetId === user.id;
-  assert(isSelf || isSuperAdmin(user), 'Only a Super Admin can remove other members.');
+  assert(isSelf || isSuperAdmin(user) || access.leaderId === user.id, 'Only a Super Admin or the group leader can remove other members.');
 
   await db.transaction(async tx => {
     const { rows } = await tx.query(

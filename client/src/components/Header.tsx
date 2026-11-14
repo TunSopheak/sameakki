@@ -1,5 +1,5 @@
-import React, { useEffect, useRef, useState } from 'react';
-import { ChevronDown, Moon, Search, Sun, X } from 'lucide-react';
+import React, { useRef, useState } from 'react';
+import { ChevronDown, Moon, Sun } from 'lucide-react';
 import { useApp } from '../context/AppContext';
 import { useTheme } from '../lib/theme';
 import { useDismiss } from '../lib/useDismiss';
@@ -17,24 +17,11 @@ const LANGUAGES = [
 ] as const;
 
 export const Header: React.FC<HeaderProps> = ({ activeTab }) => {
-  const { language, setLanguage, t, activeGroup, searchQuery, setSearchQuery } = useApp();
+  const { language, setLanguage, t, activeGroup } = useApp();
   const { theme, toggle } = useTheme();
   const [langOpen, setLangOpen] = useState(false);
-  const searchRef = useRef<HTMLInputElement>(null);
   const langRef = useRef<HTMLDivElement>(null);
   useDismiss(langRef, langOpen, () => setLangOpen(false));
-
-  // Ctrl/Cmd + K focuses the search box
-  useEffect(() => {
-    const onKeyDown = (e: KeyboardEvent) => {
-      if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'k') {
-        e.preventDefault();
-        searchRef.current?.focus();
-      }
-    };
-    window.addEventListener('keydown', onKeyDown);
-    return () => window.removeEventListener('keydown', onKeyDown);
-  }, []);
 
   const tabTitles: Record<Tab, string> = {
     dashboard: t.tabDashboard,
@@ -56,23 +43,6 @@ export const Header: React.FC<HeaderProps> = ({ activeTab }) => {
             <span className="hidden text-neutral-400 sm:inline">/</span>
             <span className="hidden truncate font-semibold text-neutral-600 sm:inline">{tabTitles[activeTab]}</span>
           </div>
-        </div>
-
-        <div className="relative mx-2 flex max-w-xs flex-1 items-center sm:max-w-md lg:max-w-lg">
-          <Search className="pointer-events-none absolute left-3 size-3.5 text-neutral-400" />
-          <input
-            ref={searchRef}
-            type="text"
-            value={searchQuery}
-            onChange={e => setSearchQuery(e.target.value)}
-            placeholder={language === 'km' ? 'ស្វែងរក...' : 'Search...'}
-            className="h-10 w-full rounded-xl border border-neutral-200 bg-neutral-50 pl-9 pr-9 text-sm sm:text-xs transition-all hover:bg-neutral-100/80 focus:border-brand focus:bg-white focus:outline-none focus:ring-1 focus:ring-brand/40"
-          />
-          {searchQuery && (
-            <button onClick={() => setSearchQuery('')} className="absolute right-2.5 p-0.5 text-neutral-400 hover:text-black">
-              <X className="size-3.5" />
-            </button>
-          )}
         </div>
 
         <div className="flex shrink-0 items-center gap-2">

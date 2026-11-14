@@ -17,9 +17,10 @@ interface UsersTableProps {
   users: AdminUserRow[];
   onDelete: (user: AdminUserRow, active: boolean) => void;
   onChangeRole: (user: AdminUserRow, role: Role) => void;
+  onEditPlan: (user: AdminUserRow) => void;
 }
 
-export const UsersTable: React.FC<UsersTableProps> = ({ users, onDelete, onChangeRole }) => {
+export const UsersTable: React.FC<UsersTableProps> = ({ users, onDelete, onChangeRole, onEditPlan }) => {
   const { t, language } = useApp();
   const [role, setRole] = useState<'all' | Role>('all');
   const [status, setStatus] = useState<StatusFilter>('all');
@@ -58,6 +59,19 @@ export const UsersTable: React.FC<UsersTableProps> = ({ users, onDelete, onChang
     },
     initialSort: { key: 'created', dir: 'asc' },
   });
+
+  const planLabel = (user: AdminUserRow) => {
+    if (user.role === 'super_admin') return '—';
+    const limit = user.maxMembers ? `≤ ${user.maxMembers}` : t.adminUnlimited;
+    if (!user.expiresAt) return `${t.adminNeverExpires} · ${limit}`;
+    const expired = new Date(user.expiresAt).getTime() < Date.now();
+    return (
+      <span className={expired ? 'font-semibold text-brand' : undefined}>
+        {expired ? `${t.adminExpired} ` : ''}
+        {user.expiresAt.slice(0, 10)} · {limit}
+      </span>
+    );
+  };
 
   const lastSeen = (user: AdminUserRow) => {
     if (!user.isActive) return t.adminDeleted;
@@ -99,7 +113,7 @@ export const UsersTable: React.FC<UsersTableProps> = ({ users, onDelete, onChang
       </div>
 
       <div className="overflow-x-auto">
-        <table className="w-full min-w-[44rem] text-left text-xs">
+        <table className="w-full min-w-[52rem] text-left text-xs">
           <thead className="bg-neutral-50 text-neutral-500">
             <tr>
               <SortHeader label={t.memberName} column="name" sort={view.sort} onSort={view.toggleSort} />
@@ -107,6 +121,7 @@ export const UsersTable: React.FC<UsersTableProps> = ({ users, onDelete, onChang
               <SortHeader label={t.adminGroups} column="groups" sort={view.sort} onSort={view.toggleSort} />
               <SortHeader label={t.adminJoined} column="created" sort={view.sort} onSort={view.toggleSort} />
               <SortHeader label={t.adminLastActive} column="seen" sort={view.sort} onSort={view.toggleSort} />
+              <th className="px-4 py-2.5 font-semibold">{t.adminPlan}</th>
               <th className="px-4 py-2.5 text-right font-semibold">{t.adminActions}</th>
             </tr>
           </thead>
@@ -148,7 +163,16 @@ export const UsersTable: React.FC<UsersTableProps> = ({ users, onDelete, onChang
                       {lastSeen(user)}
                     </span>
                   </td>
+                  <td className="px-4 py-3 text-neutral-700">{planLabel(user)}</td>
                   <td className="px-4 py-3 text-right">
+                    {canEdit && (
+                      <button
+                        onClick={() => onEditPlan(user)}
+                        className="mr-3 cursor-pointer text-xs font-semibold text-black hover:underline"
+                      >
+                        {t.adminEditPlan}
+                      </button>
+                    )}
                     {user.role !== 'super_admin' && (
                       <RowAction
                         active={user.isActive}
@@ -163,7 +187,7 @@ export const UsersTable: React.FC<UsersTableProps> = ({ users, onDelete, onChang
             })}
             {view.pageRows.length === 0 && (
               <tr>
-                <td colSpan={6} className="px-4 py-8 text-center text-neutral-500">
+                <td colSpan={7} className="px-4 py-8 text-center text-neutral-500">
                   {t.adminNoResults}
                 </td>
               </tr>

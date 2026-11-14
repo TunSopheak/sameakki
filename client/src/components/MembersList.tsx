@@ -5,7 +5,6 @@ import { Role } from '../types';
 import {
   Shield,
   ShieldCheck,
-  UserPlus,
   Trash2,
   CheckCircle2,
   Clock,
@@ -13,28 +12,25 @@ import {
   Users,
 } from 'lucide-react';
 import { Avatar } from './Avatar';
-import { Pager, SortHeader } from './TableParts';
+import { Pager, SearchBox, SortHeader } from './TableParts';
 import { useTableView } from '../lib/useTableView';
 
 interface MembersListProps {
-  onOpenAddMember: () => void;
   onOpenLeaveGroup: (groupId: string) => void;
 }
 
-export const MembersList: React.FC<MembersListProps> = ({
-  onOpenAddMember,
-}) => {
+export const MembersList: React.FC<MembersListProps> = () => {
   const {
     activeGroupMembers,
     currentUser,
     isSuperAdmin,
+    canManageGroup,
     updateUserRole,
     removeMemberFromGroup,
     activeGroupTasks,
     activeGroupDailyLogs,
     t,
     language,
-    searchQuery,
   } = useApp();
 
   const [roleFilter, setRoleFilter] = useState<'all' | Role>('all');
@@ -42,7 +38,6 @@ export const MembersList: React.FC<MembersListProps> = ({
 
   const byRole = roleFilter === 'all' ? activeGroupMembers : activeGroupMembers.filter(m => m.role === roleFilter);
   const view = useTableView(byRole, {
-    externalQuery: searchQuery,
     searchText: m => `${m.name} ${m.nameKm ?? ''} ${m.email} ${m.specialty ?? ''} ${m.role}`,
     compare: {
       name: (a, b) => a.name.localeCompare(b.name),
@@ -97,19 +92,10 @@ export const MembersList: React.FC<MembersListProps> = ({
             </span>
           </div>
           <p className="text-xs text-neutral-500 mt-0.5">
-            {isSuperAdmin ? t.onlySuperAdminNotice : t.memberViewDesc}
+            {canManageGroup ? t.onlySuperAdminNotice : t.memberViewDesc}
           </p>
         </div>
 
-        {isSuperAdmin && (
-          <button
-            onClick={onOpenAddMember}
-            className="inline-flex items-center gap-1.5 px-4 py-2 bg-brand hover:bg-brand-dark text-white text-xs font-semibold rounded-lg shadow-xs transition-colors cursor-pointer self-start sm:self-auto"
-          >
-            <UserPlus className="w-4 h-4" />
-            <span>{t.addMember}</span>
-          </button>
-        )}
       </div>
 
       {isSuperAdmin && (
@@ -166,6 +152,8 @@ export const MembersList: React.FC<MembersListProps> = ({
             Member
           </button>
         </div>
+
+        <SearchBox value={view.query} onChange={view.setQuery} placeholder={t.searchMembers} />
       </div>
 
       <ul className="md:hidden divide-y divide-neutral-100">
@@ -191,7 +179,7 @@ export const MembersList: React.FC<MembersListProps> = ({
                   {member.nameKm && <p className="text-xs text-neutral-500 truncate">{member.nameKm}</p>}
                   <p className="text-xs text-neutral-500 truncate">{member.email}</p>
                 </div>
-                {isSuperAdmin && !isCurrentUser && (
+                {canManageGroup && !isCurrentUser && (
                   <button
                     onClick={() => {
                       if (confirm(t.removeMemberConfirm)) removeMemberFromGroup(member.id);
@@ -248,7 +236,7 @@ export const MembersList: React.FC<MembersListProps> = ({
               <SortHeader label={t.memberSpecialty} column="specialty" sort={view.sort} onSort={view.toggleSort} className="py-3 px-4" />
               <th className="py-3 px-4 text-center">{language === 'km' ? 'ToDo ថ្ងៃនេះ' : 'Today Standup'}</th>
               <th className="py-3 px-4 text-center">{language === 'km' ? 'កិច្ចការ' : 'Tasks'}</th>
-              {isSuperAdmin && <th className="py-3 px-6 text-right">{language === 'km' ? 'សកម្មភាព' : 'Actions'}</th>}
+              {canManageGroup && <th className="py-3 px-6 text-right">{language === 'km' ? 'សកម្មភាព' : 'Actions'}</th>}
             </tr>
           </thead>
           <tbody className="divide-y divide-neutral-100 text-xs">
@@ -357,7 +345,7 @@ export const MembersList: React.FC<MembersListProps> = ({
                       </span>
                     </td>
 
-                    {isSuperAdmin && (
+                    {canManageGroup && (
                       <td className="py-4 px-6 text-right">
                         {!isCurrentUser ? (
                           <button
@@ -374,7 +362,7 @@ export const MembersList: React.FC<MembersListProps> = ({
                           </button>
                         ) : (
                           <span className="text-neutral-400 text-[11px] italic">
-                            {language === 'km' ? 'ម្ចាស់ប្រព័ន្ធ' : 'Super Admin'}
+                            {language === 'km' ? 'អ្នក' : 'You'}
                           </span>
                         )}
                       </td>

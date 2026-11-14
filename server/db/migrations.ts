@@ -149,4 +149,15 @@ export const migrations: { id: string; sql: string }[] = [
       ALTER TABLE daily_logs ADD COLUMN is_active SMALLINT NOT NULL DEFAULT 1 CHECK (is_active IN (0, 1, 2));
     `,
   },
+  {
+    // Accounts are created by the Super Admin. expires_at ends access (NULL = never),
+    // max_members caps the size of a leader's groups (NULL = unlimited), and created_by
+    // lets a renewal reach the members a leader added.
+    id: '007_account_plan',
+    sql: `
+      ALTER TABLE users ADD COLUMN expires_at TIMESTAMPTZ;
+      ALTER TABLE users ADD COLUMN max_members INTEGER CHECK (max_members IS NULL OR max_members > 0);
+      ALTER TABLE users ADD COLUMN created_by UUID REFERENCES users(id) ON DELETE SET NULL;
+    `,
+  },
 ];

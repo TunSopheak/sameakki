@@ -22,9 +22,10 @@ import { LeaveGroupModal } from './components/LeaveGroupModal';
 import { AssignmentReportModal } from './components/AssignmentReportModal';
 import { AuthScreen } from './components/AuthScreen';
 import { Notice } from './components/Notice';
+import { DemoBanner } from './components/DemoBanner';
 
 const MainApp: React.FC = () => {
-  const { currentUser, language, setSearchQuery } = useApp();
+  const { currentUser, language } = useApp();
 
   const [activeTab, setActiveTab] = useState<Tab>('dashboard');
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
@@ -40,7 +41,6 @@ const MainApp: React.FC = () => {
 
   // The report opens as a modal, not a tab
   const handleTabChange = (tab: Tab) => {
-    setSearchQuery('');
     if (tab === 'report') {
       setIsReportModalOpen(true);
     } else {
@@ -49,7 +49,7 @@ const MainApp: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-neutral-50 flex text-black selection:bg-brand selection:text-white">
+    <div className="min-h-screen flex text-black selection:bg-brand selection:text-white">
       <Sidebar
         activeTab={activeTab}
         setActiveTab={handleTabChange}
@@ -67,6 +67,7 @@ const MainApp: React.FC = () => {
           isSidebarCollapsed ? 'lg:pl-20' : 'lg:pl-64'
         }`}
       >
+        <DemoBanner />
         <Header activeTab={activeTab} />
 
         <main className="flex-1 pb-8 lg:pb-16">
@@ -109,10 +110,7 @@ const MainApp: React.FC = () => {
             {activeTab === 'admin' && <AdminOverview />}
 
             {activeTab === 'members' && (
-              <MembersList
-                onOpenAddMember={() => setIsAddMemberOpen(true)}
-                onOpenLeaveGroup={id => setLeaveGroupId(id)}
-              />
+              <MembersList onOpenLeaveGroup={id => setLeaveGroupId(id)} />
             )}
           </div>
         </main>
