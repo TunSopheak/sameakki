@@ -27,6 +27,7 @@ export const TaskBoard: React.FC<TaskBoardProps> = ({
     updateTaskStatus,
     updateTaskDeadline,
     approveTask,
+    reassignTask,
     deleteTask,
     t,
   } = useApp();
@@ -40,6 +41,9 @@ export const TaskBoard: React.FC<TaskBoardProps> = ({
   const [completionNote, setCompletionNote] = useState('');
   const [approvingTaskId, setApprovingTaskId] = useState<string | null>(null);
   const [leaderFeedback, setLeaderFeedback] = useState('');
+  const [reassigningTaskId, setReassigningTaskId] = useState<string | null>(null);
+  // Viewers cannot work on tasks
+  const assignableMembers = activeGroupMembers.filter(m => m.role !== 'viewer');
 
   const categories = Array.from(new Set(activeGroupTasks.map(t => t.module))).filter(Boolean);
 
@@ -442,6 +446,38 @@ export const TaskBoard: React.FC<TaskBoardProps> = ({
                         </span>
                       </div>
                     </div>
+
+                    {isTeamLead && task.status !== 'approved' && (
+                      reassigningTaskId === task.id ? (
+                        <select
+                          autoFocus
+                          // A member who left is no longer in the list
+                          value={assignableMembers.some(m => m.id === task.assignedTo) ? task.assignedTo : ''}
+                          onChange={e => {
+                            reassignTask(task.id, e.target.value);
+                            setReassigningTaskId(null);
+                          }}
+                          onBlur={() => setReassigningTaskId(null)}
+                          className="max-w-[120px] rounded-lg border border-neutral-200 bg-white px-1.5 py-1 text-[11px] text-black focus:outline-none focus:ring-1 focus:ring-brand/40"
+                        >
+                          <option value="" disabled>
+                            {t.taskAssignTo}
+                          </option>
+                          {assignableMembers.map(m => (
+                            <option key={m.id} value={m.id}>
+                              {m.name}
+                            </option>
+                          ))}
+                        </select>
+                      ) : (
+                        <button
+                          onClick={() => setReassigningTaskId(task.id)}
+                          className="text-[11px] font-semibold text-neutral-500 hover:text-black hover:underline cursor-pointer"
+                        >
+                          {t.reassignTask}
+                        </button>
+                      )
+                    )}
 
                     <div className="text-right">
                       <EditableDate value={task.dueDate} canEdit={isTeamLead} onSave={date => updateTaskDeadline(task.id, date)} size="sm" className="justify-end">

@@ -134,6 +134,7 @@ export type ActivityEventType =
   | 'daily_todo_approved'
   | 'group_created'
   | 'group_deadline_changed'
+  | 'group_status_changed'
   | 'support_access_changed';
 
 export interface ActivityEvent {

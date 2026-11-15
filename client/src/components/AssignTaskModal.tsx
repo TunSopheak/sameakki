@@ -10,7 +10,9 @@ interface AssignTaskModalProps {
 }
 
 export const AssignTaskModal: React.FC<AssignTaskModalProps> = ({ isOpen, onClose }) => {
-  const { assignTask, activeGroupMembers, t } = useApp();
+  const { assignTask, activeGroupMembers: groupMembers, t } = useApp();
+  // Viewers cannot work on tasks
+  const activeGroupMembers = groupMembers.filter(m => m.role !== 'viewer');
 
   const [title, setTitle] = useState('');
   const [module, setModule] = useState('General');

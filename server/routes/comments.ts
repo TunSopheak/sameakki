@@ -3,7 +3,7 @@ import { z } from 'zod';
 import type { Comment, CommentKind, User } from '../../shared/types';
 import { getDb, type Queryable } from '../db';
 import { notFound } from '../middleware/errors';
-import { assert, getGroupAccess } from '../services/access';
+import { assert, assertWritable, getGroupAccess } from '../services/access';
 import { groupLeadIds, notifyComment } from '../services/notifications';
 
 export const commentsRouter = Router();
@@ -49,10 +49,11 @@ async function listComments(db: Queryable, kind: CommentKind, id: string): Promi
     `SELECT c.id, c.user_id, c.body, c.created_at, u.name, u.name_km, u.avatar
        FROM comments c JOIN users u ON u.id = c.user_id
       WHERE c.target_type = $1 AND c.target_id = $2 AND c.is_active = 1
-      ORDER BY c.created_at ASC LIMIT ${MAX_PER_THREAD}`,
+      ORDER BY c.created_at DESC LIMIT ${MAX_PER_THREAD}`,
     [kind, id]
   );
-  return rows.map(toComment);
+  // Newest 200, shown oldest first
+  return rows.reverse().map(toComment);
 }
 
 function register(kind: CommentKind, path: string) {
@@ -66,6 +67,7 @@ function register(kind: CommentKind, path: string) {
     const user = req.user!;
     const db = await getDb();
     const { target, access } = await loadTarget(db, user, kind, req.params.id);
+    assertWritable(access);
     assert(access.canContribute, 'Viewers cannot comment.');
     const { body } = bodySchema.parse(req.body);
 

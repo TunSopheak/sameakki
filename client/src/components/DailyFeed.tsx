@@ -126,7 +126,8 @@ export const DailyFeed: React.FC = () => {
             };
 
             const isAuthor = log.userId === currentUser.id;
-            const canEditChecklist = (isAuthor && canContribute) || isTeamLead;
+            // After approval only a leader can still change the checklist
+            const canEditChecklist = isTeamLead || (isAuthor && canContribute && log.status !== 'approved');
             const completedItemsCount = log.items.filter(i => i.done).length;
             const totalItemsCount = log.items.length;
             const calcPercent = totalItemsCount > 0
@@ -262,7 +263,7 @@ export const DailyFeed: React.FC = () => {
                   </div>
                 )}
 
-                {isTeamLead && log.status !== 'approved' && (
+                {isTeamLead && log.status === 'completed' && (
                   <div className="mb-3">
                     {activeLeaderNoteId === log.id ? (
                       <div className="p-3 bg-neutral-50 rounded-lg space-y-2">
@@ -311,7 +312,7 @@ export const DailyFeed: React.FC = () => {
                       </button>
                     )}
 
-                    {isTeamLead && log.status !== 'approved' && activeLeaderNoteId !== log.id && (
+                    {isTeamLead && log.status === 'completed' && activeLeaderNoteId !== log.id && (
                       <button
                         onClick={() => setActiveLeaderNoteId(log.id)}
                         className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-brand hover:bg-brand-dark text-white rounded-lg font-semibold text-xs transition-colors cursor-pointer shadow-xs"
@@ -329,7 +330,8 @@ export const DailyFeed: React.FC = () => {
                         <button
                           key={r.emoji}
                           onClick={() => addReactionToDailyLog(log.id, r.emoji)}
-                          className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs transition-colors cursor-pointer ${
+                          disabled={!canContribute}
+                          className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs transition-colors enabled:cursor-pointer ${
                             userHasReacted
                               ? 'bg-brand text-white'
                               : 'bg-neutral-100 text-neutral-700 hover:bg-neutral-200'
@@ -342,7 +344,7 @@ export const DailyFeed: React.FC = () => {
                     })}
 
                     <div className="flex items-center gap-0.5 pl-1">
-                      {availableEmojis.map(emoji => {
+                      {canContribute && availableEmojis.map(emoji => {
                         if (log.reactions.some(r => r.emoji === emoji)) return null;
                         return (
                           <button

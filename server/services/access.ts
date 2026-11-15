@@ -13,11 +13,15 @@ export interface GroupAccess {
   isMember: boolean;
   canLead: boolean;
   canContribute: boolean;
+  /** The group is archived, or its leader's plan has ended, so its work cannot change. */
+  viewOnly: boolean;
 }
+
+export const VIEW_ONLY_MESSAGE = 'This group is view-only right now.';
 
 export async function getGroupAccess(db: Queryable, user: User, groupId: string): Promise<GroupAccess> {
   const { rows } = await db.query(
-    `SELECT g.id, g.leader_id,
+    `SELECT g.id, g.leader_id, g.status,
             (g.support_access_until IS NOT NULL AND g.support_access_until > now()) AS support_open,
             EXISTS (SELECT 1 FROM users l WHERE l.id = g.leader_id AND l.role <> 'super_admin' AND l.expires_at IS NOT NULL AND l.expires_at < now()) AS leader_plan_ended,
             EXISTS (SELECT 1 FROM group_members m WHERE m.group_id = g.id AND m.user_id = $2) AS is_member
@@ -31,8 +35,8 @@ export async function getGroupAccess(db: Queryable, user: User, groupId: string)
   // The Super Admin sees a group's content only as a member, or while its leader allows support access
   if (!isMember && !(isSuperAdmin(user) && row.support_open)) throw notFound('Group not found.');
 
-  // A leader with an ended plan freezes the whole group
-  const frozen = row.leader_plan_ended === true && !isSuperAdmin(user);
+  // A leader with an ended plan freezes the group, and so does archiving it
+  const frozen = (row.leader_plan_ended === true && !isSuperAdmin(user)) || row.status === 'archived';
   const canLead =
     !frozen && (isSuperAdmin(user) || (isMember && (user.role === 'team_lead' || row.leader_id === user.id)));
 
@@ -42,7 +46,13 @@ export async function getGroupAccess(db: Queryable, user: User, groupId: string)
     isMember,
     canLead,
     canContribute: !frozen && (isSuperAdmin(user) || (isMember && user.role !== 'viewer')),
+    viewOnly: frozen,
   };
+}
+
+/** Call first in every route that changes tasks, updates or comments. */
+export function assertWritable(access: GroupAccess) {
+  if (access.viewOnly) throw forbidden(VIEW_ONLY_MESSAGE);
 }
 
 export function assert(condition: boolean, message?: string): asserts condition {

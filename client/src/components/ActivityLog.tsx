@@ -53,6 +53,11 @@ export const ActivityLog: React.FC<ActivityLogProps> = ({
           icon: <Icons.deadline className="size-3.5 text-black" />,
           label: t.logDeadlineChange,
         };
+      case 'group_status_changed':
+        return {
+          icon: <Icons.group className="size-3.5 text-black" />,
+          label: t.logGroupStatusChanged,
+        };
       case 'member_added':
         return {
           icon: <Icons.addMember className="size-3.5 text-black" />,

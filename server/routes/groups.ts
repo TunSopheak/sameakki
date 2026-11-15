@@ -27,7 +27,18 @@ const joinLimiter = rateLimit({
   message: { error: 'Too many attempts. Please wait a few minutes and try again.' },
 });
 
-const optionalText = (max: number) => z.string().trim().max(max).optional();
+// Counts only failed attempts, so guessing which emails have accounts runs out quickly
+export const addMemberLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  limit: 10,
+  skipSuccessfulRequests: true,
+  keyGenerator: req => req.user!.id,
+  standardHeaders: 'draft-7',
+  legacyHeaders: false,
+  message: { error: 'Too many attempts. Please wait a few minutes and try again.' },
+});
+
+const optionalText =(max: number) => z.string().trim().max(max).optional();
 
 const createGroupSchema = z.object({
   name: z.string().trim().min(1).max(160),
@@ -127,6 +138,8 @@ const updateGroupSchema = z.object({
   category: z.enum(GROUP_CATEGORIES).optional(),
 });
 
+const STATUS_KM: Record<string, string> = { active: 'សកម្ម', completed: 'បានបញ្ចប់', archived: 'រក្សាទុក' };
+
 groupsRouter.patch('/groups/:groupId', async (req, res) => {
   const user = req.user!;
   const db = await getDb();
@@ -166,6 +179,18 @@ groupsRouter.patch('/groups/:groupId', async (req, res) => {
         metadata: { oldValue, newValue },
       });
     }
+
+    if (input.status !== undefined && input.status !== before.status) {
+      await logActivity(tx, user, {
+        groupId: access.groupId,
+        type: 'group_status_changed',
+        targetId: access.groupId,
+        targetTitle: before.name,
+        description: `changed the group status from ${before.status} to ${input.status}`,
+        descriptionKm: `បានប្តូរស្ថានភាពក្រុមពី ${STATUS_KM[before.status]} ទៅ ${STATUS_KM[input.status]}`,
+        metadata: { oldValue: before.status, newValue: input.status },
+      });
+    }
   });
 
   res.status(204).end();
@@ -184,7 +209,8 @@ const addMemberSchema = z.object({
   name: z.string().trim().min(1).max(120),
   nameKm: optionalText(120),
   email: z.string().trim().toLowerCase().email().max(200),
-  role: z.enum(['team_lead', 'member', 'viewer']).default('member'),
+  // Left out, a new account is a member and an existing account keeps its role
+  role: z.enum(['team_lead', 'member', 'viewer']).optional(),
   specialty: optionalText(200),
   department: optionalText(120),
   password: z.string().min(1).max(200).optional(),
@@ -198,6 +224,11 @@ groupsRouter.get('/groups/:groupId/member-candidates', async (req, res) => {
   assert(admin || access.leaderId === user.id, 'Only a Super Admin or the group leader can add members.');
 
   const q = String(req.query.q ?? '').trim().toLowerCase().slice(0, 100);
+  // The Super Admin can find anyone, so a name must be typed first. A list of every account is never shown.
+  if (admin && q.length < 2) {
+    res.json([]);
+    return;
+  }
   const like = `%${q.replace(/[\\%_]/g, m => '\\' + m)}%`;
   const { rows } = await db.query(
     `SELECT id, name, name_km, email, username, avatar, role
@@ -222,10 +253,10 @@ groupsRouter.get('/groups/:groupId/member-candidates', async (req, res) => {
   );
 });
 
-groupsRouter.post('/groups/:groupId/members', async (req, res) => {
+groupsRouter.post('/groups/:groupId/members', addMemberLimiter, async (req, res) => {
   const user = req.user!;
   const db = await getDb();
-  const access = await getGroupAccess(db, user, req.params.groupId);
+  const access = await getGroupAccess(db, user, req.params.groupId as string);
   const admin = isSuperAdmin(user);
   assert(admin || access.leaderId === user.id, 'Only a Super Admin or the group leader can add members.');
   const input = addMemberSchema.parse(req.body);
@@ -242,14 +273,14 @@ groupsRouter.post('/groups/:groupId/members', async (req, res) => {
 
     let target = matches[0];
     if (target && !admin) {
-      if (target.created_by !== user.id) throw conflict('That email already has an account that you cannot add.');
+      if (target.created_by !== user.id) throw conflict('This email cannot be added. Ask the person to join with the group code.');
     } else if (target) {
-      if (target.id === user.id && input.role !== target.role) {
+      if (target.id === user.id && input.role && input.role !== target.role) {
         throw badRequest('You cannot change your own role.');
       }
       const { rows } = await tx.query(
         `UPDATE users SET role = $2, specialty = COALESCE($3, specialty) WHERE id = $1 RETURNING ${USER_COLUMNS}`,
-        [target.id, input.role, input.specialty || null]
+        [target.id, input.role ?? target.role, input.specialty || null]
       );
       target = rows[0];
     } else {
@@ -266,7 +297,7 @@ groupsRouter.post('/groups/:groupId/members', async (req, res) => {
           input.nameKm || null,
           input.email,
           passwordHash,
-          input.role,
+          input.role ?? 'member',
           input.specialty || null,
           input.department || 'Member',
           plan[0]?.expires_at ?? null,
@@ -290,9 +321,9 @@ groupsRouter.post('/groups/:groupId/members', async (req, res) => {
         type: 'member_added',
         targetId: target.id,
         targetTitle: target.name,
-        description: `added ${target.name} as ${input.role.replace('_', ' ')}`,
-        descriptionKm: `បានបញ្ចូល ${target.name} ក្នុងក្រុម (តួនាទី៖ ${input.role})`,
-        metadata: { role: input.role },
+        description: `added ${target.name} as ${target.role.replace('_', ' ')}`,
+        descriptionKm: `បានបញ្ចូល ${target.name} ក្នុងក្រុម (តួនាទី៖ ${target.role})`,
+        metadata: { role: target.role },
       });
     }
     return target;
@@ -335,6 +366,8 @@ groupsRouter.delete('/groups/:groupId/members/:userId', async (req, res) => {
   const targetId = req.params.userId;
   const isSelf = targetId === user.id;
   assert(isSelf || isSuperAdmin(user) || access.leaderId === user.id, 'Only a Super Admin or the group leader can remove other members.');
+  // Without its leader nobody could manage the group
+  if (targetId === access.leaderId) throw badRequest('The group leader cannot leave or be removed from the group.');
 
   await db.transaction(async tx => {
     const { rows } = await tx.query(

@@ -155,7 +155,11 @@ export const AddMemberModal: React.FC<AddMemberModalProps> = ({ isOpen, onClose 
                       <li key={c.id}>
                         <button
                           type="button"
-                          onClick={() => setSelected(c)}
+                          onClick={() => {
+                            setSelected(c);
+                            // An existing account keeps its role unless it is changed
+                            setRole(c.role);
+                          }}
                           className="flex w-full cursor-pointer items-center gap-2.5 px-3 py-2 text-left hover:bg-neutral-100"
                         >
                           <Avatar name={c.name} avatar={c.avatar} className="size-7" />

@@ -3,10 +3,10 @@ import { z } from 'zod';
 import { getDb, type Queryable } from '../db';
 import { TASK_PRIORITIES } from '../../shared/types';
 import type { User } from '../../shared/types';
-import { assert, getGroupAccess } from '../services/access';
+import { assert, assertWritable, getGroupAccess } from '../services/access';
 import { logActivity } from '../services/activity';
 import { groupLeadIds, notify } from '../services/notifications';
-import { badRequest, notFound } from '../middleware/errors';
+import { badRequest, conflict, notFound } from '../middleware/errors';
 import { isoDate, isoTime as time } from '../services/validation';
 import { TIME_ZONE } from '../services/time';
 
@@ -21,7 +21,20 @@ async function loadTask(db: Queryable, user: User, taskId: string) {
   return { task, access };
 }
 
-const START_AFTER_DUE = 'The start date cannot be after the due date.';
+/** The person must be in the group, and able to work on a task. */
+async function loadAssignee(tx: Queryable, groupId: string, userId: string) {
+  const { rows } = await tx.query(
+    `SELECT u.name, u.role FROM group_members m JOIN users u ON u.id = m.user_id
+      WHERE m.group_id = $1 AND m.user_id = $2`,
+    [groupId, userId]
+  );
+  if (!rows[0]) throw badRequest('The assignee must be a member of this group.');
+  // A viewer cannot update a task, so it would be stuck
+  if (rows[0].role === 'viewer') throw badRequest('Viewers cannot be assigned tasks.');
+  return rows[0] as { name: string; role: string };
+}
+
+const START_AFTER_DUE ='The start date cannot be after the due date.';
 
 const createTaskSchema = z
   .object({
@@ -76,16 +89,12 @@ tasksRouter.post('/groups/:groupId/tasks', async (req, res) => {
   const user = req.user!;
   const db = await getDb();
   const access = await getGroupAccess(db, user, req.params.groupId);
+  assertWritable(access);
   assert(access.canLead, 'Only team leads can assign tasks.');
   const input = createTaskSchema.parse(req.body);
 
   const id = await db.transaction(async tx => {
-    const { rows: assignee } = await tx.query(
-      `SELECT u.name FROM group_members m JOIN users u ON u.id = m.user_id
-        WHERE m.group_id = $1 AND m.user_id = $2`,
-      [access.groupId, input.assignedTo]
-    );
-    if (!assignee[0]) throw badRequest('The assignee must be a member of this group.');
+    const assignee = await loadAssignee(tx, access.groupId, input.assignedTo);
 
     const { rows } = await tx.query(
       `INSERT INTO tasks (group_id, title, module, description, assigned_to, assigned_by, priority, due_date, due_time, start_date)
@@ -105,7 +114,7 @@ tasksRouter.post('/groups/:groupId/tasks', async (req, res) => {
         TIME_ZONE,
       ]
     );
-    const name = assignee[0].name;
+    const name = assignee.name;
     await logActivity(tx, user, {
       groupId: access.groupId,
       type: 'task_assigned',
@@ -140,6 +149,7 @@ tasksRouter.patch('/tasks/:taskId/status', async (req, res) => {
   const user = req.user!;
   const db = await getDb();
   const { task, access } = await loadTask(db, user, req.params.taskId);
+  assertWritable(access);
   const isAssignee = task.assigned_to === user.id && access.canContribute;
   assert(isAssignee || access.canLead, 'Only the assignee or a team lead can update this task.');
   if (task.status === 'approved' && !access.canLead) {
@@ -184,12 +194,63 @@ tasksRouter.patch('/tasks/:taskId/status', async (req, res) => {
   res.status(204).end();
 });
 
-const deadlineSchema = z.object({ dueDate: isoDate, dueTime: time.optional() });
+const assigneeSchema = z.object({ assignedTo: z.string().uuid() });
+
+tasksRouter.patch('/tasks/:taskId/assignee', async (req, res) => {
+  const user = req.user!;
+  const db = await getDb();
+  const { task, access } = await loadTask(db, user, req.params.taskId);
+  assertWritable(access);
+  assert(access.canLead, 'Only team leads can reassign tasks.');
+  const input = assigneeSchema.parse(req.body);
+  if (task.status === 'approved') throw badRequest('An approved task cannot be reassigned.');
+  if (input.assignedTo === task.assigned_to) {
+    res.status(204).end();
+    return;
+  }
+
+  await db.transaction(async tx => {
+    const assignee = await loadAssignee(tx, task.group_id, input.assignedTo);
+    const { rows: before } = task.assigned_to
+      ? await tx.query('SELECT name FROM users WHERE id = $1', [task.assigned_to])
+      : { rows: [] as any[] };
+    const from = before[0]?.name ?? '-';
+
+    // The new person starts fresh, without the old person's progress
+    await tx.query(
+      `UPDATE tasks SET assigned_to = $2, status = 'todo', member_notes = NULL, completed_at = NULL WHERE id = $1`,
+      [task.id, input.assignedTo]
+    );
+    await logActivity(tx, user, {
+      groupId: task.group_id,
+      type: 'task_assigned',
+      targetId: task.id,
+      targetTitle: task.title,
+      description: `reassigned task "${task.title}" from ${from} to ${assignee.name}`,
+      descriptionKm: `បានប្តូរអ្នកទទួលកិច្ចការ "${task.title}" ពី ${from} ទៅ ${assignee.name}`,
+    });
+    if (input.assignedTo !== user.id) {
+      await notify(tx, {
+        userId: input.assignedTo,
+        type: 'task_assigned',
+        groupId: task.group_id,
+        targetId: task.id,
+        actorName: user.name,
+        params: { title: task.title, dueDate: task.due_date },
+      });
+    }
+  });
+
+  res.status(204).end();
+});
+
+const deadlineSchema =z.object({ dueDate: isoDate, dueTime: time.optional() });
 
 tasksRouter.patch('/tasks/:taskId/deadline', async (req, res) => {
   const user = req.user!;
   const db = await getDb();
   const { task, access } = await loadTask(db, user, req.params.taskId);
+  assertWritable(access);
   assert(access.canLead, 'Only team leads can change task deadlines.');
   const input = deadlineSchema.parse(req.body);
 
@@ -207,6 +268,7 @@ tasksRouter.patch('/tasks/:taskId/schedule', async (req, res) => {
   const user = req.user!;
   const db = await getDb();
   const { task, access } = await loadTask(db, user, req.params.taskId);
+  assertWritable(access);
   assert(access.canLead, 'Only team leads can change the schedule.');
   const input = scheduleSchema.parse(req.body);
 
@@ -220,8 +282,11 @@ tasksRouter.post('/tasks/:taskId/approve', async (req, res) => {
   const user = req.user!;
   const db = await getDb();
   const { task, access } = await loadTask(db, user, req.params.taskId);
+  assertWritable(access);
   assert(access.canLead, 'Only team leads can approve tasks.');
   const input = approveSchema.parse(req.body ?? {});
+  if (task.status === 'approved') throw conflict('This task is already approved.');
+  if (task.status !== 'ready_for_review') throw badRequest('Only a task that is ready for review can be approved.');
 
   await db.transaction(async tx => {
     await tx.query(
@@ -258,6 +323,7 @@ tasksRouter.delete('/tasks/:taskId', async (req, res) => {
   const user = req.user!;
   const db = await getDb();
   const { task, access } = await loadTask(db, user, req.params.taskId);
+  assertWritable(access);
   assert(access.canLead, 'Only team leads can delete tasks.');
   await db.query('UPDATE tasks SET is_active = 0 WHERE id = $1', [task.id]);
   res.status(204).end();

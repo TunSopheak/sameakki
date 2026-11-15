@@ -310,6 +310,111 @@ test('comments: permissions, counts, and one bell entry per thread', async () =>
   assert.equal((await m1.get(url)).body.length, 1);
 });
 
+test('approvals follow the flow, and viewers and the leader keep to their parts', async () => {
+  const { lead, m1, viewer } = sessions;
+
+  // A task is approved only after it is submitted, and only once
+  const task = (await lead.post(`/api/groups/${ids.g1}/tasks`, { title: 'Flow', assignedTo: ids.m1, dueDate: day(10) })).body.id;
+  assert.equal((await lead.post(`/api/tasks/${task}/approve`, {})).status, 400);
+  await m1.patch(`/api/tasks/${task}/status`, { status: 'ready_for_review' });
+  assert.equal((await lead.post(`/api/tasks/${task}/approve`, {})).status, 204);
+  assert.equal((await lead.post(`/api/tasks/${task}/approve`, {})).status, 409);
+
+  // A viewer cannot work on a task, so they cannot be given one
+  assert.equal((await lead.post(`/api/groups/${ids.g1}/tasks`, { title: 'Nope', assignedTo: ids.viewer, dueDate: day(10) })).status, 400);
+
+  // A daily update is approved after the author marks it done, and the author cannot change it after that
+  assert.equal((await lead.post(`/api/daily-logs/${ids.log}/approve`, {})).status, 400);
+  assert.equal((await viewer.post(`/api/daily-logs/${ids.log}/reactions`, { emoji: '\u{1F44D}' })).status, 403, 'viewers cannot react');
+  assert.equal((await m1.post(`/api/daily-logs/${ids.log}/complete`)).status, 204);
+  assert.equal((await lead.post(`/api/daily-logs/${ids.log}/approve`, {})).status, 204);
+  assert.equal((await lead.post(`/api/daily-logs/${ids.log}/approve`, {})).status, 409);
+  const itemId = (await m1.get('/api/bootstrap')).body.dailyLogs.find((l: Json) => l.id === ids.log).items[0].id;
+  assert.equal((await m1.post(`/api/daily-logs/${ids.log}/items/${itemId}/toggle`)).status, 400);
+  assert.equal((await m1.post(`/api/daily-logs/${ids.log}/complete`)).status, 400);
+
+  // The leader cannot leave their own group
+  assert.equal((await lead.del(`/api/groups/${ids.g1}/members/${ids.lead}`)).status, 400);
+});
+
+test('a task can be given to someone else, and an archived group is view-only', async () => {
+  const { lead, m1, m2 } = sessions;
+  const m2Id = (await m2.get('/api/bootstrap')).body.currentUser.id;
+  const task = (await lead.post(`/api/groups/${ids.g1}/tasks`, { title: 'Pass it on', assignedTo: ids.m1, dueDate: day(10) })).body.id;
+  await m1.patch(`/api/tasks/${task}/status`, { status: 'in_progress', memberNotes: 'Half way' });
+
+  // Only a leader can reassign, and only to someone who can work on it
+  assert.equal((await m1.patch(`/api/tasks/${task}/assignee`, { assignedTo: m2Id })).status, 403);
+  assert.equal((await lead.patch(`/api/tasks/${task}/assignee`, { assignedTo: ids.viewer })).status, 400);
+  assert.equal((await lead.patch(`/api/tasks/${task}/assignee`, { assignedTo: m2Id })).status, 204);
+
+  // The new person starts fresh and is told about it
+  const moved = (await m2.get('/api/bootstrap')).body.tasks.find((t: Json) => t.id === task);
+  assert.equal(moved.assignedTo, m2Id);
+  assert.equal(moved.status, 'todo');
+  assert.equal(moved.memberNotes, undefined);
+  const told = (await m2.get('/api/notifications')).body.items.filter((i: Json) => i.type === 'task_assigned' && i.params.title === 'Pass it on');
+  assert.equal(told.length, 1);
+
+  // An approved task stays with the person who did it
+  await m2.patch(`/api/tasks/${task}/status`, { status: 'ready_for_review' });
+  await lead.post(`/api/tasks/${task}/approve`, {});
+  assert.equal((await lead.patch(`/api/tasks/${task}/assignee`, { assignedTo: ids.m1 })).status, 400);
+
+  // Archiving makes the group read-only for everyone, and opening it again undoes that
+  assert.equal((await lead.patch(`/api/groups/${ids.g1}`, { status: 'archived' })).status, 204);
+  assert.equal((await lead.post(`/api/groups/${ids.g1}/tasks`, { title: 'Late', assignedTo: ids.m1, dueDate: day(10) })).status, 403);
+  assert.equal((await m1.post(`/api/tasks/${task}/comments`, { body: 'hi' })).status, 403);
+  assert.equal((await m1.post(`/api/daily-logs/${ids.log}/reactions`, { emoji: '\u{1F44D}' })).status, 403);
+  assert.equal((await m1.get(`/api/tasks/${task}/comments`)).status, 200, 'reading still works');
+  assert.equal((await lead.patch(`/api/groups/${ids.g1}`, { status: 'active' })).status, 204);
+  assert.equal((await m1.post(`/api/tasks/${task}/comments`, { body: 'hi' })).status, 201);
+});
+
+test('the Super Admin must type to find accounts, and adding one keeps its role', async () => {
+  const admin = sessions.admin;
+  const group = (await admin.post('/api/groups', { name: 'Admin group', courseOrProject: 'Test' })).body.id;
+
+  const browse = await admin.get(`/api/groups/${group}/member-candidates?q=`);
+  assert.deepEqual(browse.body, [], 'no list of every account');
+  assert.equal((await admin.get(`/api/groups/${group}/member-candidates?q=m`)).body.length, 0, 'one letter is not enough');
+  assert.ok((await admin.get(`/api/groups/${group}/member-candidates?q=Lead`)).body.length > 0, 'a name finds the account');
+
+  // The leader is a Team Leader; adding them without a role must not turn them into a member
+  assert.equal((await admin.post(`/api/groups/${group}/members`, { name: 'Lead', email: 'lead@test.local' })).status, 201);
+  const [row] = await query('SELECT role FROM users WHERE id = $1', [ids.lead]);
+  assert.equal(row.role, 'team_lead');
+  assert.equal((await admin.del(`/api/groups/${group}`)).status, 204, 'tidy up for the next tests');
+});
+
+test('guessing which emails have accounts stops after ten failed tries', async () => {
+  const { addMemberLimiter } = await import('../server/routes/groups');
+  const lead = sessions.lead;
+  const url = `/api/groups/${ids.g1}/members`;
+
+  // Earlier tests already had a few refusals, so count from zero
+  await addMemberLimiter.resetKey(ids.lead);
+  for (let i = 0; i < 10; i++) {
+    assert.equal((await lead.post(url, { name: 'x', email: 'other@test.local' })).status, 409);
+  }
+  assert.equal((await lead.post(url, { name: 'x', email: 'other@test.local' })).status, 429);
+
+  await addMemberLimiter.resetKey(ids.lead);
+  assert.equal((await lead.post(url, { name: 'x', email: 'other@test.local' })).status, 409, 'allowed again after the wait');
+  await addMemberLimiter.resetKey(ids.lead);
+});
+
+test('changing a group status is kept in its activity', async () => {
+  const changes = () => query(`SELECT description FROM activity_events WHERE group_id = $1 AND type = 'group_status_changed' ORDER BY created_at`, [ids.g1]);
+  const before = (await changes()).length;
+  assert.equal((await sessions.lead.patch(`/api/groups/${ids.g1}`, { status: 'completed' })).status, 204);
+  assert.equal((await sessions.lead.patch(`/api/groups/${ids.g1}`, { status: 'completed' })).status, 204, 'the same status again');
+  const after = await changes();
+  assert.equal(after.length, before + 1, 'only a real change is kept');
+  assert.match(after[after.length - 1].description, /to completed$/);
+  assert.equal((await sessions.lead.patch(`/api/groups/${ids.g1}`, { status: 'active' })).status, 204);
+});
+
 test('the Super Admin cannot read group content unless the leader allows it', async () => {
   const admin = sessions.admin;
   const url = `/api/tasks/${ids.tLate}/comments`;

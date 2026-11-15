@@ -3,10 +3,11 @@ import { z } from 'zod';
 import { getDb, type Queryable } from '../db';
 import type { DailyTodoItem, User } from '../../shared/types';
 import { parseRawLogContent } from '../../shared/dailyLogParser';
-import { assert, getGroupAccess } from '../services/access';
+import { assert, assertWritable, getGroupAccess } from '../services/access';
 import { logActivity } from '../services/activity';
 import { notify } from '../services/notifications';
-import { notFound } from '../middleware/errors';
+import { badRequest, conflict, notFound } from '../middleware/errors';
+import { TIME_ZONE } from '../services/time';
 import { isoDate } from '../services/validation';
 
 export const dailyLogsRouter = Router();
@@ -31,6 +32,7 @@ dailyLogsRouter.post('/groups/:groupId/daily-logs', async (req, res) => {
   const user = req.user!;
   const db = await getDb();
   const access = await getGroupAccess(db, user, req.params.groupId);
+  assertWritable(access);
   assert(access.canContribute, 'Viewers cannot post daily updates.');
   const input = createSchema.parse(req.body);
   const { title, items } = parseRawLogContent(input.rawContent);
@@ -39,7 +41,7 @@ dailyLogsRouter.post('/groups/:groupId/daily-logs', async (req, res) => {
   const id = await db.transaction(async tx => {
     const { rows } = await tx.query(
       `INSERT INTO daily_logs (group_id, user_id, log_date, title, raw_content, items, status, completed_at)
-       VALUES ($1, $2, COALESCE($3::date, CURRENT_DATE), $4, $5, $6::jsonb, $7, $8) RETURNING id`,
+       VALUES ($1, $2, COALESCE($3::date, (now() AT TIME ZONE $9)::date), $4, $5, $6::jsonb, $7, $8) RETURNING id`,
       [
         access.groupId,
         user.id,
@@ -49,6 +51,7 @@ dailyLogsRouter.post('/groups/:groupId/daily-logs', async (req, res) => {
         JSON.stringify(items),
         allDone ? 'completed' : 'in_progress',
         allDone ? new Date().toISOString() : null,
+        TIME_ZONE,
       ]
     );
     await logActivity(tx, user, {
@@ -69,7 +72,9 @@ dailyLogsRouter.post('/daily-logs/:logId/items/:itemId/toggle', async (req, res)
   const user = req.user!;
   const db = await getDb();
   const { log, items, access, isAuthor } = await loadLog(db, user, req.params.logId);
+  assertWritable(access);
   assert((isAuthor && access.canContribute) || access.canLead, 'Only the author can update this checklist.');
+  if (log.status === 'approved' && !access.canLead) throw badRequest('This update has already been approved.');
 
   const item = items.find(i => i.id === req.params.itemId);
   if (!item) throw notFound('Checklist item not found.');
@@ -104,7 +109,13 @@ dailyLogsRouter.post('/daily-logs/:logId/complete', async (req, res) => {
   const user = req.user!;
   const db = await getDb();
   const { log, items, access, isAuthor } = await loadLog(db, user, req.params.logId);
+  assertWritable(access);
   assert((isAuthor && access.canContribute) || access.canLead, 'Only the author can complete this update.');
+  if (log.status === 'approved' && !access.canLead) throw badRequest('This update has already been approved.');
+  if (log.status !== 'in_progress') {
+    res.status(204).end();
+    return;
+  }
 
   const doneItems = items.map(i => ({ ...i, done: true }));
   await db.transaction(async tx => {
@@ -134,8 +145,11 @@ dailyLogsRouter.post('/daily-logs/:logId/approve', async (req, res) => {
   const user = req.user!;
   const db = await getDb();
   const { log, access } = await loadLog(db, user, req.params.logId);
+  assertWritable(access);
   assert(access.canLead, 'Only team leads can approve daily updates.');
   const input = approveSchema.parse(req.body ?? {});
+  if (log.status === 'approved') throw conflict('This update is already approved.');
+  if (log.status !== 'completed') throw badRequest('The update must be marked as done before it can be approved.');
 
   await db.transaction(async tx => {
     await tx.query(
@@ -172,6 +186,7 @@ dailyLogsRouter.delete('/daily-logs/:logId', async (req, res) => {
   const user = req.user!;
   const db = await getDb();
   const { log, access, isAuthor } = await loadLog(db, user, req.params.logId);
+  assertWritable(access);
   assert(isAuthor || access.canLead, 'Only the author or a team lead can delete this update.');
   await db.query('UPDATE daily_logs SET is_active = 0 WHERE id = $1', [log.id]);
   res.status(204).end();
@@ -182,7 +197,9 @@ const reactionSchema = z.object({ emoji: z.string().refine(e => ALLOWED_EMOJIS.i
 dailyLogsRouter.post('/daily-logs/:logId/reactions', async (req, res) => {
   const user = req.user!;
   const db = await getDb();
-  const { log } = await loadLog(db, user, req.params.logId);
+  const { log, access } = await loadLog(db, user, req.params.logId);
+  assertWritable(access);
+  assert(access.canContribute, 'Viewers cannot react.');
   const { emoji } = reactionSchema.parse(req.body);
 
   const { rows } = await db.query(

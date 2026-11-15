@@ -19,6 +19,7 @@ interface AppContextType {
   isDemo: boolean;
   isReadOnly: boolean;
   groupFrozen: boolean;
+  groupArchived: boolean;
   logout: () => Promise<void>;
   refresh: () => Promise<void>;
 
@@ -75,6 +76,7 @@ interface AppContextType {
   deleteGroup: (groupId: string) => Promise<void>;
   leaveGroup: (userId: string, groupId?: string) => Promise<void>;
   updateGroupDeadline: (groupId: string, newDeadline: string) => Promise<void>;
+  updateGroupStatus: (groupId: string, status: Group['status']) => Promise<void>;
 
   addSimpleDailyLog: (rawContent: string) => Promise<void>;
   toggleDailyTodoItem: (logId: string, itemId: string) => Promise<void>;
@@ -96,6 +98,7 @@ interface AppContextType {
   updateTaskStatus: (taskId: string, status: Exclude<TaskStatus, 'approved'>, memberNotes?: string) => Promise<void>;
   updateTaskDeadline: (taskId: string, newDueDate: string, newDueTime?: string) => Promise<void>;
   rescheduleTask: (taskId: string, startDate: string, dueDate: string) => Promise<void>;
+  reassignTask: (taskId: string, assignedTo: string) => Promise<void>;
   approveTask: (taskId: string, leaderFeedback?: string) => Promise<void>;
   deleteTask: (taskId: string) => Promise<void>;
 
@@ -216,14 +219,17 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const isSuperAdmin = currentUser.role === 'super_admin';
   const isReadOnly = currentUser.plan?.status === 'read_only';
   const groupFrozen = !!activeGroup?.planEnded && !isSuperAdmin;
+  const groupArchived = activeGroup?.status === 'archived';
   const noEdits = isReadOnly || groupFrozen;
+  // An archived group can still be managed (to open it again), but its work cannot change
+  const noWork = noEdits || groupArchived;
   const canCreateGroup = !isReadOnly && (isSuperAdmin || currentUser.role === 'team_lead');
   const canManageGroup = !noEdits && (isSuperAdmin || (!!activeGroup && activeGroup.leaderId === currentUser.id));
   const isMemberOfActive = !!activeGroup?.memberIds.includes(currentUser.id);
   const isTeamLead =
-    !noEdits &&
+    !noWork &&
     (isSuperAdmin || (isMemberOfActive && (currentUser.role === 'team_lead' || activeGroup?.leaderId === currentUser.id)));
-  const canContribute = !noEdits && (isSuperAdmin || (isMemberOfActive && currentUser.role !== 'viewer'));
+  const canContribute = !noWork && (isSuperAdmin || (isMemberOfActive && currentUser.role !== 'viewer'));
 
   const run = useCallback(
     async (action: () => Promise<unknown>, successMessage?: string) => {
@@ -272,6 +278,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     isDemo,
     isReadOnly,
     groupFrozen,
+    groupArchived,
     async logout() {
       if (demoRef.current) {
         demoRef.current = false;
@@ -329,6 +336,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     deleteGroup: groupId => run(() => api.deleteGroup(groupId)),
     leaveGroup: (userId, groupId) => run(() => api.removeMember(groupId || resolvedGroupId, userId)),
     updateGroupDeadline: (groupId, deadline) => quiet(run(() => api.updateGroup(groupId, { deadline }))),
+    updateGroupStatus: (groupId, status) => quiet(run(() => api.updateGroup(groupId, { status }))),
 
     addSimpleDailyLog: rawContent => run(() => api.createDailyLog(resolvedGroupId, rawContent, todayLocal())),
     toggleDailyTodoItem: (logId, itemId) => quiet(run(() => api.toggleDailyLogItem(logId, itemId))),
@@ -339,6 +347,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
     assignTask: input => run(() => api.createTask(resolvedGroupId, input)),
     updateTaskStatus: (taskId, status, notes) => quiet(run(() => api.updateTaskStatus(taskId, status, notes))),
+    reassignTask: (taskId, assignedTo) => quiet(run(() => api.reassignTask(taskId, assignedTo))),
     rescheduleTask: (taskId, startDate, dueDate) => quiet(run(() => api.scheduleTask(taskId, startDate, dueDate))),
     updateTaskDeadline: (taskId, dueDate, dueTime) => quiet(run(() => api.updateTaskDeadline(taskId, dueDate, dueTime))),
     approveTask: (taskId, feedback) => quiet(run(() => api.approveTask(taskId, feedback))),

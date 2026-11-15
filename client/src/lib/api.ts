@@ -1,5 +1,6 @@
 import type { LandingSettings } from '@shared/landing';
-import type { AdminOverview, BootstrapData, Comment, CommentKind, NotificationsResponse, Role, TaskPriority, TaskStatus, User, GroupCategory } from '@shared/types';
+import { localizeError } from '../locales/serverErrors';
+import type { AdminOverview, BootstrapData, Comment, CommentKind, NotificationsResponse, Role, TaskPriority, TaskStatus, User, GroupCategory, GroupStatus } from '@shared/types';
 
 export class ApiError extends Error {
   constructor(public status: number, message: string) {
@@ -20,12 +21,12 @@ async function request<T = void>(method: string, path: string, body?: unknown): 
       body: body !== undefined ? JSON.stringify(body) : undefined,
     });
   } catch {
-    throw new ApiError(0, 'Cannot reach the server. Check your connection and try again.');
+    throw new ApiError(0, localizeError('Cannot reach the server. Check your connection and try again.'));
   }
 
   if (res.status === 204) return undefined as T;
   const data = await res.json().catch(() => ({}));
-  if (!res.ok) throw new ApiError(res.status, data.error || `Request failed (${res.status})`);
+  if (!res.ok) throw new ApiError(res.status, localizeError(data.error || `Request failed (${res.status})`));
   return data as T;
 }
 
@@ -68,7 +69,7 @@ export const api = {
     category: GroupCategory;
   }) => post<{ id: string }>('/groups', data),
   joinGroup: (code: string) => post<{ id: string }>('/groups/join', { code }),
-  updateGroup: (groupId: string, data: { deadline?: string | null }) => patch(`/groups/${groupId}`, data),
+  updateGroup: (groupId: string, data: { deadline?: string | null; status?: GroupStatus }) => patch(`/groups/${groupId}`, data),
   deleteGroup: (groupId: string) => del(`/groups/${groupId}`),
   addMember: (
     groupId: string,
@@ -105,6 +106,7 @@ export const api = {
   ) => post<{ id: string }>(`/groups/${groupId}/tasks`, data),
   updateTaskStatus: (taskId: string, status: Exclude<TaskStatus, 'approved'>, memberNotes?: string) =>
     patch(`/tasks/${taskId}/status`, { status, memberNotes }),
+  reassignTask: (taskId: string, assignedTo: string) => patch(`/tasks/${taskId}/assignee`, { assignedTo }),
   scheduleTask: (taskId: string, startDate: string, dueDate: string) => patch(`/tasks/${taskId}/schedule`, { startDate, dueDate }),
   updateTaskDeadline: (taskId: string, dueDate: string, dueTime?: string) =>
     patch(`/tasks/${taskId}/deadline`, { dueDate, dueTime }),

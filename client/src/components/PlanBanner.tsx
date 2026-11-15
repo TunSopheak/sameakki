@@ -1,17 +1,17 @@
 import React from 'react';
 import { useApp } from '../context/AppContext';
 import { telegramLink } from '../lib/contact';
-import { localDateOf } from '../lib/dates';
+import { localDateOf } from '../lib/dates';
 import { Icons } from './icons';
 
 /** Banner for a plan that has ended (view only). */
 export const PlanBanner: React.FC = () => {
-  const { isReadOnly, groupFrozen, currentUser, t } = useApp();
-  if (!isReadOnly && groupFrozen) {
+  const { isReadOnly, groupFrozen, groupArchived, currentUser, t } = useApp();
+  if (!isReadOnly && (groupFrozen || groupArchived)) {
     return (
       <div role="status" className="flex items-center gap-2 border-b border-brand bg-brand-soft px-4 py-2 text-xs font-medium text-brand print:hidden">
         <Icons.lock className="size-4 shrink-0" />
-        <span>{t.planGroupEnded}</span>
+        <span>{groupFrozen ? t.planGroupEnded : t.groupArchivedNote}</span>
       </div>
     );
   }

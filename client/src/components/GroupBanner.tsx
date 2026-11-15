@@ -2,7 +2,7 @@ import { SupportAccessControl } from './SupportAccessControl';
 import React, { useState } from 'react';
 import { useApp } from '../context/AppContext';
 import { daysUntil } from '../lib/dates';
-import { ChevronDown } from 'lucide-react';
+import { ChevronDown } from 'lucide-react';
 import { EditableDate } from './EditableDate';
 import { Icons } from './icons';
 
@@ -33,6 +33,7 @@ export const GroupBanner: React.FC<GroupBannerProps> = ({
     canManageGroup,
     isDemo,
     updateGroupDeadline,
+    updateGroupStatus,
     t,
     language,
   } = useApp();
@@ -158,15 +159,37 @@ export const GroupBanner: React.FC<GroupBannerProps> = ({
                 )}
               </div>
 
-              <span
-                className={`text-xs px-2.5 py-0.5 rounded-lg font-medium ${
-                  activeGroup.status === 'completed'
-                    ? 'bg-neutral-900 text-white'
-                    : 'bg-neutral-100 text-neutral-800'
-                }`}
-              >
-                {activeGroup.status === 'completed' ? t.groupCompleted : t.activeGroups}
-              </span>
+              {canManageGroup ? (
+                <select
+                  value={activeGroup.status}
+                  aria-label={t.groupStatusLabel}
+                  title={t.groupStatusLabel}
+                  onChange={e => {
+                    const next = e.target.value as typeof activeGroup.status;
+                    if (next === 'archived' && !confirm(t.archiveGroupConfirm)) return;
+                    updateGroupStatus(activeGroup.id, next);
+                  }}
+                  className="cursor-pointer rounded-lg bg-neutral-100 px-2 py-0.5 text-xs font-medium text-neutral-800 focus:outline-none focus:ring-1 focus:ring-brand/40"
+                >
+                  <option value="active">{t.activeGroups}</option>
+                  <option value="completed">{t.groupCompleted}</option>
+                  <option value="archived">{t.groupArchived}</option>
+                </select>
+              ) : (
+                <span
+                  className={`text-xs px-2.5 py-0.5 rounded-lg font-medium ${
+                    activeGroup.status === 'completed'
+                      ? 'bg-neutral-900 text-white'
+                      : 'bg-neutral-100 text-neutral-800'
+                  }`}
+                >
+                  {activeGroup.status === 'completed'
+                    ? t.groupCompleted
+                    : activeGroup.status === 'archived'
+                      ? t.groupArchived
+                      : t.activeGroups}
+                </span>
+              )}
 
               <EditableDate value={activeGroup.deadline || ''} canEdit={canManageGroup} onSave={date => updateGroupDeadline(activeGroup.id, date)}>
                 <span className="inline-flex items-center gap-1 rounded-lg bg-neutral-100 px-2.5 py-0.5 text-xs font-medium text-neutral-800 group-hover/edit:bg-neutral-200">
@@ -233,7 +256,7 @@ export const GroupBanner: React.FC<GroupBannerProps> = ({
                 </button>
               )}
 
-              {activeGroup.memberIds.includes(currentUser.id) && (
+              {activeGroup.memberIds.includes(currentUser.id) && activeGroup.leaderId !== currentUser.id && (
               <button
                 onClick={() => onOpenLeaveGroup(activeGroup.id)}
                 className="inline-flex items-center gap-1 px-3 py-1.5 text-xs font-medium text-neutral-700 hover:text-black bg-white hover:bg-neutral-100 rounded-lg transition-colors cursor-pointer border border-neutral-200"
