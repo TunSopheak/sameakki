@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
 import { createPortal } from 'react-dom';
 import { api } from '../lib/api';
-import { useApp } from '../context/AppContext';
+import { useApp } from '../context/AppContext';
 import { Icons } from './icons';
+import { PasswordInput } from './PasswordInput';
 
 const inputClass =
   'h-10 w-full rounded-lg border border-neutral-200 bg-white px-3 text-sm text-black transition-colors focus:border-brand focus:outline-none focus:ring-1 focus:ring-brand/40';
@@ -59,16 +60,16 @@ export const ForcePasswordChange: React.FC = () => {
         <div className="space-y-3">
           <label className="block">
             <span className="mb-1 block text-xs font-bold text-black">{t.currentPassword}</span>
-            <input type="password" required autoFocus autoComplete="current-password" value={current} onChange={e => setCurrent(e.target.value)} className={inputClass} />
+            <PasswordInput required autoFocus autoComplete="current-password" value={current} onChange={e => setCurrent(e.target.value)} className={inputClass} />
           </label>
           <label className="block">
             <span className="mb-1 block text-xs font-bold text-black">{t.newPassword}</span>
-            <input type="password" required autoComplete="new-password" value={next} onChange={e => setNext(e.target.value)} className={inputClass} />
+            <PasswordInput required autoComplete="new-password" value={next} onChange={e => setNext(e.target.value)} className={inputClass} />
             <span className="mt-1 block text-[11px] text-neutral-500">{t.passwordHint}</span>
           </label>
           <label className="block">
             <span className="mb-1 block text-xs font-bold text-black">{t.confirmNewPassword}</span>
-            <input type="password" required autoComplete="new-password" value={confirm} onChange={e => setConfirm(e.target.value)} className={inputClass} />
+            <PasswordInput required autoComplete="new-password" value={confirm} onChange={e => setConfirm(e.target.value)} className={inputClass} />
           </label>
         </div>
 

@@ -4,6 +4,7 @@ import { api } from '../lib/api';
 import { useApp } from '../context/AppContext';
 import { Avatar } from './Avatar';
 import { Icons } from './icons';
+import { PasswordInput } from './PasswordInput';
 
 interface ProfileModalProps {
   isOpen: boolean;
@@ -105,11 +106,11 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({ isOpen, onClose }) =
                 <div className="animate-rise space-y-4 border-t border-neutral-200 px-3.5 pb-4 pt-4">
                   {field(
                     t.currentPassword,
-                    <input type="password" autoComplete="current-password" required value={currentPassword} onChange={e => setCurrentPassword(e.target.value)} className={input} />
+                    <PasswordInput autoComplete="current-password" required value={currentPassword} onChange={e => setCurrentPassword(e.target.value)} className={input} />
                   )}
                   {field(
                     t.newPassword,
-                    <input type="password" autoComplete="new-password" required value={newPassword} onChange={e => setNewPassword(e.target.value)} className={input} />
+                    <PasswordInput autoComplete="new-password" required value={newPassword} onChange={e => setNewPassword(e.target.value)} className={input} />
                   )}
                 </div>
               )}

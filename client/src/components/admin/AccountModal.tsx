@@ -3,7 +3,8 @@ import { createPortal } from 'react-dom';
 import type { AdminUserRow } from '@shared/types';
 import { api } from '../../lib/api';
 import { useApp } from '../../context/AppContext';
-import { TempPasswordModal } from '../TempPasswordModal';
+import { PasswordInput } from '../PasswordInput';
+import { TempPasswordModal } from '../TempPasswordModal';
 import { Icons } from '../icons';
 
 const fieldClass =
@@ -116,7 +117,7 @@ export const AccountModal: React.FC<AccountModalProps> = ({ user, onClose, onSav
               </label>
               <label className="block">
                 <span className="mb-1 block text-xs font-bold text-black">{t.adminStartPassword}</span>
-                <input type="password" value={form.password} onChange={update('password')} autoComplete="new-password" className={fieldClass} />
+                <PasswordInput value={form.password} onChange={update('password')} autoComplete="new-password" className={fieldClass} />
                 <span className="mt-1 block text-[11px] text-neutral-500">{t.accPasswordHint}</span>
               </label>
             </>

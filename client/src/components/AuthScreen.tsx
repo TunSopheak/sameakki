@@ -3,6 +3,7 @@ import { useApp } from '../context/AppContext';
 import { telegramLink } from '../lib/contact';
 import { navigate } from '../lib/route';
 import { Brand } from './Brand';
+import { PasswordInput } from './PasswordInput';
 import { PreferenceToggles } from './PreferenceToggles';
 import { Icons } from './icons';
 
@@ -76,8 +77,7 @@ export const AuthScreen: React.FC = () => {
 
             <label className="block">
               <span className="block text-xs font-bold text-black mb-1">{t.password} *</span>
-              <input
-                type="password"
+              <PasswordInput
                 required
                 value={form.password}
                 onChange={update('password')}

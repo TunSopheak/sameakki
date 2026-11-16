@@ -3,6 +3,7 @@ import { useApp } from '../context/AppContext';
 import { api } from '../lib/api';
 import { Role } from '../types';
 import { Avatar } from './Avatar';
+import { PasswordInput } from './PasswordInput';
 import { TempPasswordModal } from './TempPasswordModal';
 import { Icons } from './icons';
 
@@ -209,8 +210,7 @@ export const AddMemberModal: React.FC<AddMemberModalProps> = ({ isOpen, onClose 
 
               <div>
                 <label className="mb-1 block text-xs font-bold text-black">{t.newMemberPassword}</label>
-                <input
-                  type="password"
+                <PasswordInput
                   value={password}
                   onChange={e => setPassword(e.target.value)}
                   autoComplete="new-password"
