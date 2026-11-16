@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useRef } from 'react';
 import { PanelLeft, PanelLeftClose } from 'lucide-react';
 import { useApp } from '../context/AppContext';
 import { Brand } from './Brand';
@@ -34,6 +34,15 @@ export const Sidebar: React.FC<SidebarProps> = ({
   onOpenJoinGroup,
 }) => {
   const { t } = useApp();
+  const touchX = useRef<number | null>(null);
+
+  useEffect(() => {
+    if (!isMobileOpen) return;
+    const onKey = (e: KeyboardEvent) => e.key === 'Escape' && setIsMobileOpen(false);
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [isMobileOpen, setIsMobileOpen]);
+
   const select = (tab: Tab) => {
     setActiveTab(tab);
     setIsMobileOpen(false);
@@ -47,24 +56,33 @@ export const Sidebar: React.FC<SidebarProps> = ({
 
       <aside
         aria-label="Sidebar"
-        className={`fixed inset-y-0 left-0 z-50 flex flex-col border-r border-neutral-200 bg-white transition-[width,transform] duration-200 ease-out ${
+        onTouchStart={e => (touchX.current = e.touches[0].clientX)}
+        onTouchEnd={e => {
+          // Swipe left on the drawer to close it
+          if (touchX.current !== null && touchX.current - e.changedTouches[0].clientX > 60) setIsMobileOpen(false);
+          touchX.current = null;
+        }}
+        className={`fixed inset-y-0 left-0 z-50 flex flex-col border-r border-neutral-200 bg-white transition-[width,transform,box-shadow] duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] ${
           isCollapsed ? 'w-20' : 'w-64'
-        } ${isMobileOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}`}
+        } ${isMobileOpen ? 'translate-x-0 shadow-2xl' : '-translate-x-full lg:translate-x-0'}`}
       >
+        {/* Collapse toggle sits on the sidebar edge so the header stays clean */}
+        <button
+          type="button"
+          onClick={() => setIsCollapsed(!isCollapsed)}
+          aria-label={isCollapsed ? 'Expand sidebar' : 'Collapse sidebar'}
+          title={isCollapsed ? 'Expand sidebar' : 'Collapse sidebar'}
+          className="absolute -right-3 top-5 z-10 hidden size-6 cursor-pointer items-center justify-center rounded-full border border-neutral-200 bg-white text-neutral-500 shadow-xs transition-colors hover:border-brand hover:text-brand focus-visible:outline-2 focus-visible:outline-brand lg:flex"
+        >
+          {isCollapsed ? <PanelLeft className="size-3" /> : <PanelLeftClose className="size-3" />}
+        </button>
+
         <header
-          className={`flex shrink-0 items-center border-b border-neutral-100 px-4 ${
-            isCollapsed ? 'flex-col justify-center gap-1 py-3' : 'h-16 justify-between gap-2'
+          className={`flex h-16 shrink-0 items-center border-b border-neutral-100 ${
+            isCollapsed ? 'justify-center px-2' : 'justify-between gap-2 px-4'
           }`}
         >
-          <Brand short iconOnly={isCollapsed} />
-          <button
-            type="button"
-            onClick={() => setIsCollapsed(!isCollapsed)}
-            aria-label={isCollapsed ? 'Expand sidebar' : 'Collapse sidebar'}
-            className={`hidden lg:block ${iconButton}`}
-          >
-            {isCollapsed ? <PanelLeft className="size-4" /> : <PanelLeftClose className="size-4" />}
-          </button>
+          <Brand short iconOnly={isCollapsed} onClick={() => select('dashboard')} />
           <button type="button" onClick={() => setIsMobileOpen(false)} aria-label={t.close} className={`lg:hidden ${iconButton}`}>
             <Icons.close className="size-4" />
           </button>

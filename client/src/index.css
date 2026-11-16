@@ -168,6 +168,10 @@ html {
   from { opacity: 0; transform: translateY(18px) scale(0.98); }
   to { opacity: 1; transform: none; }
 }
+@keyframes tip-in {
+  from { opacity: 0; margin-left: -6px; }
+  to { opacity: 1; margin-left: 0; }
+}
 @keyframes float {
   50% { transform: translateY(-4px); }
 }
@@ -180,6 +184,7 @@ html {
 .animate-toast { animation: toast-in 0.35s var(--ease-out) both; }
 .modal-overlay { animation: overlay-in 0.2s ease-out both; }
 .modal-panel { animation: pop 0.3s var(--ease-out) both; }
+.tip-in { animation: tip-in 0.16s var(--ease-out) both; }
 .logo-float:hover { animation: float 1.2s ease-in-out infinite; }
 .logo-breathe { animation: breathe 1.6s ease-in-out infinite; }
 
