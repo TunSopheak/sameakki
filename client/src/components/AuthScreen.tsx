@@ -78,6 +78,7 @@ export const AuthScreen: React.FC = () => {
             <label className="block">
               <span className="block text-xs font-bold text-black mb-1">{t.password} *</span>
               <PasswordInput
+                capsWarning
                 required
                 value={form.password}
                 onChange={update('password')}

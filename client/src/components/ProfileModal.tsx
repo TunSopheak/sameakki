@@ -110,7 +110,8 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({ isOpen, onClose }) =
                   )}
                   {field(
                     t.newPassword,
-                    <PasswordInput autoComplete="new-password" required value={newPassword} onChange={e => setNewPassword(e.target.value)} className={input} />
+                    <PasswordInput autoComplete="new-password" required value={newPassword} onChange={e => setNewPassword(e.target.value)} className={input} />,
+                    t.passwordHint
                   )}
                 </div>
               )}
@@ -123,7 +124,7 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({ isOpen, onClose }) =
             )}
           </div>
 
-          <div className="flex justify-end gap-2 border-t border-neutral-200 bg-neutral-50 px-5 py-3">
+          <div className="flex justify-end gap-2 px-5 pb-5 pt-1">
             <button type="button" onClick={onClose} className="h-10 rounded-lg px-4 text-sm font-medium text-neutral-600 hover:bg-neutral-100">
               {t.cancel}
             </button>

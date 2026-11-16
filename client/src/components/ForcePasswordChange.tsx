@@ -70,6 +70,7 @@ export const ForcePasswordChange: React.FC = () => {
           <label className="block">
             <span className="mb-1 block text-xs font-bold text-black">{t.confirmNewPassword}</span>
             <PasswordInput required autoComplete="new-password" value={confirm} onChange={e => setConfirm(e.target.value)} className={inputClass} />
+            {confirm && next !== confirm && <span role="alert" className="mt-1 block text-[11px] font-medium text-brand">{t.passwordMismatch}</span>}
           </label>
         </div>
 
