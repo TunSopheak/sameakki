@@ -222,4 +222,12 @@ export const migrations: { id: string; sql: string }[] = [
       ALTER TABLE tasks ADD CONSTRAINT tasks_start_not_after_due CHECK (start_date <= due_date);
     `,
   },
+  {
+    // Tasks given to several people at once share a batch, so progress can be shown together
+    id: '015_task_batch',
+    sql: `
+      ALTER TABLE tasks ADD COLUMN batch_id UUID;
+      CREATE INDEX tasks_batch_idx ON tasks (batch_id) WHERE batch_id IS NOT NULL;
+    `,
+  },
 ];

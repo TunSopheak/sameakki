@@ -6,6 +6,7 @@ import { GroupSwitcher } from './sidebar/GroupSwitcher';
 import { SidebarNav, type Tab } from './sidebar/SidebarNav';
 import { UserMenu } from './sidebar/UserMenu';
 import { Icons } from './icons';
+import { useIsDesktop } from '../lib/useIsDesktop';
 
 interface SidebarProps {
   activeTab: Tab;
@@ -25,7 +26,7 @@ const iconButton =
 export const Sidebar: React.FC<SidebarProps> = ({
   activeTab,
   setActiveTab,
-  isCollapsed,
+  isCollapsed: collapsedPreference,
   setIsCollapsed,
   isMobileOpen,
   setIsMobileOpen,
@@ -34,6 +35,9 @@ export const Sidebar: React.FC<SidebarProps> = ({
   onOpenJoinGroup,
 }) => {
   const { t } = useApp();
+  // The icon-only layout is for the desktop column; the phone drawer is always full width
+  const isDesktop = useIsDesktop();
+  const isCollapsed = collapsedPreference && isDesktop;
   const touchX = useRef<number | null>(null);
 
   useEffect(() => {

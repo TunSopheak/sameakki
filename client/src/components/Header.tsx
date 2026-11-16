@@ -39,7 +39,15 @@ export const Header: React.FC<HeaderProps> = ({ activeTab, onNavigate }) => {
     <header className="sticky top-0 z-30 border-b border-neutral-200 bg-white/95 backdrop-blur-md">
       <div className="flex h-16 items-center justify-between gap-3 px-4 sm:px-6 lg:px-8">
         <div className="flex min-w-0 items-center gap-3">
-          <Logo className="size-9 shrink-0 text-black lg:hidden" />
+          <button
+            type="button"
+            onClick={() => onNavigate('dashboard')}
+            aria-label={APP_NAME}
+            title={APP_NAME}
+            className="shrink-0 cursor-pointer rounded-lg focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand lg:hidden"
+          >
+            <Logo className="size-9 text-black" />
+          </button>
           <div className="hidden items-center gap-2 truncate text-xs sm:flex">
             <span className="max-w-44 truncate font-bold text-black sm:max-w-64">{groupName}</span>
             <span className="hidden text-neutral-400 sm:inline">/</span>

@@ -320,6 +320,28 @@ test('approvals follow the flow, and viewers and the leader keep to their parts'
   assert.equal((await lead.post(`/api/tasks/${task}/approve`, {})).status, 204);
   assert.equal((await lead.post(`/api/tasks/${task}/approve`, {})).status, 409);
 
+  // Assign to all: one task per member who can work, never the viewer
+  const all = await lead.post(`/api/groups/${ids.g1}/tasks`, { title: 'Everyone', assignToAll: true, dueDate: day(10) });
+  assert.equal(all.status, 201);
+  assert.ok(all.body.ids.length >= 2, 'one task each');
+  assert.equal(new Set(all.body.ids).size, all.body.ids.length);
+  assert.equal((await lead.post(`/api/groups/${ids.g1}/tasks`, { title: 'Nobody', dueDate: day(10) })).status, 400);
+
+  // Chosen people: one task each, linked by a shared batch; a single person gets no batch
+  const some = await lead.post(`/api/groups/${ids.g1}/tasks`, { title: 'Two of us', assigneeIds: [ids.m1, ids.m2], dueDate: day(10) });
+  assert.equal(some.status, 201);
+  assert.equal(some.body.ids.length, 2);
+  const solo = await lead.post(`/api/groups/${ids.g1}/tasks`, { title: 'Just one', assigneeIds: [ids.m1], dueDate: day(10) });
+  assert.equal(solo.body.ids.length, 1);
+  const boot = (await lead.get('/api/bootstrap')).body;
+  const picked = boot.tasks.filter((x: Json) => some.body.ids.includes(x.id));
+  assert.equal(picked.length, 2);
+  assert.ok(picked[0].batchId && picked[0].batchId === picked[1].batchId, 'shared batch');
+  assert.equal(boot.tasks.find((x: Json) => x.id === solo.body.id).batchId, undefined);
+  // Moving a team task onto someone who already has their own copy would make a duplicate
+  assert.equal((await lead.patch(`/api/tasks/${some.body.ids[0]}/assignee`, { assignedTo: ids.m2 })).status, 400);
+  assert.equal((await lead.post(`/api/groups/${ids.g1}/tasks`, { title: 'Bad', assigneeIds: [ids.m1, ids.viewer], dueDate: day(10) })).status, 400);
+
   // A viewer cannot work on a task, so they cannot be given one
   assert.equal((await lead.post(`/api/groups/${ids.g1}/tasks`, { title: 'Nope', assignedTo: ids.viewer, dueDate: day(10) })).status, 400);
 

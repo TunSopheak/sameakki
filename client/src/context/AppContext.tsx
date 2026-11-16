@@ -89,7 +89,9 @@ interface AppContextType {
     title: string;
     module: string;
     description: string;
-    assignedTo: string;
+    assignedTo?: string;
+    assigneeIds?: string[];
+    assignToAll?: boolean;
     priority: Task['priority'];
     startDate?: string;
     dueDate: string;

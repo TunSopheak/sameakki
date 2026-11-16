@@ -98,6 +98,8 @@ export interface Task {
   completedAt?: string;
   approvedAt?: string;
   approvedBy?: string;
+  /** Shared by the tasks that were given to several people at once */
+  batchId?: string;
   memberNotes?: string;
   leaderFeedback?: string;
   commentCount?: number;

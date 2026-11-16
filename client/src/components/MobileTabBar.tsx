@@ -21,6 +21,11 @@ const useHideOnScroll = () => {
       frame = requestAnimationFrame(() => {
         const y = window.scrollY;
         const delta = y - last;
+        if (y <= 120) {
+          setHidden(false);
+          last = y;
+          return;
+        }
         // Ignore tiny jitters and iOS rubber-banding at the very top and bottom
         if (Math.abs(delta) > 8) {
           const atBottom = window.innerHeight + y >= document.documentElement.scrollHeight - 4;
@@ -36,7 +41,7 @@ const useHideOnScroll = () => {
     };
   }, []);
 
-  return hidden;
+  return [hidden, () => setHidden(false)] as const;
 };
 
 const tap = () => {
@@ -50,7 +55,7 @@ const tap = () => {
 /** Floating bottom tabs on phones. */
 export const MobileTabBar: React.FC<MobileTabBarProps> = ({ activeTab, onSelect, onOpenMenu }) => {
   const { t } = useApp();
-  const hidden = useHideOnScroll();
+  const [hidden, show] = useHideOnScroll();
 
   const tabs: { id: Tab; label: string; icon: React.ElementType }[] = [
     { id: 'dashboard', label: t.navHome, icon: Icons.home },
@@ -67,6 +72,7 @@ export const MobileTabBar: React.FC<MobileTabBarProps> = ({ activeTab, onSelect,
   return (
     <nav
       aria-label="Tabs"
+      onFocus={show}
       className={`fixed inset-x-3 bottom-[max(0.75rem,env(safe-area-inset-bottom))] z-30 transition-transform duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] lg:hidden ${
         hidden ? 'translate-y-[calc(100%+1.5rem)]' : 'translate-y-0'
       }`}

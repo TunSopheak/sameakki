@@ -33,6 +33,9 @@ export const SERVER_ERRORS_KM: Record<string, string> = {
   // Tasks and daily updates
   'The assignee must be a member of this group.': 'អ្នកទទួលកិច្ចការត្រូវជាសមាជិកក្រុមនេះ។',
   'Viewers cannot be assigned tasks.': 'មិនអាចចាត់តាំងកិច្ចការជូនអ្នកមើលតែប៉ុណ្ណោះ (Viewer) បានទេ។',
+  'This person already has a copy of this team task.': 'សមាជិកនេះមានកិច្ចការរួមនេះរួចហើយ។',
+  'This group has no members to assign.': 'ក្រុមនេះមិនមានសមាជិកសម្រាប់ចាត់តាំងកិច្ចការទេ។',
+  'Choose who to assign the task to.': 'សូមជ្រើសរើសអ្នកទទួលកិច្ចការ។',
   'Only a task that is ready for review can be approved.': 'អនុម័តបានតែកិច្ចការដែលកំពុងរង់ចាំត្រួតពិនិត្យប៉ុណ្ណោះ។',
   'This task is already approved.': 'កិច្ចការនេះត្រូវបានអនុម័តរួចហើយ។',
   'This task has already been approved.': 'កិច្ចការនេះត្រូវបានអនុម័តរួចហើយ។',

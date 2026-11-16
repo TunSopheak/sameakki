@@ -38,6 +38,9 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({ isOpen, onClose }) =
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isOpen]);
 
+  // Only a filled-in password section counts; opening it and leaving it empty changes nothing
+  const wantsPassword = showPassword && (currentPassword !== '' || newPassword !== '');
+
   if (!isOpen) return null;
 
   const submit = async (e: React.FormEvent) => {
@@ -46,7 +49,7 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({ isOpen, onClose }) =
     setSaving(true);
     setError('');
     try {
-      if (showPassword && newPassword) await api.changePassword(currentPassword, newPassword);
+      if (wantsPassword) await api.changePassword(currentPassword, newPassword);
       await updateProfile({ name, nameKm, specialty });
       onClose();
     } catch (err) {
@@ -106,11 +109,11 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({ isOpen, onClose }) =
                 <div className="animate-rise space-y-4 border-t border-neutral-200 px-3.5 pb-4 pt-4">
                   {field(
                     t.currentPassword,
-                    <PasswordInput autoComplete="current-password" required value={currentPassword} onChange={e => setCurrentPassword(e.target.value)} className={input} />
+                    <PasswordInput autoComplete="current-password" required={wantsPassword} value={currentPassword} onChange={e => setCurrentPassword(e.target.value)} className={input} />
                   )}
                   {field(
                     t.newPassword,
-                    <PasswordInput autoComplete="new-password" required value={newPassword} onChange={e => setNewPassword(e.target.value)} className={input} />,
+                    <PasswordInput autoComplete="new-password" required={wantsPassword} value={newPassword} onChange={e => setNewPassword(e.target.value)} className={input} />,
                     t.passwordHint
                   )}
                 </div>

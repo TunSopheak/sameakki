@@ -1,3 +1,4 @@
+import { randomUUID } from 'node:crypto';
 import { Router } from 'express';
 import { z } from 'zod';
 import { getDb, type Queryable } from '../db';
@@ -41,12 +42,17 @@ const createTaskSchema = z
     title: z.string().trim().min(1).max(200),
     module: z.string().trim().max(120).optional(),
     description: z.string().trim().max(5000).optional(),
-    assignedTo: z.string().uuid(),
+    assignedTo: z.string().uuid().optional(),
+    // Several chosen people; each gets their own task
+    assigneeIds: z.array(z.string().uuid()).min(1).max(200).optional(),
+    // One separate task per member, so everyone tracks and completes their own copy
+    assignToAll: z.boolean().default(false),
     priority: z.enum(TASK_PRIORITIES).default('medium'),
     startDate: isoDate.optional(),
     dueDate: isoDate,
     dueTime: time.optional(),
   })
+  .refine(v => v.assignToAll || v.assignedTo || v.assigneeIds, { message: 'Choose who to assign the task to.', path: ['assignedTo'] })
   .refine(v => !v.startDate || v.startDate <= v.dueDate, { message: START_AFTER_DUE, path: ['startDate'] });
 
 async function applySchedule(
@@ -93,51 +99,73 @@ tasksRouter.post('/groups/:groupId/tasks', async (req, res) => {
   assert(access.canLead, 'Only team leads can assign tasks.');
   const input = createTaskSchema.parse(req.body);
 
-  const id = await db.transaction(async tx => {
-    const assignee = await loadAssignee(tx, access.groupId, input.assignedTo);
-
-    const { rows } = await tx.query(
-      `INSERT INTO tasks (group_id, title, module, description, assigned_to, assigned_by, priority, due_date, due_time, start_date)
-       VALUES ($1, $2, $3, $4, $5, $6, $7, $8::date, $9, LEAST(COALESCE($10::date, (now() AT TIME ZONE $11)::date), $8::date))
-       RETURNING id`,
-      [
-        access.groupId,
-        input.title,
-        input.module || 'General',
-        input.description || 'Deliver specified module requirements.',
-        input.assignedTo,
-        user.id,
-        input.priority,
-        input.dueDate,
-        input.dueTime || '23:59',
-        input.startDate ?? null,
-        TIME_ZONE,
-      ]
-    );
-    const name = assignee.name;
-    await logActivity(tx, user, {
-      groupId: access.groupId,
-      type: 'task_assigned',
-      targetId: rows[0].id,
-      targetTitle: input.title,
-      description: `assigned task "${input.title}" to ${name} (Due: ${input.dueDate})`,
-      descriptionKm: `បានចាត់តាំងកិច្ចការ "${input.title}" ជូន ${name} (Deadline៖ ${input.dueDate})`,
-      metadata: { newValue: input.dueDate },
-    });
-    if (input.assignedTo !== user.id) {
-      await notify(tx, {
-        userId: input.assignedTo,
-        type: 'task_assigned',
-        groupId: access.groupId,
-        targetId: rows[0].id,
-        actorName: user.name,
-        params: { title: input.title, dueDate: input.dueDate },
-      });
+  const ids = await db.transaction(async tx => {
+    let assignees: { id: string; name: string }[];
+    if (input.assignToAll) {
+      // Everyone who can work on tasks (viewers cannot)
+      const { rows } = await tx.query(
+        `SELECT u.id, u.name FROM group_members m JOIN users u ON u.id = m.user_id
+          WHERE m.group_id = $1 AND u.role <> 'viewer' ORDER BY u.name`,
+        [access.groupId]
+      );
+      if (rows.length === 0) throw badRequest('This group has no members to assign.');
+      assignees = rows;
+    } else {
+      const wanted = [...new Set(input.assigneeIds ?? [input.assignedTo!])];
+      assignees = [];
+      for (const userId of wanted) {
+        const assignee = await loadAssignee(tx, access.groupId, userId);
+        assignees.push({ id: userId, name: assignee.name });
+      }
     }
-    return rows[0].id;
+    const batchId = assignees.length > 1 ? randomUUID() : null;
+
+    const created: string[] = [];
+    for (const person of assignees) {
+      const { rows } = await tx.query(
+        `INSERT INTO tasks (group_id, title, module, description, assigned_to, assigned_by, priority, due_date, due_time, start_date, batch_id)
+         VALUES ($1, $2, $3, $4, $5, $6, $7, $8::date, $9, LEAST(COALESCE($10::date, (now() AT TIME ZONE $11)::date), $8::date), $12)
+         RETURNING id`,
+        [
+          access.groupId,
+          input.title,
+          input.module || 'General',
+          input.description || 'Deliver specified module requirements.',
+          person.id,
+          user.id,
+          input.priority,
+          input.dueDate,
+          input.dueTime || '23:59',
+          input.startDate ?? null,
+          TIME_ZONE,
+          batchId,
+        ]
+      );
+      await logActivity(tx, user, {
+        groupId: access.groupId,
+        type: 'task_assigned',
+        targetId: rows[0].id,
+        targetTitle: input.title,
+        description: `assigned task "${input.title}" to ${person.name} (Due: ${input.dueDate})`,
+        descriptionKm: `បានចាត់តាំងកិច្ចការ "${input.title}" ជូន ${person.name} (Deadline៖ ${input.dueDate})`,
+        metadata: { newValue: input.dueDate },
+      });
+      if (person.id !== user.id) {
+        await notify(tx, {
+          userId: person.id,
+          type: 'task_assigned',
+          groupId: access.groupId,
+          targetId: rows[0].id,
+          actorName: user.name,
+          params: { title: input.title, dueDate: input.dueDate },
+        });
+      }
+      created.push(rows[0].id);
+    }
+    return created;
   });
 
-  res.status(201).json({ id });
+  res.status(201).json({ id: ids[0], ids });
 });
 
 const statusSchema = z.object({
@@ -211,6 +239,13 @@ tasksRouter.patch('/tasks/:taskId/assignee', async (req, res) => {
 
   await db.transaction(async tx => {
     const assignee = await loadAssignee(tx, task.group_id, input.assignedTo);
+    if (task.batch_id) {
+      const { rows: twin } = await tx.query(
+        'SELECT 1 FROM tasks WHERE batch_id = $1 AND assigned_to = $2 AND is_active = 1 AND id <> $3',
+        [task.batch_id, input.assignedTo, task.id]
+      );
+      if (twin[0]) throw badRequest('This person already has a copy of this team task.');
+    }
     const { rows: before } = task.assigned_to
       ? await tx.query('SELECT name FROM users WHERE id = $1', [task.assigned_to])
       : { rows: [] as any[] };

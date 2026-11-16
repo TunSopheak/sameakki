@@ -9,7 +9,7 @@ export const Notice: React.FC = () => {
 
   const isError = notice.type === 'error';
   return (
-    <div className="animate-toast fixed bottom-4 right-4 left-4 sm:left-auto z-[60] sm:max-w-sm print:hidden" role={isError ? 'alert' : 'status'}>
+    <div className="animate-toast fixed bottom-24 right-4 left-4 lg:bottom-4 sm:left-auto z-[60] sm:max-w-sm print:hidden" role={isError ? 'alert' : 'status'}>
       <div
         className={`flex items-start gap-2.5 p-3 rounded-xl shadow-2xl border text-xs ${
           isError ? 'bg-brand text-white border-brand' : 'bg-white text-black border-neutral-200'

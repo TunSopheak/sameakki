@@ -37,6 +37,7 @@ export const TaskBoard: React.FC<TaskBoardProps> = ({
   const [statusFilter, setStatusFilter] = useState<'all' | TaskStatus>('all');
   const [assigneeFilter, setAssigneeFilter] = useState<string>('all');
   const [categoryFilter, setCategoryFilter] = useState<string>('all');
+  const [batchFilter, setBatchFilter] = useState<string | null>(null);
   const [completingTaskId, setCompletingTaskId] = useState<string | null>(null);
   const [completionNote, setCompletionNote] = useState('');
   const [approvingTaskId, setApprovingTaskId] = useState<string | null>(null);
@@ -50,6 +51,7 @@ export const TaskBoard: React.FC<TaskBoardProps> = ({
   const filteredTasks = activeGroupTasks.filter(task => {
     if (statusFilter !== 'all' && task.status !== statusFilter) return false;
     if (assigneeFilter !== 'all' && task.assignedTo !== assigneeFilter) return false;
+    if (batchFilter && task.batchId !== batchFilter) return false;
     if (categoryFilter !== 'all' && task.module.toLowerCase() !== categoryFilter.toLowerCase()) return false;
 
     if (searchQuery.trim()) {
@@ -64,6 +66,16 @@ export const TaskBoard: React.FC<TaskBoardProps> = ({
     }
     return true;
   });
+
+  // Progress of tasks that were given to several people at once
+  const batchStats = new Map<string, { done: number; total: number }>();
+  for (const task of activeGroupTasks) {
+    if (!task.batchId) continue;
+    const entry = batchStats.get(task.batchId) ?? { done: 0, total: 0 };
+    entry.total += 1;
+    if (task.status === 'ready_for_review' || task.status === 'approved') entry.done += 1;
+    batchStats.set(task.batchId, entry);
+  }
 
   const PRIORITY_ORDER = { urgent: 0, high: 1, medium: 2, low: 3 } as const;
   const STATUS_ORDER = { todo: 0, in_progress: 1, ready_for_review: 2, approved: 3 } as const;
@@ -84,12 +96,14 @@ export const TaskBoard: React.FC<TaskBoardProps> = ({
     statusFilter !== 'all' ||
     assigneeFilter !== 'all' ||
     categoryFilter !== 'all' ||
+    batchFilter !== null ||
     searchQuery.trim().length > 0;
 
   const handleResetFilters = () => {
     setStatusFilter('all');
     setAssigneeFilter('all');
     setCategoryFilter('all');
+    setBatchFilter(null);
     setSearchQuery('');
   };
 
@@ -362,6 +376,27 @@ export const TaskBoard: React.FC<TaskBoardProps> = ({
                 className="lift bg-white rounded-xl border border-neutral-200 p-5 flex flex-col justify-between gap-4 shadow-xs"
               >
                 <div className="space-y-2">
+                  {task.batchId && batchStats.get(task.batchId) && (
+                    <button
+                      onClick={() => setBatchFilter(batchFilter === task.batchId ? null : task.batchId!)}
+                      title={batchFilter === task.batchId ? t.teamTaskClear : t.teamTaskFilter}
+                      className="flex w-full cursor-pointer items-center gap-2 rounded-lg bg-brand-soft px-2.5 py-1.5 text-[11px] font-semibold text-brand transition-colors hover:brightness-95"
+                    >
+                      <Icons.members className="size-3.5 shrink-0" />
+                      <span>{t.teamTask}</span>
+                      <span className="ml-auto font-mono-numbers">
+                        {t.teamTaskDone
+                          .replace('{done}', String(batchStats.get(task.batchId)!.done))
+                          .replace('{total}', String(batchStats.get(task.batchId)!.total))}
+                      </span>
+                      <span className="h-1.5 w-12 overflow-hidden rounded-full bg-white/70">
+                        <span
+                          className="block h-full rounded-full bg-brand transition-[width] duration-500"
+                          style={{ width: `${(batchStats.get(task.batchId)!.done / batchStats.get(task.batchId)!.total) * 100}%` }}
+                        />
+                      </span>
+                    </button>
+                  )}
                   <div className="flex items-center justify-between gap-2">
                     <button
                       onClick={() => setCategoryFilter(task.module)}

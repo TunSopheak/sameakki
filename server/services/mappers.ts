@@ -55,6 +55,7 @@ export const toTask = (r: any): Task => ({
   completedAt: iso(r.completed_at),
   approvedAt: iso(r.approved_at),
   approvedBy: opt(r.approved_by),
+  batchId: opt(r.batch_id),
   memberNotes: opt(r.member_notes),
   leaderFeedback: opt(r.leader_feedback),
 });
