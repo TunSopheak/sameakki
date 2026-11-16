@@ -60,7 +60,7 @@ bootstrapRouter.get('/bootstrap', async (req, res) => {
   }
 
   const [members, users, tasks, logs, reactions, events, commentCounts] = await Promise.all([
-    db.query('SELECT group_id, user_id FROM group_members WHERE group_id = ANY($1::uuid[]) ORDER BY joined_at', [groupIds]),
+    db.query('SELECT group_id, user_id, specialty FROM group_members WHERE group_id = ANY($1::uuid[]) ORDER BY joined_at', [groupIds]),
     isSuperAdmin(user)
       ? db.query(`SELECT ${USER_COLUMNS} FROM users ORDER BY created_at`)
       : // Current members of my groups, plus past authors/assignees so old posts still show names.
@@ -98,9 +98,11 @@ bootstrapRouter.get('/bootstrap', async (req, res) => {
   const commentCountOf = new Map<string, number>(commentCounts.rows.map(r => [r.key as string, r.n as number]));
 
   const membersByGroup = new Map<string, string[]>();
+  const specialtiesByGroup = new Map<string, Record<string, string>>();
   for (const m of members.rows) {
     if (!membersByGroup.has(m.group_id)) membersByGroup.set(m.group_id, []);
     membersByGroup.get(m.group_id)!.push(m.user_id);
+    if (m.specialty) specialtiesByGroup.set(m.group_id, { ...specialtiesByGroup.get(m.group_id), [m.user_id]: m.specialty });
   }
 
   const reactionsByLog = new Map<string, DailyLogReaction[]>();
@@ -119,7 +121,7 @@ bootstrapRouter.get('/bootstrap', async (req, res) => {
   const data: BootstrapData = {
     currentUser: user,
     users: users.rows.map(toUser),
-    groups: groupRows.map(g => toGroup(g, membersByGroup.get(g.id) ?? [])),
+    groups: groupRows.map(g => toGroup(g, membersByGroup.get(g.id) ?? [], specialtiesByGroup.get(g.id))),
     tasks: tasks.rows.map(r => ({ ...toTask(r), commentCount: commentCountOf.get(`task:${r.id}`) ?? 0 })),
     dailyLogs: logs.rows.map(l => ({
       ...toDailyLog(l, reactionsByLog.get(l.id) ?? []),

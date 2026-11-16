@@ -20,7 +20,7 @@ export const toUser = (r: any): User => ({
   avatar: opt(r.avatar),
 });
 
-export const toGroup = (r: any, memberIds: string[]): Group => ({
+export const toGroup = (r: any, memberIds: string[], memberSpecialties?: Record<string, string>): Group => ({
   id: r.id,
   name: r.name,
   nameKm: opt(r.name_km),
@@ -29,6 +29,7 @@ export const toGroup = (r: any, memberIds: string[]): Group => ({
   courseOrProject: r.course_or_project,
   leaderId: r.leader_id ?? '',
   memberIds,
+  memberSpecialties: memberSpecialties && Object.keys(memberSpecialties).length > 0 ? memberSpecialties : undefined,
   createdAt: iso(r.created_at)!,
   deadline: opt(r.deadline),
   status: r.status,

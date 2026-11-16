@@ -4,7 +4,7 @@ import rateLimit from 'express-rate-limit';
 import { z } from 'zod';
 import { getDb } from '../db';
 import { GROUP_CATEGORIES, GROUP_STATUSES } from '../../shared/types';
-import { assert, getGroupAccess, isSuperAdmin, requireSuperAdmin } from '../services/access';
+import { assert, assertWritable, getGroupAccess, isSuperAdmin, requireSuperAdmin } from '../services/access';
 import { logActivity } from '../services/activity';
 import { badRequest, conflict, notFound } from '../middleware/errors';
 import { USER_COLUMNS } from '../services/mappers';
@@ -253,6 +253,25 @@ groupsRouter.get('/groups/:groupId/member-candidates', async (req, res) => {
   );
 });
 
+const memberSpecialtySchema = z.object({ specialty: z.string().trim().max(200) });
+
+// What someone does in this group: they set their own, and a lead sets anyone's. Empty clears it.
+groupsRouter.patch('/groups/:groupId/members/:userId/specialty', async (req, res) => {
+  const user = req.user!;
+  const db = await getDb();
+  const access = await getGroupAccess(db, user, req.params.groupId as string);
+  assertWritable(access);
+  assert(req.params.userId === user.id || access.canLead, 'Only the member or a team lead can change this.');
+  const input = memberSpecialtySchema.parse(req.body);
+  const { rows } = await db.query('UPDATE group_members SET specialty = $3 WHERE group_id = $1 AND user_id = $2 RETURNING user_id', [
+    access.groupId,
+    req.params.userId,
+    input.specialty || null,
+  ]);
+  if (rows.length === 0) throw notFound('Member not found.');
+  res.status(204).end();
+});
+
 groupsRouter.post('/groups/:groupId/members', addMemberLimiter, async (req, res) => {
   const user = req.user!;
   const db = await getDb();
@@ -279,8 +298,8 @@ groupsRouter.post('/groups/:groupId/members', addMemberLimiter, async (req, res)
         throw badRequest('You cannot change your own role.');
       }
       const { rows } = await tx.query(
-        `UPDATE users SET role = $2, specialty = COALESCE($3, specialty) WHERE id = $1 RETURNING ${USER_COLUMNS}`,
-        [target.id, input.role ?? target.role, input.specialty || null]
+        `UPDATE users SET role = $2 WHERE id = $1 RETURNING ${USER_COLUMNS}`,
+        [target.id, input.role ?? target.role]
       );
       target = rows[0];
     } else {
@@ -315,6 +334,9 @@ groupsRouter.post('/groups/:groupId/members', addMemberLimiter, async (req, res)
        ON CONFLICT DO NOTHING RETURNING user_id`,
       [access.groupId, target.id]
     );
+    if (input.specialty) {
+      await tx.query('UPDATE group_members SET specialty = $3 WHERE group_id = $1 AND user_id = $2', [access.groupId, target.id, input.specialty]);
+    }
     if (inserted[0]) {
       await logActivity(tx, user, {
         groupId: access.groupId,

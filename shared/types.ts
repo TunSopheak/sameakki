@@ -116,6 +116,8 @@ export interface Group {
   courseOrProject: string;
   leaderId: string;
   memberIds: string[];
+  /** What each member does in this group (userId to specialty). Members without one are left out. */
+  memberSpecialties?: Record<string, string>;
   createdAt: string;
   deadline?: string; // YYYY-MM-DD
   status: GroupStatus;

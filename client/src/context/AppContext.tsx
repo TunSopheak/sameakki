@@ -61,6 +61,7 @@ interface AppContextType {
   }) => Promise<{ password?: string } | undefined>;
   removeMemberFromGroup: (userId: string, groupId?: string) => Promise<void>;
   updateAvatar: (avatar: string) => Promise<void>;
+  updateMemberSpecialty: (userId: string, specialty: string) => Promise<void>;
   updateProfile: (data: { name: string; nameKm?: string; specialty?: string }) => Promise<void>;
   updateUserRole: (userId: string, newRole: Role) => Promise<void>;
   createGroup: (data: {
@@ -213,7 +214,8 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const derived = useMemo(() => {
     const memberIds = new Set(activeGroup?.memberIds ?? []);
     return {
-      activeGroupMembers: users.filter(u => memberIds.has(u.id)),
+      // What a person does is set per group; the account's own value is only the fallback
+      activeGroupMembers: users.filter(u => memberIds.has(u.id)).map(u => ({ ...u, specialty: activeGroup?.memberSpecialties?.[u.id] ?? u.specialty })),
       activeGroupTasks: tasks.filter(t => t.groupId === resolvedGroupId),
       activeGroupDailyLogs: dailyLogs.filter(d => d.groupId === resolvedGroupId),
       activeGroupActivityEvents: activityEvents.filter(e => e.groupId === resolvedGroupId),
@@ -325,6 +327,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     removeMemberFromGroup: (userId, groupId) =>
       quiet(run(() => api.removeMember(groupId || resolvedGroupId, userId))),
     updateAvatar: avatar => run(() => api.updateAvatar(avatar)),
+    updateMemberSpecialty: (userId, specialty) => quiet(run(() => api.updateMemberSpecialty(resolvedGroupId, userId, specialty))),
     updateProfile: data => run(() => api.updateProfile(data)),
     updateUserRole: (userId, role) => quiet(run(() => api.updateUserRole(userId, role, resolvedGroupId || undefined))),
     createGroup: input =>

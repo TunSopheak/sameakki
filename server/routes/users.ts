@@ -18,12 +18,11 @@ const profileSchema = z.object({
 usersRouter.patch('/users/me', async (req, res) => {
   const input = profileSchema.parse(req.body);
   const db = await getDb();
-  await db.query('UPDATE users SET name = $2, name_km = $3, specialty = $4 WHERE id = $1', [
-    req.user!.id,
-    input.name,
-    input.nameKm || null,
-    input.specialty || null,
-  ]);
+  await db.query('UPDATE users SET name = $2, name_km = $3 WHERE id = $1', [req.user!.id, input.name, input.nameKm || null]);
+  // Only touched when sent: the fallback used by groups that have no specialty of their own
+  if (input.specialty !== undefined) {
+    await db.query('UPDATE users SET specialty = $2 WHERE id = $1', [req.user!.id, input.specialty || null]);
+  }
   res.status(204).end();
 });
 

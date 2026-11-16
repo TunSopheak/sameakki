@@ -45,6 +45,12 @@ export const formatDateLong = (value: string, language: string) =>
 export const formatMonthYear = (year: number, month: number, language: string) =>
   new Intl.DateTimeFormat(locale(language), { month: 'long', year: 'numeric' }).format(new Date(year, month, 1));
 
+export const formatYear = (year: number, language: string) =>
+  new Intl.DateTimeFormat(locale(language), { year: 'numeric' }).format(new Date(year, 0, 1));
+
+export const monthShortNames = (language: string) =>
+  Array.from({ length: 12 }, (_, i) => new Intl.DateTimeFormat(locale(language), { month: 'short' }).format(new Date(2024, i, 1)));
+
 /** Monday to Sunday, short names. */
 export const weekdayNames = (language: string) =>
   Array.from({ length: 7 }, (_, i) => new Intl.DateTimeFormat(locale(language), { weekday: 'short' }).format(new Date(2024, 0, 1 + i)));

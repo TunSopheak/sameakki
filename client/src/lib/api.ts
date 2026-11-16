@@ -96,6 +96,8 @@ export const api = {
   setUserPlan: (userId: string, data: { expiresAt?: string | null; maxMembers?: number | null }) =>
     post(`/admin/users/${userId}/plan`, data),
   setGroupActive: (groupId: string, active: boolean) => post(`/admin/groups/${groupId}/active`, { active }),
+  updateMemberSpecialty: (groupId: string, userId: string, specialty: string) =>
+    patch(`/groups/${groupId}/members/${userId}/specialty`, { specialty }),
   updateProfile: (data: { name: string; nameKm?: string; specialty?: string }) => patch('/users/me', data),
   updateAvatar: (avatar: string) => patch('/users/me/avatar', { avatar }),
   updateUserRole: (userId: string, role: Role, groupId?: string) => patch(`/users/${userId}/role`, { role, groupId }),

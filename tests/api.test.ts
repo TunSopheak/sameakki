@@ -724,3 +724,27 @@ test('a team task is deleted for everyone at once, by a lead only', async () => 
   assert.equal(left.length, 0, 'both copies are gone');
   assert.equal((await lead.del(`/api/groups/${ids.g1}/task-batches/${batchId}`)).status, 404);
 });
+
+test('a specialty belongs to the group, set by the member or a lead', async () => {
+  const { lead, m1 } = sessions;
+  const g = (await lead.get('/api/bootstrap')).body.groups.find((x: Json) => x.id === ids.g1);
+  const url = (userId: string) => `/api/groups/${ids.g1}/members/${userId}/specialty`;
+  const specialtyOf = async (userId: string) => (await lead.get('/api/bootstrap')).body.groups.find((x: Json) => x.id === ids.g1).memberSpecialties?.[userId];
+  assert.ok(g, 'the group is listed');
+
+  // A member sets their own, and a lead can set anyone's
+  assert.equal((await m1.patch(url(ids.m1), { specialty: '  Project Manager ' })).status, 204);
+  assert.equal(await specialtyOf(ids.m1), 'Project Manager');
+  assert.equal((await lead.patch(url(ids.m1), { specialty: 'Backend Developer' })).status, 204);
+  assert.equal(await specialtyOf(ids.m1), 'Backend Developer');
+
+  // A member cannot set someone else's; an unknown person is not found
+  assert.equal((await m1.patch(url(ids.m2), { specialty: 'Boss' })).status, 403);
+  assert.equal((await lead.patch(url('00000000-0000-4000-8000-000000000000'), { specialty: 'x' })).status, 404);
+  assert.equal((await m1.patch(url(ids.m1), { specialty: 'x'.repeat(201) })).status, 400);
+
+  // Empty clears it, and the profile form no longer changes it
+  assert.equal((await m1.patch('/api/users/me', { name: 'Mem One' })).status, 204);
+  assert.equal((await m1.patch(url(ids.m1), { specialty: '' })).status, 204);
+  assert.equal(await specialtyOf(ids.m1), undefined);
+});

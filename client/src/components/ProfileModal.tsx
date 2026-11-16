@@ -15,7 +15,9 @@ const input =
   'h-10 w-full rounded-lg border border-neutral-200 bg-white px-3 text-sm transition-colors focus:border-brand focus:outline-none focus:ring-1 focus:ring-brand/40';
 
 export const ProfileModal: React.FC<ProfileModalProps> = ({ isOpen, onClose }) => {
-  const { currentUser, updateProfile, t } = useApp();
+  const { currentUser, updateProfile, updateMemberSpecialty, activeGroup, activeGroupMembers, language, t } = useApp();
+  // Inside a group the specialty belongs to that group; without one it is the account's own
+  const membership = activeGroupMembers.find(m => m.id === currentUser.id);
   const [name, setName] = useState('');
   const [nameKm, setNameKm] = useState('');
   const [specialty, setSpecialty] = useState('');
@@ -29,7 +31,7 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({ isOpen, onClose }) =
     if (!isOpen) return;
     setName(currentUser.name);
     setNameKm(currentUser.nameKm || '');
-    setSpecialty(currentUser.specialty || '');
+    setSpecialty((membership ? membership.specialty : currentUser.specialty) || '');
     setCurrentPassword('');
     setNewPassword('');
     setError('');
@@ -50,7 +52,8 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({ isOpen, onClose }) =
     setError('');
     try {
       if (wantsPassword) await api.changePassword(currentPassword, newPassword);
-      await updateProfile({ name, nameKm, specialty });
+      await updateProfile(membership ? { name, nameKm } : { name, nameKm, specialty });
+      if (membership && specialty.trim() !== (membership.specialty ?? '')) await updateMemberSpecialty(currentUser.id, specialty.trim());
       onClose();
     } catch (err) {
       setError(err instanceof Error ? err.message : String(err));
@@ -90,7 +93,20 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({ isOpen, onClose }) =
               {field(t.memberName, <input required value={name} onChange={e => setName(e.target.value)} className={input} />)}
               {field(t.khmerName, <input value={nameKm} onChange={e => setNameKm(e.target.value)} className={input} />)}
             </div>
-            {field(t.memberSpecialty, <input value={specialty} onChange={e => setSpecialty(e.target.value)} className={input} />)}
+            {field(
+              membership && activeGroup
+                ? t.specialtyInGroup.replace('{group}', language === 'km' && activeGroup.nameKm ? activeGroup.nameKm : activeGroup.name)
+                : t.memberSpecialty,
+              <input
+                list="specialty-suggestions"
+                value={specialty}
+                onChange={e => setSpecialty(e.target.value)}
+                placeholder={t.specialtyPlaceholder}
+                className={input}
+              />,
+              membership ? t.specialtyGroupHint : undefined
+            )}
+
 
             <div className="rounded-xl border border-neutral-200">
               <button

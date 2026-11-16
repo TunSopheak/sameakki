@@ -22,6 +22,7 @@ import { LeaveGroupModal } from './components/LeaveGroupModal';
 import { AssignmentReportModal } from './components/AssignmentReportModal';
 import { AuthScreen } from './components/AuthScreen';
 import { Notice } from './components/Notice';
+import { SpecialtySuggestions } from './components/SpecialtyCell';
 import { DemoBanner } from './components/DemoBanner';
 import { PlanBanner } from './components/PlanBanner';
 import { ForcePasswordChange } from './components/ForcePasswordChange';
@@ -175,6 +176,7 @@ const MainApp: React.FC = () => {
       />
 
       <ForcePasswordChange />
+      <SpecialtySuggestions />
       <Notice />
     </div>
   );

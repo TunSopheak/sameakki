@@ -238,4 +238,13 @@ export const migrations: { id: string; sql: string }[] = [
       UPDATE tasks SET progress = 100 WHERE status IN ('ready_for_review', 'approved');
     `,
   },
+  {
+    // A person does a different job in each group, so the specialty belongs to the membership.
+    // users.specialty stays as the fallback for groups where none is set.
+    id: '017_member_specialty',
+    sql: `
+      ALTER TABLE group_members ADD COLUMN specialty TEXT;
+      UPDATE group_members m SET specialty = u.specialty FROM users u WHERE u.id = m.user_id AND u.specialty IS NOT NULL;
+    `,
+  },
 ];

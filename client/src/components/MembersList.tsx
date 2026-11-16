@@ -1,3 +1,4 @@
+import { SpecialtyCell } from './SpecialtyCell';
 import React, { useState } from 'react';
 import { useApp } from '../context/AppContext';
 import { todayLocal } from '../lib/dates';
@@ -20,6 +21,8 @@ export const MembersList: React.FC<MembersListProps> = () => {
     isSuperAdmin,
     canManageGroup,
     updateUserRole,
+    updateMemberSpecialty,
+    isTeamLead,
     removeMemberFromGroup,
     activeGroupTasks,
     activeGroupDailyLogs,
@@ -316,7 +319,7 @@ export const MembersList: React.FC<MembersListProps> = () => {
                     </td>
 
                     <td className="py-4 px-4 text-neutral-700">
-                      <span>{member.specialty || 'General'}</span>
+                      <SpecialtyCell value={member.specialty} canEdit={(canManageGroup || isTeamLead || isCurrentUser) && !isDemo} onSave={value => updateMemberSpecialty(member.id, value)} />
                     </td>
 
                     <td className="py-4 px-4 text-center">
