@@ -376,27 +376,41 @@ export const TaskBoard: React.FC<TaskBoardProps> = ({
                 className="lift bg-white rounded-xl border border-neutral-200 p-5 flex flex-col justify-between gap-4 shadow-xs"
               >
                 <div className="space-y-2">
-                  {task.batchId && batchStats.get(task.batchId) && (
-                    <button
-                      onClick={() => setBatchFilter(batchFilter === task.batchId ? null : task.batchId!)}
-                      title={batchFilter === task.batchId ? t.teamTaskClear : t.teamTaskFilter}
-                      className="flex w-full cursor-pointer items-center gap-2 rounded-lg bg-brand-soft px-2.5 py-1.5 text-[11px] font-semibold text-brand transition-colors hover:brightness-95"
-                    >
-                      <Icons.members className="size-3.5 shrink-0" />
-                      <span>{t.teamTask}</span>
-                      <span className="ml-auto font-mono-numbers">
-                        {t.teamTaskDone
-                          .replace('{done}', String(batchStats.get(task.batchId)!.done))
-                          .replace('{total}', String(batchStats.get(task.batchId)!.total))}
-                      </span>
-                      <span className="h-1.5 w-12 overflow-hidden rounded-full bg-white/70">
+                  {task.batchId && batchStats.get(task.batchId) && (() => {
+                    const { done, total } = batchStats.get(task.batchId)!;
+                    const percent = Math.round((done / total) * 100);
+                    const active = batchFilter === task.batchId;
+                    return (
+                      <button
+                        onClick={() => setBatchFilter(active ? null : task.batchId!)}
+                        title={active ? t.teamTaskClear : t.teamTaskFilter}
+                        className={`block w-full cursor-pointer rounded-lg border px-3 py-2 text-left transition-colors ${
+                          active ? 'border-brand bg-brand-soft' : 'border-brand/20 bg-brand-soft/60 hover:bg-brand-soft'
+                        }`}
+                      >
+                        <span className="flex items-center gap-2 text-[11px] font-semibold text-brand">
+                          <Icons.members className="size-3.5 shrink-0" />
+                          <span>{t.teamTask}</span>
+                          <span className="ml-auto text-sm font-bold font-mono-numbers">{percent}%</span>
+                        </span>
                         <span
-                          className="block h-full rounded-full bg-brand transition-[width] duration-500"
-                          style={{ width: `${(batchStats.get(task.batchId)!.done / batchStats.get(task.batchId)!.total) * 100}%` }}
-                        />
-                      </span>
-                    </button>
-                  )}
+                          role="progressbar"
+                          aria-valuemin={0}
+                          aria-valuemax={100}
+                          aria-valuenow={percent}
+                          className="mt-1.5 block h-2 overflow-hidden rounded-full bg-brand/15"
+                        >
+                          <span
+                            className="block h-full rounded-full bg-brand transition-[width] duration-500"
+                            style={{ width: `${percent}%` }}
+                          />
+                        </span>
+                        <span className="mt-1 block text-[11px] text-neutral-600 font-mono-numbers">
+                          {t.teamTaskDone.replace('{done}', String(done)).replace('{total}', String(total))}
+                        </span>
+                      </button>
+                    );
+                  })()}
                   <div className="flex items-center justify-between gap-2">
                     <button
                       onClick={() => setCategoryFilter(task.module)}
