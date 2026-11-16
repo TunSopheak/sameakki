@@ -168,6 +168,53 @@ tasksRouter.post('/groups/:groupId/tasks', async (req, res) => {
   res.status(201).json({ id: ids[0], ids });
 });
 
+/**
+ * Moves a task to a status. The one place that keeps status, progress and the leader's
+ * notification in step, so the status buttons and the progress slider cannot disagree.
+ */
+async function applyStatus(
+  tx: Queryable,
+  user: User,
+  task: any,
+  status: 'todo' | 'in_progress' | 'ready_for_review',
+  opts: { memberNotes?: string; progress?: number }
+) {
+  const isDone = status === 'ready_for_review';
+  // Without an explicit value: to do is 0%, done is 100%, and "in progress" keeps what was reached
+  const progress = opts.progress ?? (status === 'todo' ? 0 : isDone ? 100 : Math.min(task.progress ?? 0, 99));
+  await tx.query(
+    `UPDATE tasks SET status = $2,
+            member_notes = COALESCE($3, member_notes),
+            completed_at = CASE WHEN $4::boolean THEN COALESCE(completed_at, now()) ELSE NULL END,
+            progress = $5,
+            approved_at = NULL, approved_by = NULL
+      WHERE id = $1`,
+    [task.id, status, opts.memberNotes ?? null, isDone, progress]
+  );
+  if (isDone) {
+    await logActivity(tx, user, {
+      groupId: task.group_id,
+      type: 'task_completed',
+      targetId: task.id,
+      targetTitle: task.title,
+      description: `submitted task "${task.title}" as completed / ready for leader review`,
+      descriptionKm: `បានបញ្ជាក់ការសម្រេចកិច្ចការ "${task.title}" រង់ចាំប្រធានត្រួតពិនិត្យ`,
+    });
+    if (task.status !== 'ready_for_review') {
+      for (const leadId of await groupLeadIds(tx, task.group_id, user.id)) {
+        await notify(tx, {
+          userId: leadId,
+          type: 'task_ready_for_review',
+          groupId: task.group_id,
+          targetId: task.id,
+          actorName: user.name,
+          params: { title: task.title },
+        });
+      }
+    }
+  }
+}
+
 const statusSchema = z.object({
   status: z.enum(['todo', 'in_progress', 'ready_for_review']),
   memberNotes: z.string().trim().max(5000).optional(),
@@ -185,39 +232,30 @@ tasksRouter.patch('/tasks/:taskId/status', async (req, res) => {
   }
   const input = statusSchema.parse(req.body);
 
-  await db.transaction(async tx => {
-    const isDone = input.status === 'ready_for_review';
-    await tx.query(
-      `UPDATE tasks SET status = $2,
-              member_notes = COALESCE($3, member_notes),
-              completed_at = CASE WHEN $4::boolean THEN COALESCE(completed_at, now()) ELSE NULL END,
-              approved_at = NULL, approved_by = NULL
-        WHERE id = $1`,
-      [task.id, input.status, input.memberNotes ?? null, isDone]
-    );
-    if (isDone) {
-      await logActivity(tx, user, {
-        groupId: task.group_id,
-        type: 'task_completed',
-        targetId: task.id,
-        targetTitle: task.title,
-        description: `submitted task "${task.title}" as completed / ready for leader review`,
-        descriptionKm: `បានបញ្ជាក់ការសម្រេចកិច្ចការ "${task.title}" រង់ចាំប្រធានត្រួតពិនិត្យ`,
-      });
-      if (task.status !== 'ready_for_review') {
-        for (const leadId of await groupLeadIds(tx, task.group_id, user.id)) {
-          await notify(tx, {
-            userId: leadId,
-            type: 'task_ready_for_review',
-            groupId: task.group_id,
-            targetId: task.id,
-            actorName: user.name,
-            params: { title: task.title },
-          });
-        }
-      }
-    }
-  });
+  await db.transaction(tx => applyStatus(tx, user, task, input.status, { memberNotes: input.memberNotes }));
+
+  res.status(204).end();
+});
+
+const progressSchema = z.object({
+  progress: z.number().int().min(0).max(100),
+  memberNotes: z.string().trim().max(5000).optional(),
+});
+
+// Same rights as the status buttons: the assignee, or any team lead
+tasksRouter.patch('/tasks/:taskId/progress', async (req, res) => {
+  const user = req.user!;
+  const db = await getDb();
+  const { task, access } = await loadTask(db, user, req.params.taskId);
+  assertWritable(access);
+  const isAssignee = task.assigned_to === user.id && access.canContribute;
+  assert(isAssignee || access.canLead, 'Only the assignee or a team lead can update this task.');
+  if (task.status === 'approved') throw badRequest('This task has already been approved.');
+  const input = progressSchema.parse(req.body);
+
+  // 0% is to do, 100% is submitted for review, anything between is in progress
+  const status = input.progress === 0 ? 'todo' : input.progress === 100 ? 'ready_for_review' : 'in_progress';
+  await db.transaction(tx => applyStatus(tx, user, task, status, { memberNotes: input.memberNotes, progress: input.progress }));
 
   res.status(204).end();
 });
@@ -253,7 +291,7 @@ tasksRouter.patch('/tasks/:taskId/assignee', async (req, res) => {
 
     // The new person starts fresh, without the old person's progress
     await tx.query(
-      `UPDATE tasks SET assigned_to = $2, status = 'todo', member_notes = NULL, completed_at = NULL WHERE id = $1`,
+      `UPDATE tasks SET assigned_to = $2, status = 'todo', progress = 0, member_notes = NULL, completed_at = NULL WHERE id = $1`,
       [task.id, input.assignedTo]
     );
     await logActivity(tx, user, {
@@ -351,6 +389,21 @@ tasksRouter.post('/tasks/:taskId/approve', async (req, res) => {
     }
   });
 
+  res.status(204).end();
+});
+
+// A team task is one task per member; the leader removes them all together
+tasksRouter.delete('/groups/:groupId/task-batches/:batchId', async (req, res) => {
+  const user = req.user!;
+  const db = await getDb();
+  const access = await getGroupAccess(db, user, req.params.groupId);
+  assertWritable(access);
+  assert(access.canLead, 'Only team leads can delete tasks.');
+  const { rows } = await db.query('UPDATE tasks SET is_active = 0 WHERE group_id = $1 AND batch_id = $2 AND is_active = 1 RETURNING id', [
+    access.groupId,
+    req.params.batchId,
+  ]);
+  if (rows.length === 0) throw notFound('Task not found.');
   res.status(204).end();
 });
 

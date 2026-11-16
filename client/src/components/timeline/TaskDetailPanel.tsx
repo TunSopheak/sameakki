@@ -4,6 +4,7 @@ import { useApp } from '../../context/AppContext';
 import { Avatar } from '../Avatar';
 import { fromDay, spanDays, toDay } from './ganttModel';
 import { Icons } from '../icons';
+import { DatePicker } from '../pickers/DatePicker';
 
 const dateField =
   'w-full rounded-lg border border-neutral-200 bg-white px-3 py-2 text-sm text-black focus:border-brand focus:outline-none focus:ring-1 focus:ring-brand/40 disabled:opacity-60';
@@ -78,14 +79,14 @@ export const TaskDetailPanel: React.FC<TaskDetailPanelProps> = ({ task, assignee
       {task.description && <p className="mt-3 line-clamp-3 text-sm leading-relaxed text-neutral-600">{task.description}</p>}
 
       <div className="mt-4 grid items-end gap-3 sm:grid-cols-[1fr_1fr_auto]">
-        <label className="block">
+        <div className="block">
           <span className="mb-1 block text-xs font-bold">{t.taskStartDate}</span>
-          <input type="date" value={start} disabled={!canEdit} onChange={e => changeStart(e.target.value)} className={dateField} />
-        </label>
-        <label className="block">
+          <DatePicker value={start} disabled={!canEdit} onChange={changeStart} className={dateField} />
+        </div>
+        <div className="block">
           <span className="mb-1 block text-xs font-bold">{t.taskDeadline}</span>
-          <input type="date" value={due} disabled={!canEdit} onChange={e => changeDue(e.target.value)} className={dateField} />
-        </label>
+          <DatePicker value={due} disabled={!canEdit} onChange={changeDue} className={dateField} />
+        </div>
         {canEdit ? (
           <button
             onClick={save}

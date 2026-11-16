@@ -3,6 +3,10 @@ import { useApp } from '../context/AppContext';
 import { TaskPriority } from '../types';
 import { addDays, todayLocal } from '../lib/dates';
 import { Icons } from './icons';
+import { DatePicker } from './pickers/DatePicker';
+import { TimePicker } from './pickers/TimePicker';
+
+const pickerField = 'w-full px-3 py-2 text-sm text-black bg-white border border-neutral-200 rounded-lg focus:outline-none focus:ring-1 focus:ring-brand/40';
 
 interface AssignTaskModalProps {
   isOpen: boolean;
@@ -220,41 +224,34 @@ export const AssignTaskModal: React.FC<AssignTaskModalProps> = ({ isOpen, onClos
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
             <div>
               <label className="block text-xs font-bold text-black mb-1">{t.taskStartDate}</label>
-              <input
-                type="date"
+              <DatePicker
                 required
                 value={startDate}
-                onChange={e => {
-                  setStartDate(e.target.value);
+                onChange={value => {
+                  setStartDate(value);
                   // Start and due dates never cross
-                  if (e.target.value > dueDate) setDueDate(e.target.value);
+                  if (value > dueDate) setDueDate(value);
                 }}
-                className="w-full px-3 py-2 text-sm bg-white border border-neutral-200 rounded-lg focus:outline-none focus:ring-1 focus:ring-brand/40"
+                className={pickerField}
               />
             </div>
 
             <div>
               <label className="block text-xs font-bold text-black mb-1">{t.taskDeadline} *</label>
-              <input
-                type="date"
+              <DatePicker
                 required
                 value={dueDate}
-                onChange={e => {
-                  setDueDate(e.target.value);
-                  if (e.target.value < startDate) setStartDate(e.target.value);
+                onChange={value => {
+                  setDueDate(value);
+                  if (value < startDate) setStartDate(value);
                 }}
-                className="w-full px-3 py-2 text-sm bg-white border border-neutral-200 rounded-lg focus:outline-none focus:ring-1 focus:ring-brand/40"
+                className={pickerField}
               />
             </div>
 
             <div>
               <label className="block text-xs font-bold text-black mb-1">{t.taskTime}</label>
-              <input
-                type="time"
-                value={dueTime}
-                onChange={e => setDueTime(e.target.value)}
-                className="w-full px-3 py-2 text-sm bg-white border border-neutral-200 rounded-lg focus:outline-none focus:ring-1 focus:ring-brand/40"
-              />
+              <TimePicker value={dueTime} onChange={setDueTime} className={pickerField} />
             </div>
           </div>
 

@@ -106,12 +106,15 @@ export const api = {
   ) => post<{ id: string; ids: string[] }>(`/groups/${groupId}/tasks`, data),
   updateTaskStatus: (taskId: string, status: Exclude<TaskStatus, 'approved'>, memberNotes?: string) =>
     patch(`/tasks/${taskId}/status`, { status, memberNotes }),
+  updateTaskProgress: (taskId: string, progress: number, memberNotes?: string) =>
+    patch(`/tasks/${taskId}/progress`, { progress, memberNotes }),
   reassignTask: (taskId: string, assignedTo: string) => patch(`/tasks/${taskId}/assignee`, { assignedTo }),
   scheduleTask: (taskId: string, startDate: string, dueDate: string) => patch(`/tasks/${taskId}/schedule`, { startDate, dueDate }),
   updateTaskDeadline: (taskId: string, dueDate: string, dueTime?: string) =>
     patch(`/tasks/${taskId}/deadline`, { dueDate, dueTime }),
   approveTask: (taskId: string, feedback?: string) => post(`/tasks/${taskId}/approve`, { feedback }),
   deleteTask: (taskId: string) => del(`/tasks/${taskId}`),
+  deleteTeamTask: (groupId: string, batchId: string) => del(`/groups/${groupId}/task-batches/${batchId}`),
 
   createDailyLog: (groupId: string, rawContent: string, date: string) =>
     post<{ id: string }>(`/groups/${groupId}/daily-logs`, { rawContent, date }),

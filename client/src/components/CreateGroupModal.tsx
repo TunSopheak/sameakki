@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useApp } from '../context/AppContext';
 import { Icons } from './icons';
+import { DatePicker } from './pickers/DatePicker';
 
 interface CreateGroupModalProps {
   isOpen: boolean;
@@ -154,11 +155,11 @@ export const CreateGroupModal: React.FC<CreateGroupModalProps> = ({ isOpen, onCl
             <label className="block text-xs font-bold text-black mb-1">
               {t.taskDeadline}
             </label>
-            <input
-              type="date"
+            <DatePicker
               value={deadline}
-              onChange={e => setDeadline(e.target.value)}
-              className="w-full px-3 py-2 text-sm bg-white border border-neutral-200 rounded-lg focus:outline-none focus:ring-1 focus:ring-brand/40"
+              onChange={setDeadline}
+              clearable
+              className="w-full px-3 py-2 text-sm text-black bg-white border border-neutral-200 rounded-lg focus:outline-none focus:ring-1 focus:ring-brand/40"
             />
           </div>
 

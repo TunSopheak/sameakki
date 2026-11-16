@@ -1,13 +1,15 @@
 import React, { useState } from 'react';
 import { useApp } from '../context/AppContext';
 import { daysUntil } from '../lib/dates';
-import type { TaskPriority, TaskStatus } from '../types';
+import type { Task, TaskPriority, TaskStatus } from '../types';
 import { User as UserIcon } from 'lucide-react';
 import { Avatar } from './Avatar';
 import { FilterSelect, Pager, SearchBox } from './TableParts';
 import { useTableView } from '../lib/useTableView';
 import { CommentThread } from './CommentThread';
 import { EditableDate } from './EditableDate';
+import { TaskProgress } from './TaskProgress';
+import { TeamTaskCard } from './TeamTaskCard';
 import { Icons } from './icons';
 
 interface TaskBoardProps {
@@ -25,6 +27,8 @@ export const TaskBoard: React.FC<TaskBoardProps> = ({
     isTeamLead,
     canContribute,
     updateTaskStatus,
+    updateTaskProgress,
+    deleteTeamTask,
     updateTaskDeadline,
     approveTask,
     reassignTask,
@@ -68,24 +72,41 @@ export const TaskBoard: React.FC<TaskBoardProps> = ({
   });
 
   // Progress of tasks that were given to several people at once
-  const batchStats = new Map<string, { done: number; total: number }>();
+  const batchStats = new Map<string, { done: number; total: number; sum: number; tasks: Task[] }>();
   for (const task of activeGroupTasks) {
     if (!task.batchId) continue;
-    const entry = batchStats.get(task.batchId) ?? { done: 0, total: 0 };
+    const entry = batchStats.get(task.batchId) ?? { done: 0, total: 0, sum: 0, tasks: [] };
     entry.total += 1;
+    entry.sum += task.progress;
+    entry.tasks.push(task);
     if (task.status === 'ready_for_review' || task.status === 'approved') entry.done += 1;
     batchStats.set(task.batchId, entry);
   }
 
+  // A task given to several people is one card, unless the list is already narrowed to a person or to that team task
+  type Row = { task: Task; team?: Task[] };
+  const groupTeams = batchFilter === null && assigneeFilter === 'all';
+  const rows: Row[] = [];
+  const seenBatches = new Set<string>();
+  for (const task of filteredTasks) {
+    if (groupTeams && task.batchId) {
+      if (seenBatches.has(task.batchId)) continue;
+      seenBatches.add(task.batchId);
+      rows.push({ task, team: batchStats.get(task.batchId)!.tasks });
+    } else {
+      rows.push({ task });
+    }
+  }
+
   const PRIORITY_ORDER = { urgent: 0, high: 1, medium: 2, low: 3 } as const;
   const STATUS_ORDER = { todo: 0, in_progress: 1, ready_for_review: 2, approved: 3 } as const;
-  const view = useTableView(filteredTasks, {
+  const view = useTableView(rows, {
     searchText: () => '',
     compare: {
-      due: (a, b) => `${a.dueDate} ${a.dueTime ?? ''}`.localeCompare(`${b.dueDate} ${b.dueTime ?? ''}`),
-      priority: (a, b) => PRIORITY_ORDER[a.priority] - PRIORITY_ORDER[b.priority],
-      status: (a, b) => STATUS_ORDER[a.status] - STATUS_ORDER[b.status],
-      created: (a, b) => a.createdAt.localeCompare(b.createdAt),
+      due: (a, b) => `${a.task.dueDate} ${a.task.dueTime ?? ''}`.localeCompare(`${b.task.dueDate} ${b.task.dueTime ?? ''}`),
+      priority: (a, b) => PRIORITY_ORDER[a.task.priority] - PRIORITY_ORDER[b.task.priority],
+      status: (a, b) => STATUS_ORDER[a.task.status] - STATUS_ORDER[b.task.status],
+      created: (a, b) => a.task.createdAt.localeCompare(b.task.createdAt),
     },
     initialSort: { key: 'due', dir: 'asc' },
     pageSize: 8,
@@ -281,7 +302,7 @@ export const TaskBoard: React.FC<TaskBoardProps> = ({
               ]}
             />
             <span className="text-[11px] text-neutral-500">
-              {filteredTasks.length} {t.tasksShown}
+              {rows.length} {t.tasksShown}
             </span>
 
             {isAnyFilterActive && (
@@ -329,6 +350,24 @@ export const TaskBoard: React.FC<TaskBoardProps> = ({
         )}
       </div>
 
+      {batchFilter && batchStats.get(batchFilter) && (() => {
+        const { total, sum, done } = batchStats.get(batchFilter)!;
+        return (
+          <div className="flex flex-wrap items-center gap-3 rounded-xl border border-brand/20 bg-brand-soft px-4 py-2.5 text-xs text-brand">
+            <Icons.members className="size-4 shrink-0" />
+            <span className="font-semibold">
+              {t.teamTaskViewing} · {t.teamTaskPeople.replace('{n}', String(total))}
+            </span>
+            <span className="font-bold font-mono-numbers">
+              {Math.round(sum / total)}% · {t.teamTaskDone.replace('{done}', String(done)).replace('{total}', String(total))}
+            </span>
+            <button type="button" onClick={() => setBatchFilter(null)} className="ml-auto cursor-pointer font-semibold hover:underline">
+              {t.teamTaskBack}
+            </button>
+          </div>
+        );
+      })()}
+
       {filteredTasks.length === 0 ? (
         <div className="bg-white rounded-xl border border-neutral-200 p-12 text-center">
           <Icons.time className="size-10 text-neutral-300 mx-auto mb-2" />
@@ -358,7 +397,23 @@ export const TaskBoard: React.FC<TaskBoardProps> = ({
       ) : (
         <>
         <div className="stagger grid grid-cols-1 md:grid-cols-2 gap-4">
-          {view.pageRows.map(task => {
+          {view.pageRows.map(row => {
+            const task = row.task;
+            if (row.team) {
+              const deadlineInfo = getDeadlineStatus(task.dueDate);
+              return (
+                <TeamTaskCard
+                  key={`team-${task.batchId}`}
+                  tasks={row.team}
+                  users={users}
+                  priority={getPriorityBadge(task.priority)}
+                  deadline={{ text: deadlineInfo.text, overdue: !!deadlineInfo.isOverdue }}
+                  onProgress={(id, value) => updateTaskProgress(id, value)}
+                  onOpenIndividual={() => setBatchFilter(task.batchId!)}
+                  onDelete={() => deleteTeamTask(task.batchId!)}
+                />
+              );
+            }
             const assignee = users.find(u => u.id === task.assignedTo) || {
               id: task.assignedTo,
               name: 'Unassigned',
@@ -376,41 +431,6 @@ export const TaskBoard: React.FC<TaskBoardProps> = ({
                 className="lift bg-white rounded-xl border border-neutral-200 p-5 flex flex-col justify-between gap-4 shadow-xs"
               >
                 <div className="space-y-2">
-                  {task.batchId && batchStats.get(task.batchId) && (() => {
-                    const { done, total } = batchStats.get(task.batchId)!;
-                    const percent = Math.round((done / total) * 100);
-                    const active = batchFilter === task.batchId;
-                    return (
-                      <button
-                        onClick={() => setBatchFilter(active ? null : task.batchId!)}
-                        title={active ? t.teamTaskClear : t.teamTaskFilter}
-                        className={`block w-full cursor-pointer rounded-lg border px-3 py-2 text-left transition-colors ${
-                          active ? 'border-brand bg-brand-soft' : 'border-brand/20 bg-brand-soft/60 hover:bg-brand-soft'
-                        }`}
-                      >
-                        <span className="flex items-center gap-2 text-[11px] font-semibold text-brand">
-                          <Icons.members className="size-3.5 shrink-0" />
-                          <span>{t.teamTask}</span>
-                          <span className="ml-auto text-sm font-bold font-mono-numbers">{percent}%</span>
-                        </span>
-                        <span
-                          role="progressbar"
-                          aria-valuemin={0}
-                          aria-valuemax={100}
-                          aria-valuenow={percent}
-                          className="mt-1.5 block h-2 overflow-hidden rounded-full bg-brand/15"
-                        >
-                          <span
-                            className="block h-full rounded-full bg-brand transition-[width] duration-500"
-                            style={{ width: `${percent}%` }}
-                          />
-                        </span>
-                        <span className="mt-1 block text-[11px] text-neutral-600 font-mono-numbers">
-                          {t.teamTaskDone.replace('{done}', String(done)).replace('{total}', String(total))}
-                        </span>
-                      </button>
-                    );
-                  })()}
                   <div className="flex items-center justify-between gap-2">
                     <button
                       onClick={() => setCategoryFilter(task.module)}
@@ -458,6 +478,12 @@ export const TaskBoard: React.FC<TaskBoardProps> = ({
                     </p>
                   </div>
                 </div>
+
+                <TaskProgress
+                  value={task.progress}
+                  editable={canWorkOnTask && task.status !== 'approved'}
+                  onCommit={value => updateTaskProgress(task.id, value)}
+                />
 
                 {task.memberNotes && (
                   <div className="p-2.5 bg-neutral-50 rounded-lg text-xs text-black">

@@ -98,11 +98,13 @@ interface AppContextType {
     dueTime?: string;
   }) => Promise<void>;
   updateTaskStatus: (taskId: string, status: Exclude<TaskStatus, 'approved'>, memberNotes?: string) => Promise<void>;
+  updateTaskProgress: (taskId: string, progress: number) => Promise<void>;
   updateTaskDeadline: (taskId: string, newDueDate: string, newDueTime?: string) => Promise<void>;
   rescheduleTask: (taskId: string, startDate: string, dueDate: string) => Promise<void>;
   reassignTask: (taskId: string, assignedTo: string) => Promise<void>;
   approveTask: (taskId: string, leaderFeedback?: string) => Promise<void>;
   deleteTask: (taskId: string) => Promise<void>;
+  deleteTeamTask: (batchId: string) => Promise<void>;
 
   clearActivityLogs: (groupId?: string) => Promise<void>;
 }
@@ -348,12 +350,14 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     addReactionToDailyLog: (logId, emoji) => quiet(run(() => api.toggleReaction(logId, emoji))),
 
     assignTask: input => run(() => api.createTask(resolvedGroupId, input)),
+    updateTaskProgress: (taskId, progress) => quiet(run(() => api.updateTaskProgress(taskId, progress))),
     updateTaskStatus: (taskId, status, notes) => quiet(run(() => api.updateTaskStatus(taskId, status, notes))),
     reassignTask: (taskId, assignedTo) => quiet(run(() => api.reassignTask(taskId, assignedTo))),
     rescheduleTask: (taskId, startDate, dueDate) => quiet(run(() => api.scheduleTask(taskId, startDate, dueDate))),
     updateTaskDeadline: (taskId, dueDate, dueTime) => quiet(run(() => api.updateTaskDeadline(taskId, dueDate, dueTime))),
     approveTask: (taskId, feedback) => quiet(run(() => api.approveTask(taskId, feedback))),
     deleteTask: taskId => quiet(run(() => api.deleteTask(taskId))),
+    deleteTeamTask: batchId => quiet(run(() => api.deleteTeamTask(resolvedGroupId, batchId))),
 
     clearActivityLogs: groupId => quiet(run(() => api.clearActivity(groupId || resolvedGroupId))),
   };

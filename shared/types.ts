@@ -98,6 +98,8 @@ export interface Task {
   completedAt?: string;
   approvedAt?: string;
   approvedBy?: string;
+  /** 0-100. 0 is to do, 100 is submitted for review */
+  progress: number;
   /** Shared by the tasks that were given to several people at once */
   batchId?: string;
   memberNotes?: string;

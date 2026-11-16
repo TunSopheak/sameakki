@@ -6,6 +6,7 @@ import { useApp } from '../../context/AppContext';
 import { PasswordInput } from '../PasswordInput';
 import { TempPasswordModal } from '../TempPasswordModal';
 import { Icons } from '../icons';
+import { DatePicker } from '../pickers/DatePicker';
 
 const fieldClass =
   'w-full rounded-lg border border-neutral-200 bg-white px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-brand/40';
@@ -126,7 +127,7 @@ export const AccountModal: React.FC<AccountModalProps> = ({ user, onClose, onSav
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             <label className="block">
               <span className="mb-1 block text-xs font-bold text-black">{t.adminExpiresOn}</span>
-              <input type="date" value={form.expiresAt} onChange={update('expiresAt')} className={fieldClass} />
+              <DatePicker value={form.expiresAt} onChange={value => setForm(prev => ({ ...prev, expiresAt: value }))} clearable className={fieldClass} />
               <span className="mt-1 block text-[11px] text-neutral-500">{t.accExpiresHint}</span>
             </label>
             {isLeader && (

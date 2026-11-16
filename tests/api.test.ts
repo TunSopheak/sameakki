@@ -675,3 +675,52 @@ test('the notification list belongs to its owner', async () => {
   assert.equal((await m1.post('/api/notifications/read-all')).status, 204);
   assert.equal((await m1.get('/api/notifications')).body.unread, 0);
 });
+
+test('progress drives the status, and only the assignee or a lead may change it', async () => {
+  const { lead, m1 } = sessions;
+  const read = async (id: string) => (await lead.get('/api/bootstrap')).body.tasks.find((x: Json) => x.id === id);
+
+  const task = (await lead.post(`/api/groups/${ids.g1}/tasks`, { title: 'Progress', assignedTo: ids.m1, dueDate: day(10) })).body.id;
+  assert.equal((await read(task)).progress, 0);
+
+  // The assignee moves it along; 0 is to do, 1-99 in progress, 100 submitted for review
+  assert.equal((await m1.patch(`/api/tasks/${task}/progress`, { progress: 40 })).status, 204);
+  assert.deepEqual([(await read(task)).status, (await read(task)).progress], ['in_progress', 40]);
+  assert.equal((await m1.patch(`/api/tasks/${task}/progress`, { progress: 0 })).status, 204);
+  assert.equal((await read(task)).status, 'todo');
+  assert.equal((await m1.patch(`/api/tasks/${task}/progress`, { progress: 100 })).status, 204);
+  assert.deepEqual([(await read(task)).status, (await read(task)).progress], ['ready_for_review', 100]);
+
+  // Sending it back to work keeps it below 100, and the status buttons keep progress in step
+  await m1.patch(`/api/tasks/${task}/status`, { status: 'in_progress' });
+  assert.deepEqual([(await read(task)).status, (await read(task)).progress], ['in_progress', 99]);
+  await m1.patch(`/api/tasks/${task}/status`, { status: 'todo' });
+  assert.equal((await read(task)).progress, 0);
+
+  // A lead can update anyone's task; other members and bad numbers cannot
+  assert.equal((await lead.patch(`/api/tasks/${task}/progress`, { progress: 60 })).status, 204);
+  const theirs = (await lead.post(`/api/groups/${ids.g1}/tasks`, { title: 'Not yours', assignedTo: ids.m2, dueDate: day(10) })).body.id;
+  assert.equal((await m1.patch(`/api/tasks/${theirs}/progress`, { progress: 10 })).status, 403, 'another member');
+  assert.equal((await m1.patch(`/api/tasks/${task}/progress`, { progress: 101 })).status, 400);
+  assert.equal((await m1.patch(`/api/tasks/${task}/progress`, { progress: 12.5 })).status, 400);
+
+  // Once approved it is closed, and a new assignee starts again from 0
+  await m1.patch(`/api/tasks/${task}/progress`, { progress: 100 });
+  assert.equal((await lead.post(`/api/tasks/${task}/approve`, {})).status, 204);
+  assert.equal((await m1.patch(`/api/tasks/${task}/progress`, { progress: 50 })).status, 400);
+  const open = (await lead.post(`/api/groups/${ids.g1}/tasks`, { title: 'Move me', assignedTo: ids.m1, dueDate: day(10) })).body.id;
+  await m1.patch(`/api/tasks/${open}/progress`, { progress: 70 });
+  await lead.patch(`/api/tasks/${open}/assignee`, { assignedTo: ids.m2 });
+  assert.deepEqual([(await read(open)).status, (await read(open)).progress], ['todo', 0]);
+});
+
+test('a team task is deleted for everyone at once, by a lead only', async () => {
+  const { lead, m1 } = sessions;
+  const team = await lead.post(`/api/groups/${ids.g1}/tasks`, { title: 'Delete together', assigneeIds: [ids.m1, ids.m2], dueDate: day(10) });
+  const batchId = (await lead.get('/api/bootstrap')).body.tasks.find((x: Json) => x.id === team.body.ids[0]).batchId;
+  assert.equal((await m1.del(`/api/groups/${ids.g1}/task-batches/${batchId}`)).status, 403);
+  assert.equal((await lead.del(`/api/groups/${ids.g1}/task-batches/${batchId}`)).status, 204);
+  const left = (await lead.get('/api/bootstrap')).body.tasks.filter((x: Json) => team.body.ids.includes(x.id));
+  assert.equal(left.length, 0, 'both copies are gone');
+  assert.equal((await lead.del(`/api/groups/${ids.g1}/task-batches/${batchId}`)).status, 404);
+});

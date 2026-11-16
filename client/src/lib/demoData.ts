@@ -30,6 +30,7 @@ export function buildDemoData(): BootstrapData {
     description: 'Sample task for the demo.',
     assignedTo,
     assignedBy: lead.id,
+    progress: status === 'todo' ? 0 : status === 'in_progress' ? 50 : 100,
     priority,
     status,
     startDate: dateOffset(startIn),

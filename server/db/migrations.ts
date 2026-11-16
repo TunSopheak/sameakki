@@ -230,4 +230,12 @@ export const migrations: { id: string; sql: string }[] = [
       CREATE INDEX tasks_batch_idx ON tasks (batch_id) WHERE batch_id IS NOT NULL;
     `,
   },
+  {
+    // How far along a task is (0-100). Finished tasks count as 100.
+    id: '016_task_progress',
+    sql: `
+      ALTER TABLE tasks ADD COLUMN progress SMALLINT NOT NULL DEFAULT 0 CHECK (progress BETWEEN 0 AND 100);
+      UPDATE tasks SET progress = 100 WHERE status IN ('ready_for_review', 'approved');
+    `,
+  },
 ];
