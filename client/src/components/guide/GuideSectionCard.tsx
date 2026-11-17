@@ -11,7 +11,7 @@ interface GuideSectionCardProps {
 }
 
 export const GuideSectionCard: React.FC<GuideSectionCardProps> = ({ section, number, copy }) => (
-  <section id={`guide-${section.id}`} className="scroll-mt-24 rounded-xl border border-neutral-200 bg-white p-5 shadow-xs sm:p-6">
+  <section id={`guide-${section.id}`} className="scroll-mt-16 rounded-2xl border border-neutral-200 bg-white p-5 shadow-xs sm:p-7">
     <div className="flex items-center gap-3">
       <span className="flex size-8 shrink-0 items-center justify-center rounded-full bg-brand text-sm font-bold text-white">{number}</span>
       <h2 className="text-lg font-bold tracking-tight text-black">{section.title}</h2>

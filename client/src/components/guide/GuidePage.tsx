@@ -17,13 +17,13 @@ export const GuidePage: React.FC = () => {
         <p className="mt-1.5 text-sm text-neutral-600">{copy.subtitle}</p>
       </header>
 
-      <nav aria-label={copy.onThisPage} className="flex flex-wrap gap-2">
+      <nav aria-label={copy.onThisPage} className="sticky top-0 z-10 -mx-1 flex gap-2 overflow-x-auto bg-white px-1 py-2.5 [scrollbar-width:none]">
         {copy.sections.map((section, i) => (
           <button
             key={section.id}
             type="button"
             onClick={() => jumpTo(section.id)}
-            className="cursor-pointer rounded-full border border-neutral-200 bg-white px-3 py-1.5 text-xs font-semibold text-neutral-800 transition-colors hover:border-brand hover:text-brand-ink"
+            className="shrink-0 cursor-pointer whitespace-nowrap rounded-full border border-neutral-200 bg-white px-3 py-1.5 text-xs font-semibold text-neutral-800 transition-colors hover:border-brand hover:text-brand-ink"
           >
             {i + 1}. {section.title}
           </button>

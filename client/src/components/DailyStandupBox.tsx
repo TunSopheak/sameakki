@@ -95,26 +95,8 @@ export const DailyStandupBox: React.FC<DailyStandupBoxProps> = ({ onOpenGuide })
             </div>
           )}
 
-          <div className="flex flex-wrap items-center justify-between gap-3 text-xs">
-            <div className="flex flex-wrap items-center gap-x-3 gap-y-1.5 text-[11px] text-neutral-600">
-              <span className="hidden items-center gap-1.5 sm:inline-flex">
-                <Icons.tip className="size-3.5 shrink-0" />
-                {t.standupTip}
-              </span>
-              {!text.trim() && (
-                <button type="button" onClick={() => setText(t.dailyExample)} className="cursor-pointer font-semibold text-brand-ink hover:underline">
-                  {t.dailyUseExample}
-                </button>
-              )}
-              {onOpenGuide && (
-                <button type="button" onClick={onOpenGuide} className="cursor-pointer font-semibold text-brand-ink hover:underline">
-                  {t.dailyHowTo}
-                </button>
-              )}
-            </div>
-
-            <div className="flex items-center gap-2">
-              <span className="text-[11px] text-neutral-400 hidden sm:inline">
+          <div className="flex items-center justify-end gap-3 text-xs">
+            <span className="hidden text-[11px] text-neutral-400 md:inline">
                 Ctrl + Enter {t.ctrlEnterHint}
               </span>
               <button
@@ -125,7 +107,6 @@ export const DailyStandupBox: React.FC<DailyStandupBoxProps> = ({ onOpenGuide })
                 <Icons.send className="size-3.5" />
                 <span>{t.standupSubmit}</span>
               </button>
-            </div>
           </div>
         </form>
       </div>

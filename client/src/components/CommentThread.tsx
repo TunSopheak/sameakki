@@ -97,7 +97,7 @@ export const CommentThread: React.FC<CommentThreadProps> = ({ kind, targetId, co
       </button>
 
       {open && (
-        <div className="animate-rise mt-2 space-y-3 rounded-xl border border-neutral-200 bg-neutral-50 p-3">
+        <div className="animate-rise mt-2 space-y-3 rounded-xl border border-neutral-200 bg-neutral-50 p-3 sm:p-4">
           {items === null ? (
             <div className="space-y-3" aria-hidden>
               {[0, 1].map(i => (
@@ -117,15 +117,15 @@ export const CommentThread: React.FC<CommentThreadProps> = ({ kind, targetId, co
               ))}
             </ul>
           ) : (
-            <div className="flex flex-col items-center gap-1.5 py-3 text-center text-neutral-500">
-              <Icons.comments className="size-6 text-neutral-400" />
+            <div className="flex items-center justify-center gap-2 py-1 text-center text-neutral-500">
+              <Icons.comments className="size-4 text-neutral-400" />
               <p>{t.commentsEmpty}</p>
             </div>
           )}
 
           {canContribute ? (
-            <div className="flex items-start gap-2.5 border-t border-neutral-200 pt-3">
-              <Avatar name={currentUser.name} avatar={currentUser.avatar} className="mt-0.5 size-7 shrink-0" />
+            <div className={`flex items-start gap-2.5 ${items && items.length > 0 ? 'border-t border-neutral-200 pt-3' : ''}`}>
+              <Avatar name={currentUser.name} avatar={currentUser.avatar} className="mt-0.5 size-8 shrink-0" />
               <CommentForm placeholder={t.commentPlaceholder} submitLabel={t.commentSend} onSubmit={add} />
             </div>
           ) : (

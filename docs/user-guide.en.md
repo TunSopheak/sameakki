@@ -16,12 +16,12 @@ Step by step, for new people. Read only the parts you need.
 <a id="start"></a>
 ## 1. Getting started
 
-You are in after 4 steps.
+You can start in 4 easy steps.
 
 1. Log in with your email or username and the password your leader gave you.
 2. The first time, you must change the password. Choose a new one you can remember.
-3. Pick the language (Khmer or EN) and light or dark mode at the top.
-4. Have a group code? Tap "Join group" and enter it. If not, wait for your leader to add you.
+3. To change language, tap the flag at the top right and pick "ខ្មែរ" or "English". Next to it is the light or dark mode button.
+4. Have a group code? Tap "Join a Group" and enter it. If not, wait for your leader to add you.
 
 > **Note:** Tap the eye in a password box to see what you typed.
 
@@ -30,11 +30,11 @@ You are in after 4 steps.
 
 A ToDo tells the team what you are doing today. Write it in the one box on the home page or on "Daily ToDo".
 
-1. Line 1 is the project name or a title. It is not a task.
+1. Line 1 is the project name or a title. It is not a task. (The box always shows an example.)
 2. The next lines are tasks, one task per line, starting with "-".
 3. Want to show progress? Write "- 80%" at the end of the line.
 4. Already done? Add [x] or 100%.
-5. Check the "Preview" under the text, then tap "Post" (or Ctrl+Enter).
+5. As you type, a "Preview" appears under the text. Check it, then tap "Post ToDo" (or press Ctrl+Enter).
 
 **Example**
 
@@ -121,11 +121,11 @@ One task per line, so each can be ticked and counted.
 
 You can edit a ToDo you already posted. No need to delete it and write again.
 
-1. Tap the pencil at the right of your ToDo.
+1. Tap the pencil at the top right of your ToDo (on the "Daily ToDo" page).
 2. Change the text, check the "Preview", then tap "Save".
 3. Tasks you already ticked stay ticked if their text is the same.
 4. Want to tick or untick? Tap the task in the list.
-5. All done? Tap "Mark as done" so your leader can review it.
+5. Ticked every task? The ToDo is marked done by itself. Or tap "Mark as done" so your leader can review it.
 
 > **Note:** After your leader approves, only the leader can edit.
 
@@ -138,8 +138,8 @@ Your leader gives you tasks, and you tell the team how far you are.
 
 1. Open "Tasks" to see your tasks and their deadlines.
 2. Tap "Start" when you begin.
-3. Drag the "Progress" bar or tap 25% 50% 75%. It saves by itself.
-4. Finished? Tap "Done" (100%). It goes to your leader for review.
+3. Drag the "Progress" bar or tap 25% 50% 75%. It saves by itself, no save button needed.
+4. Finished? Tap "Done" (100%) or "Done, send for review". It goes to your leader.
 5. Wait for approval. Once approved, the task is closed.
 
 > **Note:** Red means overdue. Ask a question by leaving a comment on the task.
@@ -157,19 +157,19 @@ One task that every member must do, for example "Install the software".
 <a id="talk"></a>
 ## 6. Comments and reactions
 
-1. Tap "Comments" under a task or ToDo to write. Ctrl+Enter sends.
+1. Tap "Comments" under a task or ToDo and type in the box. Tap the arrow on the right (or press Ctrl+Enter) to send.
 2. You can edit or delete your comment. A leader can delete others' comments but not edit them.
-3. Tap the smiley to react to a ToDo. Tap again to remove it.
+3. Tap the smiley next to a ToDo to react. Tap again to remove it.
 4. The bell at the top tells you about new work and comments.
 
 <a id="leader"></a>
 ## 7. For team leaders
 
 1. Create a group, then add members ("Add member"). The temporary password is shown only once, so copy it now.
-2. Assign work with the "New task" button. Pick one person, several, or everyone.
+2. Assign work with the "New task" button. Pick "One person", "Choose" or "Everyone".
 3. Change a deadline by tapping the date. Change the person with "Reassign".
-4. Review and approve ToDos and tasks marked "In review".
-5. Open "Report" to print a summary for your lecturer.
+4. Review and approve ToDos and tasks marked "Waiting for review".
+5. Open "Report" and tap "Print / PDF" to get a summary for your lecturer.
 
 <a id="help"></a>
 ## 8. Common questions
