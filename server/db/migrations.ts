@@ -223,7 +223,7 @@ export const migrations: { id: string; sql: string }[] = [
     `,
   },
   {
-    // Tasks given to several people at once share a batch, so progress can be shown together
+    // Tasks given to several people share a batch
     id: '015_task_batch',
     sql: `
       ALTER TABLE tasks ADD COLUMN batch_id UUID;
@@ -231,7 +231,7 @@ export const migrations: { id: string; sql: string }[] = [
     `,
   },
   {
-    // How far along a task is (0-100). Finished tasks count as 100.
+    // Task progress, 0 to 100
     id: '016_task_progress',
     sql: `
       ALTER TABLE tasks ADD COLUMN progress SMALLINT NOT NULL DEFAULT 0 CHECK (progress BETWEEN 0 AND 100);
@@ -239,12 +239,19 @@ export const migrations: { id: string; sql: string }[] = [
     `,
   },
   {
-    // A person does a different job in each group, so the specialty belongs to the membership.
-    // users.specialty stays as the fallback for groups where none is set.
+    // Specialty per group, users.specialty is the fallback
     id: '017_member_specialty',
     sql: `
       ALTER TABLE group_members ADD COLUMN specialty TEXT;
       UPDATE group_members m SET specialty = u.specialty FROM users u WHERE u.id = m.user_id AND u.specialty IS NOT NULL;
     `,
+  },
+  {
+    id: '018_comment_edited',
+    sql: `ALTER TABLE comments ADD COLUMN edited_at TIMESTAMPTZ`,
+  },
+  {
+    id: '019_daily_log_edited',
+    sql: `ALTER TABLE daily_logs ADD COLUMN edited_at TIMESTAMPTZ`,
   },
 ];

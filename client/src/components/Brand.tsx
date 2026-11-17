@@ -6,11 +6,11 @@ import { APP_NAME } from '../lib/brand';
 interface BrandProps {
   short?: boolean;
   iconOnly?: boolean;
-  /** When set, the brand becomes a button (e.g. to go back home). */
   onClick?: () => void;
+  compactMobile?: boolean;
 }
 
-export const Brand: React.FC<BrandProps> = ({ short = false, iconOnly = false, onClick }) => {
+export const Brand: React.FC<BrandProps> = ({ short = false, iconOnly = false, onClick, compactMobile = false }) => {
   const { t } = useApp();
   const content = (
     <>
@@ -18,7 +18,7 @@ export const Brand: React.FC<BrandProps> = ({ short = false, iconOnly = false, o
       {!iconOnly && (
         <div className="min-w-0 text-left">
           <p className="truncate text-sm font-bold leading-tight text-black">{APP_NAME}</p>
-          <p className={`text-xs text-neutral-500 ${short ? 'truncate' : 'leading-snug'}`}>{short ? t.appTagline : t.appSubtitle}</p>
+          <p className={`text-xs text-neutral-500 ${compactMobile ? 'hidden sm:block' : ''} ${short ? 'truncate' : 'leading-snug'}`}>{short ? t.appTagline : t.appSubtitle}</p>
         </div>
       )}
     </>

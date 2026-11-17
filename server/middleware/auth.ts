@@ -10,7 +10,9 @@ import { forbidden, unauthorized } from './errors';
 const SAFE_METHODS = new Set(['GET', 'HEAD', 'OPTIONS']);
 const STILL_ALLOWED = /^\/api\/(auth\/change-password|notifications\/(read-all|[^/]+\/read)|users\/me(\/avatar)?)\/?$/;
 
-export const AUTH_COOKIE = 'leadersync_token';
+export const AUTH_COOKIE = 'sameakki_token';
+// Old cookie name, still accepted so nobody is signed out
+const LEGACY_AUTH_COOKIE = 'leadersync_token';
 
 declare global {
   namespace Express {
@@ -37,16 +39,18 @@ export function setAuthCookie(res: Response, userId: string, version: number) {
     ...cookieOptions,
     maxAge: config.jwtExpiresInDays * 24 * 60 * 60 * 1000,
   });
+  res.clearCookie(LEGACY_AUTH_COOKIE, cookieOptions);
 }
 
 export function clearAuthCookie(res: Response) {
   res.clearCookie(AUTH_COOKIE, cookieOptions);
+  res.clearCookie(LEGACY_AUTH_COOKIE, cookieOptions);
 }
 
 export const requireAuth: RequestHandler = async (req, _res, next) => {
   const header = req.headers.authorization;
   const token =
-    req.cookies?.[AUTH_COOKIE] || (header?.startsWith('Bearer ') ? header.slice(7) : undefined);
+    req.cookies?.[AUTH_COOKIE] || req.cookies?.[LEGACY_AUTH_COOKIE] || (header?.startsWith('Bearer ') ? header.slice(7) : undefined);
   if (!token) return next(unauthorized());
 
   let userId: string;

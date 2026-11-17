@@ -1,3 +1,4 @@
+import { taskDescription } from '../../lib/defaults';
 import React, { useEffect, useState } from 'react';
 import type { Task, User } from '@shared/types';
 import { useApp } from '../../context/AppContext';
@@ -76,7 +77,7 @@ export const TaskDetailPanel: React.FC<TaskDetailPanelProps> = ({ task, assignee
         </button>
       </div>
 
-      {task.description && <p className="mt-3 line-clamp-3 text-sm leading-relaxed text-neutral-600">{task.description}</p>}
+      <p className="mt-3 line-clamp-3 text-sm leading-relaxed text-neutral-600">{taskDescription(task.description, t)}</p>
 
       <div className="mt-4 grid items-end gap-3 sm:grid-cols-[1fr_1fr_auto]">
         <div className="block">

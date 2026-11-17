@@ -41,7 +41,7 @@ export const SupportAccessControl: React.FC = () => {
         aria-expanded={open}
         title={t.supportTitle}
         className={`inline-flex cursor-pointer items-center gap-1 rounded-lg border px-3 py-1.5 text-xs font-medium transition-colors ${
-          on ? 'border-brand bg-brand-soft text-brand' : 'border-neutral-200 bg-white text-neutral-700 hover:bg-neutral-100 hover:text-black'
+          on ? 'border-brand bg-brand-soft text-brand-ink' : 'border-neutral-200 bg-white text-neutral-700 hover:bg-neutral-100 hover:text-black'
         }`}
       >
         {on ? <Icons.supportOn className="size-3.5" /> : <Icons.support className="size-3.5 text-neutral-500" />}

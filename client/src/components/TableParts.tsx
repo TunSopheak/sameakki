@@ -1,7 +1,9 @@
+import { SelectMenu, SELECT_FILTER } from './pickers/SelectMenu';
 import React from 'react';
 import { ArrowDown, ArrowUp, ChevronLeft, ChevronRight, RotateCcw, Trash2 } from 'lucide-react';
 import { useApp } from '../context/AppContext';
-import type { SortDir } from '../lib/useTableView';
+import type { SortDir } from '../lib/useTableView';
+
 import { Icons } from './icons';
 
 interface SortHeaderProps {
@@ -50,17 +52,7 @@ interface FilterSelectProps {
 }
 
 export const FilterSelect: React.FC<FilterSelectProps> = ({ value, onChange, options }) => (
-  <select
-    value={value}
-    onChange={e => onChange(e.target.value)}
-    className="rounded-lg border border-neutral-200 bg-white px-2.5 py-2 text-xs font-medium text-neutral-700 focus:border-brand focus:outline-none"
-  >
-    {options.map(o => (
-      <option key={o.value} value={o.value}>
-        {o.label}
-      </option>
-    ))}
-  </select>
+  <SelectMenu value={value} onChange={onChange} options={options} className={SELECT_FILTER} />
 );
 
 interface PagerProps {
@@ -121,8 +113,8 @@ export const IconAction: React.FC<IconActionProps> = ({ icon: Icon, label, onCli
     onClick={onClick}
     aria-label={label}
     title={label}
-    className={`inline-flex size-8 cursor-pointer items-center justify-center rounded-lg transition-colors hover:bg-brand-soft hover:text-brand ${
-      tone === 'brand' ? 'text-brand' : 'text-neutral-500'
+    className={`inline-flex size-8 cursor-pointer items-center justify-center rounded-lg transition-colors hover:bg-brand-soft hover:text-brand-ink ${
+      tone === 'brand' ? 'text-brand-ink' : 'text-neutral-500'
     }`}
   >
     <Icon className="size-4" />

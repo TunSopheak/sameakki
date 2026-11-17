@@ -16,7 +16,7 @@ export const ProblemsSection: React.FC = () => {
             const Icon = ICONS[i];
             return (
               <div key={item.title} className="group p-7 transition-colors duration-300 hover:bg-brand-soft/60">
-                <span className="flex size-11 items-center justify-center rounded-xl bg-brand-soft text-brand transition-transform duration-300 group-hover:-rotate-6 group-hover:scale-110">
+                <span className="flex size-11 items-center justify-center rounded-xl bg-brand-soft text-brand-ink transition-transform duration-300 group-hover:-rotate-6 group-hover:scale-110">
                   <Icon className="size-5" />
                 </span>
                 <h3 className="mt-5 text-base font-bold">{item.title}</h3>

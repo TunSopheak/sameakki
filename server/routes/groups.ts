@@ -8,6 +8,7 @@ import { assert, assertWritable, getGroupAccess, isSuperAdmin, requireSuperAdmin
 import { logActivity } from '../services/activity';
 import { badRequest, conflict, notFound } from '../middleware/errors';
 import { USER_COLUMNS } from '../services/mappers';
+import { roleKm } from '../services/roleLabels';
 import { generatePassword, hashPassword } from '../services/password';
 import { assertCapacity } from '../services/plan';
 import { isoDate } from '../services/validation';
@@ -69,7 +70,7 @@ groupsRouter.post('/groups', async (req, res) => {
         input.nameKm || null,
         code,
         input.courseOrProject,
-        input.description || 'Collaborative team workspace.',
+        input.description || '',
         input.deadline || null,
         input.category,
         user.id,
@@ -255,7 +256,7 @@ groupsRouter.get('/groups/:groupId/member-candidates', async (req, res) => {
 
 const memberSpecialtySchema = z.object({ specialty: z.string().trim().max(200) });
 
-// What someone does in this group: they set their own, and a lead sets anyone's. Empty clears it.
+// Members set their own specialty, leads set anyone's
 groupsRouter.patch('/groups/:groupId/members/:userId/specialty', async (req, res) => {
   const user = req.user!;
   const db = await getDb();
@@ -344,7 +345,7 @@ groupsRouter.post('/groups/:groupId/members', addMemberLimiter, async (req, res)
         targetId: target.id,
         targetTitle: target.name,
         description: `added ${target.name} as ${target.role.replace('_', ' ')}`,
-        descriptionKm: `បានបញ្ចូល ${target.name} ក្នុងក្រុម (តួនាទី៖ ${target.role})`,
+        descriptionKm: `បានបញ្ចូល ${target.name} ក្នុងក្រុម (តួនាទី៖ ${roleKm(target.role)})`,
         metadata: { role: target.role },
       });
     }

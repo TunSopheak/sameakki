@@ -2,6 +2,7 @@ import type { PlanInfo } from '../../shared/types';
 import { config } from '../config';
 import type { Queryable } from '../db';
 import { badRequest, unauthorized } from '../middleware/errors';
+import { TIME_ZONE } from './time';
 
 const DAY = 24 * 60 * 60 * 1000;
 
@@ -40,4 +41,22 @@ export async function assertCapacity(db: Queryable, groupId: string) {
   }
 }
 
-export const endOfDay = (date: string | null) => (date ? new Date(`${date}T23:59:59.999Z`) : null);
+/** End of a day in the app time zone. */
+export const endOfDay = (date: string | null) => {
+  if (!date) return null;
+  const guess = new Date(`${date}T23:59:59.999Z`);
+  const parts = new Intl.DateTimeFormat('en-US', {
+    timeZone: TIME_ZONE,
+    hourCycle: 'h23',
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+    hour: '2-digit',
+    minute: '2-digit',
+    second: '2-digit',
+  }).formatToParts(guess);
+  const part = (type: string) => Number(parts.find(p => p.type === type)!.value);
+  // Zone offset from UTC
+  const offset = Date.UTC(part('year'), part('month') - 1, part('day'), part('hour'), part('minute'), part('second')) - Math.floor(guess.getTime() / 1000) * 1000;
+  return new Date(guess.getTime() - offset);
+};

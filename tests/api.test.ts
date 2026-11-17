@@ -11,7 +11,7 @@ import type { Server } from 'node:http';
 // These must be set before the app reads its settings. An empty (but defined) DATABASE_URL also stops
 // dotenv from filling it in from a real .env file.
 process.env.DATABASE_URL = '';
-process.env.PGLITE_DIR = fs.mkdtempSync(path.join(os.tmpdir(), 'leadersync-test-'));
+process.env.PGLITE_DIR = fs.mkdtempSync(path.join(os.tmpdir(), 'sameakki-test-'));
 process.env.NODE_ENV = 'test';
 
 type Json = any;
@@ -304,6 +304,15 @@ test('comments: permissions, counts, and one bell entry per thread', async () =>
   const list = (await m1.get(url)).body as Json[];
   const leadComment = list.find(c => c.userName === 'Lead')!;
   const m1Comment = list.find(c => c.userName === 'Mem One')!;
+  // Only the author edits
+  const edited = await m1.patch(`/api/comments/${m1Comment.id}`, { body: 'Where is the new file?' });
+  assert.equal(edited.status, 200);
+  assert.equal(edited.body.body, 'Where is the new file?');
+  assert.ok(edited.body.editedAt, 'marked as edited');
+  assert.equal(edited.body.userRole, 'member');
+  assert.equal((await m1.patch(`/api/comments/${leadComment.id}`, { body: 'hacked' })).status, 403);
+  assert.equal((await lead.patch(`/api/comments/${m1Comment.id}`, { body: 'hacked' })).status, 403, 'a lead can delete but not rewrite');
+  assert.equal((await m1.patch(`/api/comments/${m1Comment.id}`, { body: '   ' })).status, 400);
   assert.equal((await m1.del(`/api/comments/${leadComment.id}`)).status, 403);
   assert.equal((await m1.del(`/api/comments/${m1Comment.id}`)).status, 204);
   assert.equal((await lead.del(`/api/comments/${list.filter(c => c.userName === 'Mem One')[1].id}`)).status, 204);
@@ -320,14 +329,14 @@ test('approvals follow the flow, and viewers and the leader keep to their parts'
   assert.equal((await lead.post(`/api/tasks/${task}/approve`, {})).status, 204);
   assert.equal((await lead.post(`/api/tasks/${task}/approve`, {})).status, 409);
 
-  // Assign to all: one task per member who can work, never the viewer
+  // Assign to all, never the viewer
   const all = await lead.post(`/api/groups/${ids.g1}/tasks`, { title: 'Everyone', assignToAll: true, dueDate: day(10) });
   assert.equal(all.status, 201);
   assert.ok(all.body.ids.length >= 2, 'one task each');
   assert.equal(new Set(all.body.ids).size, all.body.ids.length);
   assert.equal((await lead.post(`/api/groups/${ids.g1}/tasks`, { title: 'Nobody', dueDate: day(10) })).status, 400);
 
-  // Chosen people: one task each, linked by a shared batch; a single person gets no batch
+  // Chosen people share a batch, one person has none
   const some = await lead.post(`/api/groups/${ids.g1}/tasks`, { title: 'Two of us', assigneeIds: [ids.m1, ids.m2], dueDate: day(10) });
   assert.equal(some.status, 201);
   assert.equal(some.body.ids.length, 2);
@@ -338,7 +347,7 @@ test('approvals follow the flow, and viewers and the leader keep to their parts'
   assert.equal(picked.length, 2);
   assert.ok(picked[0].batchId && picked[0].batchId === picked[1].batchId, 'shared batch');
   assert.equal(boot.tasks.find((x: Json) => x.id === solo.body.id).batchId, undefined);
-  // Moving a team task onto someone who already has their own copy would make a duplicate
+  // Cannot move a team task onto someone who has it
   assert.equal((await lead.patch(`/api/tasks/${some.body.ids[0]}/assignee`, { assignedTo: ids.m2 })).status, 400);
   assert.equal((await lead.post(`/api/groups/${ids.g1}/tasks`, { title: 'Bad', assigneeIds: [ids.m1, ids.viewer], dueDate: day(10) })).status, 400);
 
@@ -683,7 +692,7 @@ test('progress drives the status, and only the assignee or a lead may change it'
   const task = (await lead.post(`/api/groups/${ids.g1}/tasks`, { title: 'Progress', assignedTo: ids.m1, dueDate: day(10) })).body.id;
   assert.equal((await read(task)).progress, 0);
 
-  // The assignee moves it along; 0 is to do, 1-99 in progress, 100 submitted for review
+  // 0 is to do, 1-99 in progress, 100 for review
   assert.equal((await m1.patch(`/api/tasks/${task}/progress`, { progress: 40 })).status, 204);
   assert.deepEqual([(await read(task)).status, (await read(task)).progress], ['in_progress', 40]);
   assert.equal((await m1.patch(`/api/tasks/${task}/progress`, { progress: 0 })).status, 204);
@@ -691,20 +700,20 @@ test('progress drives the status, and only the assignee or a lead may change it'
   assert.equal((await m1.patch(`/api/tasks/${task}/progress`, { progress: 100 })).status, 204);
   assert.deepEqual([(await read(task)).status, (await read(task)).progress], ['ready_for_review', 100]);
 
-  // Sending it back to work keeps it below 100, and the status buttons keep progress in step
+  // Back to work stays below 100
   await m1.patch(`/api/tasks/${task}/status`, { status: 'in_progress' });
   assert.deepEqual([(await read(task)).status, (await read(task)).progress], ['in_progress', 99]);
   await m1.patch(`/api/tasks/${task}/status`, { status: 'todo' });
   assert.equal((await read(task)).progress, 0);
 
-  // A lead can update anyone's task; other members and bad numbers cannot
+  // A lead can update anyone's task
   assert.equal((await lead.patch(`/api/tasks/${task}/progress`, { progress: 60 })).status, 204);
   const theirs = (await lead.post(`/api/groups/${ids.g1}/tasks`, { title: 'Not yours', assignedTo: ids.m2, dueDate: day(10) })).body.id;
   assert.equal((await m1.patch(`/api/tasks/${theirs}/progress`, { progress: 10 })).status, 403, 'another member');
   assert.equal((await m1.patch(`/api/tasks/${task}/progress`, { progress: 101 })).status, 400);
   assert.equal((await m1.patch(`/api/tasks/${task}/progress`, { progress: 12.5 })).status, 400);
 
-  // Once approved it is closed, and a new assignee starts again from 0
+  // Approved is closed, a new assignee starts at 0
   await m1.patch(`/api/tasks/${task}/progress`, { progress: 100 });
   assert.equal((await lead.post(`/api/tasks/${task}/approve`, {})).status, 204);
   assert.equal((await m1.patch(`/api/tasks/${task}/progress`, { progress: 50 })).status, 400);
@@ -732,19 +741,61 @@ test('a specialty belongs to the group, set by the member or a lead', async () =
   const specialtyOf = async (userId: string) => (await lead.get('/api/bootstrap')).body.groups.find((x: Json) => x.id === ids.g1).memberSpecialties?.[userId];
   assert.ok(g, 'the group is listed');
 
-  // A member sets their own, and a lead can set anyone's
+  // Members set their own, leads set anyone's
   assert.equal((await m1.patch(url(ids.m1), { specialty: '  Project Manager ' })).status, 204);
   assert.equal(await specialtyOf(ids.m1), 'Project Manager');
   assert.equal((await lead.patch(url(ids.m1), { specialty: 'Backend Developer' })).status, 204);
   assert.equal(await specialtyOf(ids.m1), 'Backend Developer');
 
-  // A member cannot set someone else's; an unknown person is not found
+  // Not someone else's, not an unknown person
   assert.equal((await m1.patch(url(ids.m2), { specialty: 'Boss' })).status, 403);
   assert.equal((await lead.patch(url('00000000-0000-4000-8000-000000000000'), { specialty: 'x' })).status, 404);
   assert.equal((await m1.patch(url(ids.m1), { specialty: 'x'.repeat(201) })).status, 400);
 
-  // Empty clears it, and the profile form no longer changes it
+  // Empty clears it
   assert.equal((await m1.patch('/api/users/me', { name: 'Mem One' })).status, 204);
   assert.equal((await m1.patch(url(ids.m1), { specialty: '' })).status, 204);
   assert.equal(await specialtyOf(ids.m1), undefined);
+});
+
+test('the old cookie name still signs people in, and logging out clears both', async () => {
+  const login = await fetch(base + '/api/auth/login', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ email: 'root', password: 'rootpass' }),
+  });
+  const cookies = login.headers.getSetCookie().map(line => line.split(';')[0]);
+  const token = cookies.find(c => c.startsWith('sameakki_token='))?.split('=')[1];
+  assert.ok(token, 'the new cookie name is set');
+  assert.ok(!cookies.some(c => c.startsWith('leadersync_token=') && c.split('=')[1]), 'no value is set under the old name');
+
+  const withOld = await fetch(base + '/api/auth/me', { headers: { Cookie: `leadersync_token=${token}` } });
+  assert.equal(withOld.status, 200, 'a session made before the rename keeps working');
+  const withNew = await fetch(base + '/api/auth/me', { headers: { Cookie: `sameakki_token=${token}` } });
+  assert.equal(withNew.status, 200);
+});
+
+test('a posted ToDo can be edited by its author or a lead, until it is approved', async () => {
+  const { lead, m1 } = sessions;
+  const url = (id: string) => `/api/daily-logs/${id}`;
+  const post = await m1.post(`/api/groups/${ids.g1}/daily-logs`, { rawContent: 'Login\n- Wireframe\n- Colors' });
+  const id = post.body.id;
+  const read = async () => (await m1.get('/api/bootstrap')).body.dailyLogs.find((l: Json) => l.id === id);
+
+  await m1.post(`${url(id)}/items/${(await read()).items[0].id}/toggle`);
+  assert.equal((await m1.patch(url(id), { rawContent: 'Login screen\n- Wireframe\n- Colors - 80%\n- Icons' })).status, 204);
+  const log = await read();
+  assert.equal(log.title, 'Login screen');
+  assert.deepEqual(log.items.map((i: Json) => [i.text, i.done]), [['Wireframe', true], ['Colors', false], ['Icons', false]], 'the tick on Wireframe stays');
+  assert.ok(log.editedAt, 'marked as edited');
+  assert.equal(log.status, 'in_progress');
+
+  assert.equal((await m1.patch(url(id), { rawContent: '   ' })).status, 400);
+  assert.equal((await lead.patch(url(id), { rawContent: 'Login screen\n- Wireframe' })).status, 204, 'a lead can edit');
+  assert.equal((await read()).status, 'completed', 'every item is ticked now');
+
+  await lead.post(`${url(id)}/approve`, { note: 'ok' });
+  assert.equal((await m1.patch(url(id), { rawContent: 'Changed' })).status, 400, 'the author cannot edit after approval');
+  assert.equal((await lead.patch(url(id), { rawContent: 'Changed\n- one' })).status, 204);
+  assert.equal((await read()).status, 'approved');
 });

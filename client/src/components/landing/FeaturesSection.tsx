@@ -16,7 +16,7 @@ export const FeaturesSection: React.FC = () => {
           return (
             <Reveal key={item.title} delay={(i % 3) * 110}>
               <div className="lp-lift group h-full rounded-2xl border border-transparent p-5 hover:border-neutral-200 hover:bg-white">
-                <span className="flex size-10 items-center justify-center rounded-xl bg-brand-soft text-brand transition-all duration-300 group-hover:scale-110 group-hover:bg-brand group-hover:text-white">
+                <span className="flex size-10 items-center justify-center rounded-xl bg-brand-soft text-brand-ink transition-all duration-300 group-hover:scale-110 group-hover:bg-brand group-hover:text-white">
                   <Icon className="size-5" />
                 </span>
                 <h3 className="mt-4 text-sm font-bold">{item.title}</h3>

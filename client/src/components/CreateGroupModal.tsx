@@ -1,7 +1,9 @@
+import { useEscape } from '../lib/useEscape';
 import React, { useEffect, useState } from 'react';
 import { useApp } from '../context/AppContext';
 import { Icons } from './icons';
 import { DatePicker } from './pickers/DatePicker';
+import { SelectMenu, SELECT_FIELD } from './pickers/SelectMenu';
 
 interface CreateGroupModalProps {
   isOpen: boolean;
@@ -10,6 +12,7 @@ interface CreateGroupModalProps {
 
 export const CreateGroupModal: React.FC<CreateGroupModalProps> = ({ isOpen, onClose }) => {
   const { createGroup, t } = useApp();
+  useEscape(isOpen, onClose);
 
   const [name, setName] = useState('');
   const [nameKm, setNameKm] = useState('');
@@ -44,7 +47,7 @@ export const CreateGroupModal: React.FC<CreateGroupModalProps> = ({ isOpen, onCl
         nameKm: nameKm.trim() || undefined,
         code: code.trim(),
         courseOrProject: courseOrProject.trim(),
-        description: description.trim() || 'Collaborative team workspace.',
+        description: description.trim(),
         deadline: deadline || undefined,
         category,
       });
@@ -116,7 +119,7 @@ export const CreateGroupModal: React.FC<CreateGroupModalProps> = ({ isOpen, onCl
                 value={code}
                 onChange={e => setCode(e.target.value)}
                 placeholder={t.placeholderAutoCode}
-                className="w-full px-3 py-2 text-sm bg-white border border-neutral-200 rounded-lg focus:outline-none focus:ring-1 focus:ring-brand/40 font-mono uppercase placeholder:normal-case"
+                className="w-full px-3 py-2 text-sm bg-white border border-neutral-200 rounded-lg focus:outline-none focus:ring-1 focus:ring-brand/40 font-mono-numbers uppercase placeholder:normal-case"
               />
             </div>
 
@@ -124,16 +127,18 @@ export const CreateGroupModal: React.FC<CreateGroupModalProps> = ({ isOpen, onCl
               <label className="block text-xs font-bold text-black mb-1">
                 {t.groupCategory}
               </label>
-              <select
+              <SelectMenu
                 value={category}
-                onChange={e => setCategory(e.target.value as any)}
-                className="w-full px-3 py-2 text-sm bg-white border border-neutral-200 rounded-lg focus:outline-none focus:ring-1 focus:ring-brand/40"
-              >
-                <option value="assignment">School Assignment</option>
-                <option value="research">Academic Research</option>
-                <option value="startup">Project / Startup</option>
-                <option value="other">Other</option>
-              </select>
+                label={t.groupCategory}
+                className={SELECT_FIELD}
+                onChange={setCategory}
+                options={[
+                  { value: 'assignment', label: t.catAssignment },
+                  { value: 'research', label: t.catResearch },
+                  { value: 'startup', label: t.catStartup },
+                  { value: 'other', label: t.catOther },
+                ]}
+              />
             </div>
           </div>
 

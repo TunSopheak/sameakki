@@ -35,7 +35,7 @@ const BAR_HEIGHT = 28;
 export const STATUS_STYLE: Record<Task['status'], string> = {
   todo: 'border border-dashed border-neutral-500 bg-neutral-100 text-black',
   in_progress: 'border border-[#8c8178] bg-[#4a3f37] text-[#ffffff]',
-  ready_for_review: 'border border-brand bg-brand-soft text-brand',
+  ready_for_review: 'border border-brand bg-brand-soft text-brand-ink',
   approved: 'bg-brand text-white',
 };
 
@@ -240,7 +240,7 @@ export const GanttChart: React.FC<GanttChartProps> = ({ tasks, members, groupBy,
                   return (
                     <div
                       key={day}
-                      className={`flex shrink-0 flex-col items-center justify-center text-[10px] leading-tight ${isWeekend(day) ? 'text-neutral-400' : 'text-neutral-600'}`}
+                      className={`flex shrink-0 flex-col items-center justify-center text-[11px] leading-tight ${isWeekend(day) ? 'text-neutral-400' : 'text-neutral-600'}`}
                       style={{ width: px }}
                     >
                       {showNumber && (
@@ -262,11 +262,11 @@ export const GanttChart: React.FC<GanttChartProps> = ({ tasks, members, groupBy,
             ))}
             {deadlineDay !== undefined && deadlineDay >= from && deadlineDay <= to && (
               <span className="absolute inset-y-0 border-l-2 border-dashed border-brand" style={{ left: (deadlineDay - from + 1) * px - 1 }}>
-                <span className="absolute left-1 top-1 whitespace-nowrap rounded-full border border-brand bg-white px-2 py-0.5 text-[10px] font-bold text-brand">{t.ganttTeamDeadline}</span>
+                <span className="absolute left-1 top-1 whitespace-nowrap rounded-full border border-brand bg-white px-2 py-0.5 text-[11px] font-bold text-brand-ink">{t.ganttTeamDeadline}</span>
               </span>
             )}
             <span className="absolute inset-y-0 w-0.5 bg-brand" style={{ left: (today - from) * px + px / 2 - 1 }}>
-              <span className="absolute -top-px left-1/2 -translate-x-1/2 whitespace-nowrap rounded-b-md bg-brand px-2 py-0.5 text-[10px] font-bold text-white">{t.ganttToday}</span>
+              <span className="absolute -top-px left-1/2 -translate-x-1/2 whitespace-nowrap rounded-b-md bg-brand px-2 py-0.5 text-[11px] font-bold text-white">{t.ganttToday}</span>
             </span>
           </div>
 

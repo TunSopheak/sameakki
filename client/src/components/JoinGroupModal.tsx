@@ -1,5 +1,7 @@
+import { useEscape } from '../lib/useEscape';
 import React, { useEffect, useState } from 'react';
-import { useApp } from '../context/AppContext';
+import { useApp } from '../context/AppContext';
+
 import { Icons } from './icons';
 
 interface JoinGroupModalProps {
@@ -9,6 +11,7 @@ interface JoinGroupModalProps {
 
 export const JoinGroupModal: React.FC<JoinGroupModalProps> = ({ isOpen, onClose }) => {
   const { joinGroup, t } = useApp();
+  useEscape(isOpen, onClose);
   const [code, setCode] = useState('');
   const [submitting, setSubmitting] = useState(false);
 
@@ -60,7 +63,7 @@ export const JoinGroupModal: React.FC<JoinGroupModalProps> = ({ isOpen, onClose 
               value={code}
               onChange={e => setCode(e.target.value)}
               placeholder={t.groupCodePlaceholder}
-              className="w-full px-3 py-2 text-sm bg-white border border-neutral-200 rounded-lg focus:outline-none focus:ring-1 focus:ring-brand/40 font-mono uppercase"
+              className="w-full px-3 py-2 text-sm bg-white border border-neutral-200 rounded-lg focus:outline-none focus:ring-1 focus:ring-brand/40 font-mono-numbers uppercase"
             />
           </div>
 

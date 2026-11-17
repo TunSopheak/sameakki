@@ -1,3 +1,4 @@
+import { useEscape } from '../lib/useEscape';
 import { createPortal } from 'react-dom';
 import React from 'react';
 import { BOY_AVATARS, GIRL_AVATARS, type AvatarKey } from '@shared/avatars';
@@ -12,6 +13,7 @@ interface AvatarPickerModalProps {
 
 export const AvatarPickerModal: React.FC<AvatarPickerModalProps> = ({ isOpen, onClose }) => {
   const { currentUser, updateAvatar, t } = useApp();
+  useEscape(isOpen, onClose);
   if (!isOpen) return null;
 
   const choose = async (key: AvatarKey) => {

@@ -52,7 +52,7 @@ export const ForcePasswordChange: React.FC = () => {
         <p className="mb-4 text-xs leading-relaxed text-neutral-600">{t.forceChangeHint}</p>
 
         {error && (
-          <p role="alert" className="mb-4 rounded-lg border border-brand bg-brand-soft p-2.5 text-xs font-medium text-brand">
+          <p role="alert" className="mb-4 rounded-lg border border-brand bg-brand-soft p-2.5 text-xs font-medium text-brand-ink">
             {error}
           </p>
         )}
@@ -70,7 +70,7 @@ export const ForcePasswordChange: React.FC = () => {
           <label className="block">
             <span className="mb-1 block text-xs font-bold text-black">{t.confirmNewPassword}</span>
             <PasswordInput required autoComplete="new-password" value={confirm} onChange={e => setConfirm(e.target.value)} className={inputClass} />
-            {confirm && next !== confirm && <span role="alert" className="mt-1 block text-[11px] font-medium text-brand">{t.passwordMismatch}</span>}
+            {confirm && next !== confirm && <span role="alert" className="mt-1 block text-[11px] font-medium text-brand-ink">{t.passwordMismatch}</span>}
           </label>
         </div>
 

@@ -1,40 +1,43 @@
 # Run the full stack locally with a real PostgreSQL:
 #   docker compose up --build
-# then open http://localhost:3000
+# then open http://localhost:3001
 services:
   db:
     image: postgres:17-alpine
     environment:
-      POSTGRES_USER: leadersync
-      POSTGRES_PASSWORD: leadersync
-      POSTGRES_DB: leadersync
+      POSTGRES_USER: sameakki
+      POSTGRES_PASSWORD: sameakki
+      POSTGRES_DB: sameakki
     ports:
-      - '5432:5432' # so pgAdmin on your PC can connect to localhost:5432
+      # Only this computer can reach it (not everyone on the same Wi-Fi)
+      # 5433 on the PC (not 5432), so it does not clash with a PostgreSQL installed on Windows
+      - '127.0.0.1:5433:5432' # a tool on your PC can connect to localhost:5433
     volumes:
       - pgdata:/var/lib/postgresql/data
     healthcheck:
-      test: ['CMD-SHELL', 'pg_isready -U leadersync']
+      test: ['CMD-SHELL', 'pg_isready -U sameakki']
       interval: 5s
       retries: 10
 
   # Optional database GUI at http://localhost:5050 (login: admin@local.dev / admin).
-  # Register server: host "db", port 5432, user/password "leadersync".
+  # Register server: host "db", port 5432, user/password "sameakki".
   pgadmin:
     image: dpage/pgadmin4
     environment:
       PGADMIN_DEFAULT_EMAIL: admin@local.dev
       PGADMIN_DEFAULT_PASSWORD: admin
     ports:
-      - '5050:80'
+      - '127.0.0.1:5050:80'
     depends_on:
       - db
 
   app:
     build: .
     ports:
-      - '3000:3000'
+      # 3001 on the PC, because 3000 is used by `npm run dev`; inside Docker the app still listens on 3000
+      - '3001:3000'
     environment:
-      DATABASE_URL: postgres://leadersync:leadersync@db:5432/leadersync
+      DATABASE_URL: postgres://sameakki:sameakki@db:5432/sameakki
       DATABASE_SSL: 'false'
       # Plain HTTP on localhost; remove when serving behind HTTPS.
       COOKIE_SECURE: 'false'

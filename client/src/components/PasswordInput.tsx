@@ -3,7 +3,6 @@ import { useApp } from '../context/AppContext';
 import { Icons } from './icons';
 
 type PasswordInputProps = Omit<React.InputHTMLAttributes<HTMLInputElement>, 'type'> & {
-  /** Show a warning while Caps Lock is on. */
   capsWarning?: boolean;
 };
 
@@ -42,7 +41,7 @@ export const PasswordInput: React.FC<PasswordInputProps> = ({ className = '', ca
         </button>
       </div>
       {caps && (
-        <span role="status" className="mt-1 block text-[11px] font-medium text-brand">
+        <span role="status" className="mt-1 block text-[11px] font-medium text-brand-ink">
           {t.capsLockOn}
         </span>
       )}

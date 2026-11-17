@@ -1,3 +1,4 @@
+import { groupDescription } from '../lib/defaults';
 import { SupportAccessControl } from './SupportAccessControl';
 import React, { useState } from 'react';
 import { useApp } from '../context/AppContext';
@@ -5,6 +6,7 @@ import { daysUntil } from '../lib/dates';
 import { ChevronDown } from 'lucide-react';
 import { EditableDate } from './EditableDate';
 import { SelectMenu } from './pickers/SelectMenu';
+import { taskTotals } from '../lib/stats';
 import { Icons } from './icons';
 
 interface GroupBannerProps {
@@ -68,10 +70,7 @@ export const GroupBanner: React.FC<GroupBannerProps> = ({
     );
   }
 
-  const totalTasks = activeGroupTasks.length;
-  const approvedTasks = activeGroupTasks.filter(t => t.status === 'approved').length;
-  const reviewTasks = activeGroupTasks.filter(t => t.status === 'ready_for_review').length;
-  const progressPercent = totalTasks > 0 ? Math.round((approvedTasks / totalTasks) * 100) : 0;
+  const { total: totalTasks, approved: approvedTasks, review: reviewTasks, percent: progressPercent } = taskTotals(activeGroupTasks);
 
   const getDeadlineText = () => {
     if (!activeGroup.deadline) return null;
@@ -145,7 +144,7 @@ export const GroupBanner: React.FC<GroupBannerProps> = ({
                               <span className="font-semibold text-black">
                                 {language === 'km' && group.nameKm ? group.nameKm : group.name}
                               </span>
-                              <span className="font-mono text-[11px] text-neutral-600 bg-neutral-200 px-1.5 py-0.5 rounded-lg">
+                              <span className="font-mono-numbers text-[11px] text-neutral-600 bg-neutral-200 px-1.5 py-0.5 rounded-lg">
                                 {group.code}
                               </span>
                             </div>
@@ -189,8 +188,8 @@ export const GroupBanner: React.FC<GroupBannerProps> = ({
               </h1>
               <p className="text-xs sm:text-sm text-neutral-600 mt-1 max-w-3xl">
                 <span className="font-semibold text-black">{activeGroup.courseOrProject}</span>
-                <span className="mx-1.5 hidden text-neutral-300 sm:inline">·</span>
-                <span className="hidden sm:inline">{activeGroup.description}</span>
+                <span className="mx-1.5 hidden text-neutral-400 sm:inline">·</span>
+                <span className="hidden sm:inline">{groupDescription(activeGroup.description, t)}</span>
               </p>
             </div>
           </div>
@@ -204,20 +203,20 @@ export const GroupBanner: React.FC<GroupBannerProps> = ({
                 </span>
                 <span>{t.navMembers}</span>
               </div>
-              <span className="text-neutral-300">|</span>
+              <span className="text-neutral-400">|</span>
               <div className="flex items-center gap-1 text-neutral-700">
                 <Icons.done className="size-4 text-black" />
                 <span className="font-bold text-black font-mono-numbers">
                   {approvedTasks}/{totalTasks}
                 </span>
-                <span>{t.doneLabel}</span>
+                <span>{t.approvedLabel}</span>
                 <span className="font-bold font-mono-numbers text-black">
                   ({progressPercent}%)
                 </span>
               </div>
               {reviewTasks > 0 && (
                 <>
-                  <span className="text-neutral-300">|</span>
+                  <span className="text-neutral-400">|</span>
                   <div className="flex items-center gap-1 text-neutral-900 font-medium">
                     <Icons.time className="size-4 text-neutral-500" />
                     <span className="font-mono-numbers font-bold">{reviewTasks}</span>

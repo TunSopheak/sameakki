@@ -18,7 +18,7 @@ const FaqItem: React.FC<FaqItemProps> = ({ question, answer, open, onToggle }) =
       className="flex w-full cursor-pointer items-center justify-between gap-4 px-6 py-5 text-left text-sm font-semibold transition-colors hover:bg-neutral-50"
     >
       {question}
-      <ChevronDown className={`size-4 shrink-0 text-neutral-400 transition-transform duration-300 ${open ? 'rotate-180 text-brand' : ''}`} />
+      <ChevronDown className={`size-4 shrink-0 text-neutral-400 transition-transform duration-300 ${open ? 'rotate-180 text-brand-ink' : ''}`} />
     </button>
     <div className="lp-accordion" data-open={open}>
       <div>

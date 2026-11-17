@@ -35,7 +35,7 @@ export const UserMenu: React.FC<{ isCollapsed: boolean }> = ({ isCollapsed }) =>
           <>
             <span className="min-w-0 flex-1">
               <span className="block truncate text-sm font-semibold text-black">{displayName}</span>
-              <span className="mt-0.5 inline-block rounded-md bg-brand-soft px-1.5 py-px text-[11px] font-semibold uppercase tracking-wide text-brand">
+              <span className="mt-0.5 inline-block rounded-md bg-brand-soft px-1.5 py-px text-[11px] font-semibold uppercase tracking-wide text-brand-ink">
                 {roleLabel[currentUser.role]}
               </span>
             </span>

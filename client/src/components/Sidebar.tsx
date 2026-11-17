@@ -35,7 +35,6 @@ export const Sidebar: React.FC<SidebarProps> = ({
   onOpenJoinGroup,
 }) => {
   const { t } = useApp();
-  // The icon-only layout is for the desktop column; the phone drawer is always full width
   const isDesktop = useIsDesktop();
   const isCollapsed = collapsedPreference && isDesktop;
   const touchX = useRef<number | null>(null);
@@ -62,7 +61,6 @@ export const Sidebar: React.FC<SidebarProps> = ({
         aria-label="Sidebar"
         onTouchStart={e => (touchX.current = e.touches[0].clientX)}
         onTouchEnd={e => {
-          // Swipe left on the drawer to close it
           if (touchX.current !== null && touchX.current - e.changedTouches[0].clientX > 60) setIsMobileOpen(false);
           touchX.current = null;
         }}
@@ -70,13 +68,12 @@ export const Sidebar: React.FC<SidebarProps> = ({
           isCollapsed ? 'w-20' : 'w-64'
         } ${isMobileOpen ? 'translate-x-0 shadow-2xl' : '-translate-x-full lg:translate-x-0'}`}
       >
-        {/* Collapse toggle sits on the sidebar edge so the header stays clean */}
         <button
           type="button"
           onClick={() => setIsCollapsed(!isCollapsed)}
           aria-label={isCollapsed ? 'Expand sidebar' : 'Collapse sidebar'}
           title={isCollapsed ? 'Expand sidebar' : 'Collapse sidebar'}
-          className="absolute -right-3 top-5 z-10 hidden size-6 cursor-pointer items-center justify-center rounded-full border border-neutral-200 bg-white text-neutral-500 shadow-xs transition-colors hover:border-brand hover:text-brand focus-visible:outline-2 focus-visible:outline-brand lg:flex"
+          className="absolute -right-3 top-5 z-10 hidden size-6 cursor-pointer items-center justify-center rounded-full border border-neutral-200 bg-white text-neutral-500 shadow-xs transition-colors hover:border-brand hover:text-brand-ink focus-visible:outline-2 focus-visible:outline-brand lg:flex"
         >
           {isCollapsed ? <PanelLeft className="size-3" /> : <PanelLeftClose className="size-3" />}
         </button>

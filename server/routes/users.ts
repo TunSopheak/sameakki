@@ -1,3 +1,4 @@
+import { roleKm } from '../services/roleLabels';
 import { Router } from 'express';
 import { z } from 'zod';
 import { getDb } from '../db';
@@ -19,7 +20,7 @@ usersRouter.patch('/users/me', async (req, res) => {
   const input = profileSchema.parse(req.body);
   const db = await getDb();
   await db.query('UPDATE users SET name = $2, name_km = $3 WHERE id = $1', [req.user!.id, input.name, input.nameKm || null]);
-  // Only touched when sent: the fallback used by groups that have no specialty of their own
+  // Account specialty, only when sent
   if (input.specialty !== undefined) {
     await db.query('UPDATE users SET specialty = $2 WHERE id = $1', [req.user!.id, input.specialty || null]);
   }
@@ -63,7 +64,7 @@ usersRouter.patch('/users/:userId/role', async (req, res) => {
           targetId,
           targetTitle: rows[0].name,
           description: `updated ${rows[0].name}'s role to ${input.role.replace('_', ' ')}`,
-          descriptionKm: `បានប្តូរសិទ្ធិ ${rows[0].name} ទៅជា ${input.role}`,
+          descriptionKm: `បានប្តូរសិទ្ធិ ${rows[0].name} ទៅជា ${roleKm(input.role)}`,
           metadata: { role: input.role },
         });
       }

@@ -2,7 +2,8 @@ import React from 'react';
 import { Check, Users } from 'lucide-react';
 import type { LandingSettings, PriceTerm } from '@shared/landing';
 import { useLanding } from './hooks';
-import { Button, Reveal, Section, SectionTitle } from './ui';
+import { Button, Reveal, Section, SectionTitle } from './ui';
+
 import { Icons } from '../icons';
 
 interface Plan {
@@ -47,7 +48,7 @@ const PlanCard: React.FC<{ plan: Plan }> = ({ plan }) => {
       </div>
       {note && plan.price && <p className="mt-2 text-xs leading-relaxed text-neutral-500">{note}</p>}
       {plan.maxMembers && (
-        <p className="mt-3 flex items-center gap-1.5 text-xs font-semibold text-brand">
+        <p className="mt-3 flex items-center gap-1.5 text-xs font-semibold text-brand-ink">
           <Users className="size-3.5" />
           {copy.pricing.upTo(plan.maxMembers)}
         </p>
@@ -56,7 +57,7 @@ const PlanCard: React.FC<{ plan: Plan }> = ({ plan }) => {
       <ul className="mt-6 flex-1 space-y-3">
         {text.points.map(point => (
           <li key={point} className="flex items-start gap-2.5 text-sm text-neutral-700">
-            <Check className="mt-0.5 size-4 shrink-0 text-brand" />
+            <Check className="mt-0.5 size-4 shrink-0 text-brand-ink" />
             {point}
           </li>
         ))}
@@ -103,7 +104,7 @@ export const PlansSection: React.FC<PlansSectionProps> = ({ settings, ready }) =
     <Section id="pricing">
       <SectionTitle subtitle={copy.pricing.subtitle}>{copy.pricing.title}</SectionTitle>
       {ready && settings.pilotOffer && (
-        <p className="mx-auto mt-5 max-w-xl rounded-lg bg-brand-soft p-3 text-center text-xs font-semibold text-brand">{copy.pricing.pilot}</p>
+        <p className="mx-auto mt-5 max-w-xl rounded-lg bg-brand-soft p-3 text-center text-xs font-semibold text-brand-ink">{copy.pricing.pilot}</p>
       )}
 
       {!ready ? (

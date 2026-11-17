@@ -6,7 +6,8 @@ import { buildDemoNotifications } from '../lib/demoData';
 import { describeNotification, timeAgo } from '../lib/notificationText';
 import { useDismiss } from '../lib/useDismiss';
 import { useApp } from '../context/AppContext';
-import type { Tab } from './sidebar/SidebarNav';
+import type { Tab } from './sidebar/SidebarNav';
+
 import { Icons } from './icons';
 
 const POLL_MS = 30_000;
@@ -110,7 +111,7 @@ export const NotificationBell: React.FC<NotificationBellProps> = ({ onNavigate }
       >
         <Icons.notifications className="size-4" />
         {unreadCount > 0 && (
-          <span className="absolute -right-1 -top-1 flex h-4 min-w-4 items-center justify-center rounded-full bg-brand px-1 text-[10px] font-bold leading-none text-white">
+          <span className="absolute -right-1 -top-1 flex h-4 min-w-4 items-center justify-center rounded-full bg-brand px-1 text-[11px] font-bold leading-none text-white">
             {unreadCount > 9 ? '9+' : unreadCount}
           </span>
         )}
@@ -164,7 +165,7 @@ export const NotificationBell: React.FC<NotificationBellProps> = ({ onNavigate }
                             target="_blank"
                             rel="noopener noreferrer"
                             onClick={e => e.stopPropagation()}
-                            className="mt-1.5 inline-flex items-center gap-1 text-[11px] font-semibold text-brand hover:underline"
+                            className="mt-1.5 inline-flex items-center gap-1 text-[11px] font-semibold text-brand-ink hover:underline"
                           >
                             <Icons.send className="size-3" />
                             {t.contactTelegram}

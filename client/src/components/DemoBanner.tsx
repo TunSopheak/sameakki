@@ -10,7 +10,7 @@ export const DemoBanner: React.FC = () => {
   if (!isDemo) return null;
 
   return (
-    <div className="flex flex-wrap items-center gap-x-3 gap-y-2 border-b border-brand bg-brand-soft px-4 py-2 text-xs font-medium text-brand print:hidden">
+    <div className="flex flex-wrap items-center gap-x-3 gap-y-2 border-b border-brand bg-brand-soft px-4 py-2 text-xs font-medium text-brand-ink print:hidden">
       <span className="mr-auto">{t.demoBanner}</span>
       <a
         href={telegramLink(t.telegramMessage)}

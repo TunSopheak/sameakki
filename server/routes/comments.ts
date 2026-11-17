@@ -39,14 +39,16 @@ const toComment = (r: any): Comment => ({
   userId: r.user_id,
   userName: r.name,
   userNameKm: r.name_km ?? undefined,
+  userRole: r.role,
   avatar: r.avatar ?? undefined,
   body: r.body,
   createdAt: new Date(r.created_at).toISOString(),
+  editedAt: r.edited_at ? new Date(r.edited_at).toISOString() : undefined,
 });
 
 async function listComments(db: Queryable, kind: CommentKind, id: string): Promise<Comment[]> {
   const { rows } = await db.query(
-    `SELECT c.id, c.user_id, c.body, c.created_at, u.name, u.name_km, u.avatar
+    `SELECT c.id, c.user_id, c.body, c.created_at, c.edited_at, u.name, u.name_km, u.role, u.avatar
        FROM comments c JOIN users u ON u.id = c.user_id
       WHERE c.target_type = $1 AND c.target_id = $2 AND c.is_active = 1
       ORDER BY c.created_at DESC LIMIT ${MAX_PER_THREAD}`,
@@ -105,7 +107,7 @@ function register(kind: CommentKind, path: string) {
     });
 
     const { rows } = await db.query(
-      `SELECT c.id, c.user_id, c.body, c.created_at, u.name, u.name_km, u.avatar
+      `SELECT c.id, c.user_id, c.body, c.created_at, c.edited_at, u.name, u.name_km, u.role, u.avatar
          FROM comments c JOIN users u ON u.id = c.user_id WHERE c.id = $1`,
       [id]
     );
@@ -126,4 +128,24 @@ commentsRouter.delete('/comments/:commentId', async (req, res) => {
   assert(comment.user_id === user.id || access.canLead, 'You can only delete your own comments.');
   await db.query('UPDATE comments SET is_active = 0 WHERE id = $1', [req.params.commentId]);
   res.status(204).end();
+});
+
+commentsRouter.patch('/comments/:commentId', async (req, res) => {
+  const user = req.user!;
+  const db = await getDb();
+  const { rows } = await db.query('SELECT group_id, user_id FROM comments WHERE id = $1 AND is_active = 1', [req.params.commentId]);
+  const comment = rows[0];
+  if (!comment) throw notFound('Comment not found.');
+  const access = await getGroupAccess(db, user, comment.group_id);
+  assertWritable(access);
+  assert(comment.user_id === user.id && access.canContribute, 'You can only edit your own comments.');
+  const { body } = bodySchema.parse(req.body);
+
+  await db.query('UPDATE comments SET body = $2, edited_at = now() WHERE id = $1', [req.params.commentId, body]);
+  const { rows: updated } = await db.query(
+    `SELECT c.id, c.user_id, c.body, c.created_at, c.edited_at, u.name, u.name_km, u.role, u.avatar
+       FROM comments c JOIN users u ON u.id = c.user_id WHERE c.id = $1`,
+    [req.params.commentId]
+  );
+  res.json(toComment(updated[0]));
 });

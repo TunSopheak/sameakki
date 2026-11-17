@@ -1,6 +1,8 @@
 import React from 'react';
 import { useApp } from '../context/AppContext';
 import { formatDateTime, todayLocal } from '../lib/dates';
+import { averageProgress, groupTeamTasks, standupToday, taskTotals } from '../lib/stats';
+import { statusLabels } from '../lib/taskStatus';
 import { AnimatedNumber } from './AnimatedNumber';
 import { Avatar } from './Avatar';
 import { ActivityLog } from './ActivityLog';
@@ -27,24 +29,21 @@ export const OverviewDashboard: React.FC<OverviewDashboardProps> = ({
 
   const todayStr = todayLocal();
 
-  const totalTasks = activeGroupTasks.length;
-  const approvedTasks = activeGroupTasks.filter(t => t.status === 'approved').length;
-  const reviewTasks = activeGroupTasks.filter(t => t.status === 'ready_for_review').length;
-  const progressPercent = totalTasks > 0 ? Math.round((approvedTasks / totalTasks) * 100) : 0;
+  const { total: totalTasks, approved: approvedTasks, review: reviewTasks, progress: progressPercent } = taskTotals(activeGroupTasks);
 
   const submittedTodayLogs = activeGroupDailyLogs.filter(l => l.date === todayStr);
-  const submittedCount = new Set(submittedTodayLogs.map(l => l.userId)).size;
+  const { posted: submittedCount, total: posterCount, percent: standupRate } = standupToday(activeGroupMembers, activeGroupDailyLogs, todayStr);
   const totalMemberCount = activeGroupMembers.length;
-  const standupRate = totalMemberCount > 0 ? Math.round((submittedCount / totalMemberCount) * 100) : 0;
 
   const hasUserSubmittedToday = activeGroupDailyLogs.some(
     l => l.userId === currentUser.id && l.date === todayStr
   );
 
-  const urgentTasks = activeGroupTasks
-    .filter(t => t.status !== 'approved')
-    .sort((a, b) => a.dueDate.localeCompare(b.dueDate))
+  const openTasks = activeGroupTasks.filter(task => task.status !== 'approved');
+  const urgentTasks = groupTeamTasks(openTasks, activeGroupTasks)
+    .sort((a, b) => a.task.dueDate.localeCompare(b.task.dueDate))
     .slice(0, 3);
+  const statusLabel = statusLabels(t);
 
   return (
     <div className="space-y-6">
@@ -62,7 +61,7 @@ export const OverviewDashboard: React.FC<OverviewDashboardProps> = ({
                 <AnimatedNumber value={progressPercent} suffix="%" />
               </span>
               <span className="text-xs text-neutral-500">
-                ({approvedTasks}/{totalTasks} {t.colTasks})
+                ({approvedTasks}/{totalTasks} {t.approvedLabel})
               </span>
             </div>
             <div className="w-full bg-neutral-100 h-2 rounded-full overflow-hidden mt-3">
@@ -84,7 +83,7 @@ export const OverviewDashboard: React.FC<OverviewDashboardProps> = ({
           <div className="mt-3">
             <div className="flex flex-wrap items-baseline gap-x-2">
               <span className="text-2xl sm:text-3xl font-bold text-black font-mono-numbers">
-                {submittedCount}/{totalMemberCount}
+                {submittedCount}/{posterCount}
               </span>
               <span className="text-xs text-neutral-700 font-bold font-mono-numbers">
                 ({standupRate}%)
@@ -209,7 +208,7 @@ export const OverviewDashboard: React.FC<OverviewDashboardProps> = ({
                           </span>
                         </div>
                         <span className="text-[11px] font-bold text-black bg-white px-2 py-0.5 rounded-lg">
-                          {log.status === 'approved' ? 'Approved' : log.status === 'completed' ? 'Done' : 'In Progress'}
+                          {log.status === 'approved' ? t.taskStatusApproved : log.status === 'completed' ? t.reportLogDone : t.taskStatusInProgress}
                         </span>
                       </div>
                       <p className="text-xs text-neutral-800 line-clamp-2 leading-relaxed">
@@ -247,7 +246,7 @@ export const OverviewDashboard: React.FC<OverviewDashboardProps> = ({
               </div>
             ) : (
               <div className="space-y-3">
-                {urgentTasks.map(task => {
+                {urgentTasks.map(({ task, team }) => {
                   const assignee = activeGroupMembers.find(m => m.id === task.assignedTo);
                   return (
                     <div
@@ -258,7 +257,7 @@ export const OverviewDashboard: React.FC<OverviewDashboardProps> = ({
                         <span className="font-semibold text-[11px] uppercase tracking-wider text-black">
                           {task.module}
                         </span>
-                        <span className="font-mono text-[11px] text-neutral-500">
+                        <span className="font-mono-numbers text-[11px] text-neutral-500">
                           {task.dueDate}
                         </span>
                       </div>
@@ -266,10 +265,8 @@ export const OverviewDashboard: React.FC<OverviewDashboardProps> = ({
                         {task.title}
                       </h4>
                       <div className="flex items-center justify-between text-[11px] text-neutral-600 pt-1">
-                        <span>{assignee?.name}</span>
-                        <span className="font-semibold capitalize text-black">
-                          {task.status.replace('_', ' ')}
-                        </span>
+                        <span>{team ? `${t.teamTask} · ${t.teamTaskPeople.replace('{n}', String(team.length))}` : assignee?.name}</span>
+                        <span className="font-semibold text-black">{team ? `${averageProgress(team)}%` : statusLabel[task.status]}</span>
                       </div>
                     </div>
                   );

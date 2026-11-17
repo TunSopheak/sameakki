@@ -13,7 +13,7 @@ interface EditableDateProps {
   size?: 'sm' | 'md';
 }
 
-/** A date that opens a calendar when clicked. */
+/** Date that opens a calendar on click. */
 export const EditableDate: React.FC<EditableDateProps> = ({ value, canEdit, onSave, children, className = '' }) => {
   const { t } = useApp();
   const [open, setOpen] = useState(false);
@@ -33,7 +33,7 @@ export const EditableDate: React.FC<EditableDateProps> = ({ value, canEdit, onSa
         className={`group/edit inline-flex cursor-pointer items-center gap-1 text-left ${className}`}
       >
         {children}
-        <Icons.edit className="size-3 shrink-0 text-neutral-400 transition-colors group-hover/edit:text-brand" />
+        <Icons.edit className="size-3 shrink-0 text-neutral-400 transition-colors group-hover/edit:text-brand-ink" />
       </button>
       <FloatingPanel open={open} onClose={() => setOpen(false)} anchorRef={anchorRef} label={t.editDate}>
         <Calendar

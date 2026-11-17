@@ -76,6 +76,7 @@ export const toDailyLog = (r: any, reactions: DailyLogReaction[]): DailyLog => {
     overallDone: items.length > 0 && items.every((i: any) => i.done),
     status: r.status,
     completedAt: iso(r.completed_at),
+    editedAt: iso(r.edited_at),
     leaderChecked: r.leader_checked,
     leaderNote: opt(r.leader_note),
     approvedBy: opt(r.approved_by),

@@ -1,3 +1,4 @@
+import { useEscape } from '../lib/useEscape';
 import React, { useEffect, useState } from 'react';
 import { useApp } from '../context/AppContext';
 import { api } from '../lib/api';
@@ -19,6 +20,7 @@ interface AddMemberModalProps {
 
 export const AddMemberModal: React.FC<AddMemberModalProps> = ({ isOpen, onClose }) => {
   const { addMemberToGroup, t, language, activeGroup, isSuperAdmin, isDemo } = useApp();
+  useEscape(isOpen, onClose);
 
   const [query, setQuery] = useState('');
   const [results, setResults] = useState<Candidate[]>([]);

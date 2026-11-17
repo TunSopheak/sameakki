@@ -9,7 +9,7 @@ export const PlanBanner: React.FC = () => {
   const { isReadOnly, groupFrozen, groupArchived, currentUser, t } = useApp();
   if (!isReadOnly && (groupFrozen || groupArchived)) {
     return (
-      <div role="status" className="flex items-center gap-2 border-b border-brand bg-brand-soft px-4 py-2 text-xs font-medium text-brand print:hidden">
+      <div role="status" className="flex items-center gap-2 border-b border-brand bg-brand-soft px-4 py-2 text-xs font-medium text-brand-ink print:hidden">
         <Icons.lock className="size-4 shrink-0" />
         <span>{groupFrozen ? t.planGroupEnded : t.groupArchivedNote}</span>
       </div>
@@ -19,7 +19,7 @@ export const PlanBanner: React.FC = () => {
   const locksAt = currentUser.plan?.locksAt;
 
   return (
-    <div role="status" className="flex flex-wrap items-center gap-x-3 gap-y-2 border-b border-brand bg-brand-soft px-4 py-2 text-xs font-medium text-brand print:hidden">
+    <div role="status" className="flex flex-wrap items-center gap-x-3 gap-y-2 border-b border-brand bg-brand-soft px-4 py-2 text-xs font-medium text-brand-ink print:hidden">
       <Icons.lock className="size-4 shrink-0" />
       <span className="mr-auto">
         {t.planReadOnly}

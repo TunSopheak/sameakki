@@ -60,10 +60,10 @@ export const landing: Record<'km' | 'en', LandingCopy> = {
       title: 'កិច្ចការក្រុម',
       highlight: 'ដោយមិនមានជម្លោះ',
       subtitle:
-        'ដឹងភ្លាមថាអ្នកណាធ្វើអ្វី ដល់ណាហើយ និងអ្នកណាមិនទាន់ធ្វើ។ ប្រធានក្រុមមិនចាំបាច់ធ្វើគ្រប់យ៉ាងម្នាក់ឯងទៀតទេ។',
+        'ដឹងភ្លាមថាអ្នកណាធ្វើអ្វី ដល់ណាហើយ និងអ្នកណាមិនទាន់ធ្វើ។',
       explore: 'សាកល្បងមើលឥឡូវនេះ',
       exploreHint: 'មិនបាច់ចុះឈ្មោះ ប្រើទិន្នន័យគំរូ',
-      contact: 'ទាក់ទង Admin តាម Telegram',
+      contact: 'ទាក់ទងតាម Telegram',
       mock: {
         sample: 'ឧទាហរណ៍',
         group: 'គម្រោងវេបសាយ',
@@ -81,41 +81,41 @@ export const landing: Record<'km' | 'en', LandingCopy> = {
       items: [
         {
           title: 'សមាជិកខ្លះមិនធ្វើអ្វីសោះ',
-          text: 'ចាត់កិច្ចការច្បាស់លាស់ ជាមួយថ្ងៃកំណត់។ អ្នកណាធ្វើអ្វី ឃើញទាំងអស់ក្នុងមួយកន្លែង។',
+          text: 'កិច្ចការច្បាស់លាស់ មានថ្ងៃកំណត់ ឃើញទាំងអស់ក្នុងមួយកន្លែង។',
         },
         {
           title: 'ភ្លេចថាអ្នកណាសន្យាអ្វី',
-          text: 'ជួងជូនដំណឹងពេលមានកិច្ចការថ្មី ជិតដល់ថ្ងៃកំណត់ ឬមានមតិយោបល់ ដោយមិនចាំបាច់រើសមើលសារក្នុង Telegram។',
+          text: 'ជួងប្រាប់ពេលមានកិច្ចការ ថ្ងៃកំណត់ ឬមតិថ្មី។',
         },
         {
           title: 'គ្រូសួរថាអ្នកណាធ្វើអ្វី',
-          text: 'ទាញរបាយការណ៍សង្ខេបកិច្ចការរបស់សមាជិកម្នាក់ៗ ទុកបង្ហាញគ្រូបាន។',
+          text: 'ទាញរបាយការណ៍សង្ខេប ទុកបង្ហាញគ្រូ។',
         },
       ],
     },
     steps: {
       title: 'ចាប់ផ្តើមយ៉ាងងាយ ៣ ជំហាន',
       items: [
-        { title: 'ទាក់ទង Admin', text: 'ផ្ញើសារតាម Telegram ហើយទទួលគណនីប្រធានក្រុម។' },
-        { title: 'បង្កើតក្រុម', text: 'បន្ថែមសមាជិក ហើយចាត់កិច្ចការជាមួយថ្ងៃកំណត់។' },
-        { title: 'តាមដានរៀងរាល់ថ្ងៃ', text: 'សមាជិកផ្ញើរបាយការណ៍ប្រចាំថ្ងៃ ប្រធានអនុម័ត ហើយឃើញវឌ្ឍនភាពភ្លាម។' },
+        { title: 'ទាក់ទង Admin', text: 'ផ្ញើសារតាម Telegram ដើម្បីទទួលគណនី។' },
+        { title: 'បង្កើតក្រុម', text: 'បន្ថែមសមាជិក ហើយចាត់កិច្ចការ។' },
+        { title: 'តាមដានរៀងរាល់ថ្ងៃ', text: 'សមាជិកផ្ញើរបាយការណ៍ ប្រធានអនុម័ត។' },
       ],
     },
     features: {
       title: 'អ្វីដែលអ្នកទទួលបាន',
       items: [
-        { title: 'របាយការណ៍ប្រចាំថ្ងៃ', text: 'សរសេរបញ្ជីការងារថ្ងៃនេះបានរហ័ស ហើយប្រព័ន្ធគណនាភាគរយវឌ្ឍនភាពឱ្យ។' },
-        { title: 'កិច្ចការ និងថ្ងៃកំណត់', text: 'ចាត់កិច្ចការជូនសមាជិក កំណត់អាទិភាព និងដឹងថាអ្វីហួសកាលកំណត់។' },
-        { title: 'ការអនុម័តដោយប្រធាន', text: 'ប្រធានពិនិត្យ អនុម័ត និងផ្តល់មតិកែលម្អលើការងារនីមួយៗ។' },
-        { title: 'ជួងជូនដំណឹង', text: 'ដឹងភ្លាមពេលមានការងារថ្មី កិច្ចការត្រូវពិនិត្យ ឬមានអ្នកបញ្ចេញមតិ។' },
-        { title: 'មតិយោបល់ក្នុងកិច្ចការ', text: 'ពិភាក្សាក្នុងកិច្ចការនីមួយៗ មិនច្របូកច្របល់ជាមួយសារផ្សេង។' },
-        { title: 'ភាសាខ្មែរ ប្រើលើទូរសព្ទបាន', text: 'មានភាសាខ្មែរ និងអង់គ្លេស ទម្រង់ភ្លឺ/ងងឹត ហើយដំណើរការល្អលើទូរសព្ទ។' },
+        { title: 'របាយការណ៍ប្រចាំថ្ងៃ', text: 'សរសេរបញ្ជីការងារ ប្រព័ន្ធគណនា % ឱ្យ។' },
+        { title: 'កិច្ចការ និងថ្ងៃកំណត់', text: 'កំណត់អាទិភាព ហើយឃើញអ្វីដែលហួសកំណត់។' },
+        { title: 'កិច្ចការរួម', text: 'ចាត់ជូនទាំងអស់គ្នា ឃើញ % របស់ម្នាក់ៗ។' },
+        { title: 'ការអនុម័តដោយប្រធាន', text: 'ពិនិត្យ អនុម័ត និងផ្តល់មតិ។' },
+        { title: 'ជួងជូនដំណឹង', text: 'ដឹងភ្លាមពេលមានការងារ ឬមតិថ្មី។' },
+        { title: 'ខ្មែរ ហើយប្រើលើទូរសព្ទ', text: 'ខ្មែរ/អង់គ្លេស ភ្លឺ/ងងឹត ដំណើរការល្អលើទូរសព្ទ។' },
       ],
     },
     pricing: {
       title: 'កញ្ចប់ងាយៗ',
-      subtitle: 'សមាជិកប្រើឥតគិតថ្លៃ។ ប្រធានក្រុមជាអ្នកបង់ ហើយអាចចែកថ្លៃគ្នាក្នុងក្រុម។',
-      pilot: 'ក្រុមដំបូងៗ ទទួលបានការប្រើប្រាស់ ១ ខែឥតគិតថ្លៃ ជាថ្នូរនឹងមតិយោបល់របស់អ្នក។',
+      subtitle: 'សមាជិកប្រើឥតគិតថ្លៃ។ ប្រធានក្រុមជាអ្នកបង់។',
+      pilot: 'ក្រុមដំបូងៗ ប្រើ ១ ខែឥតគិតថ្លៃ ជាថ្នូរនឹងមតិរបស់អ្នក។',
       askPrice: 'ទាក់ទងសួរតម្លៃ',
       perSemester: '/ ឆមាស',
       perMonth: '/ ខែ',
@@ -125,14 +125,14 @@ export const landing: Record<'km' | 'en', LandingCopy> = {
         demo: {
           name: 'ទស្សនកិច្ច',
           description: 'សាកល្បងមើលមុននឹងសម្រេចចិត្ត',
-          points: ['ទិន្នន័យគំរូ មើលបានតែប៉ុណ្ណោះ', 'មិនបាច់ចុះឈ្មោះ', 'ឥតគិតថ្លៃ'],
+          points: ['ទិន្នន័យគំរូ (មើលតែប៉ុណ្ណោះ)', 'មិនបាច់ចុះឈ្មោះ', 'ឥតគិតថ្លៃ'],
           cta: 'សាកល្បងមើល',
         },
         student: {
           badge: 'ណែនាំ',
           name: 'ក្រុមនិស្សិត',
           description: 'សម្រាប់ក្រុមធ្វើគម្រោងក្នុងថ្នាក់',
-          points: ['កិច្ចការ និងថ្ងៃកំណត់', 'របាយការណ៍ប្រចាំថ្ងៃ និងការអនុម័ត', 'ជួងជូនដំណឹង និងមតិយោបល់', 'របាយការណ៍សង្ខេបទុកបង្ហាញគ្រូ'],
+          points: ['កិច្ចការ និងវឌ្ឍនភាព %', 'របាយការណ៍ និងការអនុម័ត', 'ជូនដំណឹង និងមតិយោបល់', 'របាយការណ៍ទុកបង្ហាញគ្រូ'],
           cta: 'ទាក់ទងតាម Telegram',
         },
       },
@@ -140,7 +140,7 @@ export const landing: Record<'km' | 'en', LandingCopy> = {
     sponsor: {
       eyebrow: 'គម្រោងនៅដំណាក់កាលដំបូង',
       title: 'ជួយឱ្យ សាមគ្គី លូតលាស់ ជាមួយនិស្សិតខ្មែរ',
-      text: 'យើងកំពុងអភិវឌ្ឍបន្តិចម្តងៗ ហើយចង់ឱ្យវាកាន់តែល្អសម្រាប់និស្សិតទូទាំងប្រទេស។ បើសាលា ក្រុមហ៊ុន ឬអ្នកណាម្នាក់ចង់ជួយឧបត្ថម្ភ ការជួយរបស់អ្នកនឹងជួយឱ្យយើងបន្ថែមមុខងារថ្មី និងរក្សាសេវានេះឱ្យនិស្សិតប្រើបាន។',
+      text: 'យើងអភិវឌ្ឍបន្តិចម្តងៗ។ ការឧបត្ថម្ភរបស់អ្នកជួយឱ្យយើងបន្ថែមមុខងារថ្មី និងរក្សាសេវានេះសម្រាប់និស្សិត។',
       roadmapTitle: 'អ្វីដែលយើងចង់បន្ថែមបន្ទាប់',
       roadmap: [
         { title: 'ជូនដំណឹងលើទូរសព្ទ', text: 'ផ្ញើការជូនដំណឹងតាម Telegram ទោះមិនបានបើកកម្មវិធី។' },
@@ -150,9 +150,9 @@ export const landing: Record<'km' | 'en', LandingCopy> = {
       ],
       benefitsTitle: 'ដៃគូឧបត្ថម្ភទទួលបាន',
       benefits: [
-        'ឱ្យនិស្សិត ឬបុគ្គលិករបស់អ្នកប្រើឥតគិតថ្លៃ តាមចំនួនក្រុមដែលយើងព្រមព្រៀង',
-        'ឈ្មោះ ឬនិមិត្តសញ្ញារបស់អ្នកនៅលើទំព័រនេះ ជាដៃគូឧបត្ថម្ភ',
-        'ស្នើមុខងារដែលអ្នកត្រូវការមុនគេ',
+        'និស្សិត ឬបុគ្គលិករបស់អ្នកប្រើឥតគិតថ្លៃ តាមចំនួនដែលព្រមព្រៀង',
+        'ឈ្មោះ ឬនិមិត្តសញ្ញារបស់អ្នកលើទំព័រនេះ',
+        'ស្នើមុខងារដែលត្រូវការមុនគេ',
       ],
       cta: 'ទាក់ទងដើម្បីឧបត្ថម្ភ',
       message: 'សួស្តី ខ្ញុំចាប់អារម្មណ៍ចង់ឧបត្ថម្ភគម្រោង សាមគ្គី។',
@@ -167,11 +167,11 @@ export const landing: Record<'km' | 'en', LandingCopy> = {
       items: [
         {
           q: 'សមាជិកត្រូវបង់ប្រាក់ដែរទេ?',
-          a: 'មិនត្រូវទេ! មានតែប្រធានក្រុមដែលមានគណនីបង់ប្រាក់ ហើយសមាជិកដែលត្រូវបានបន្ថែមប្រើបានឥតគិតថ្លៃ ក្នុងចំនួនដែលកញ្ចប់អនុញ្ញាត។',
+          a: 'មិនត្រូវទេ! មានតែប្រធានក្រុមដែលបង់។ សមាជិកប្រើឥតគិតថ្លៃ តាមចំនួនដែលកញ្ចប់អនុញ្ញាត។',
         },
         {
           q: 'តើខ្ញុំបង់ប្រាក់ និងទទួលគណនីយ៉ាងដូចម្តេច?',
-          a: 'ចុចប៊ូតុង Telegram ហើយផ្ញើសារ។ Admin នឹងប្រាប់វិធីបង់ប្រាក់ ហើយបង្កើតគណនីប្រធានក្រុមឱ្យអ្នក។',
+          a: 'ចុចប៊ូតុង Telegram ហើយផ្ញើសារ។ Admin នឹងប្រាប់វិធីបង់ ហើយបង្កើតគណនីឱ្យអ្នក។',
         },
         {
           q: 'អ្នកណាអាចមើលព័ត៌មានក្រុមរបស់ខ្ញុំ?',
@@ -179,25 +179,25 @@ export const landing: Record<'km' | 'en', LandingCopy> = {
         },
         {
           q: 'Admin អាចមើលការងារ និងការពិភាក្សារបស់ខ្ញុំបានទេ?',
-          a: 'មិនបាន លុះត្រាតែប្រធានក្រុមអនុញ្ញាត។ Admin ឃើញតែព័ត៌មានគណនី (ឈ្មោះ កញ្ចប់ ចំនួនសមាជិក) មិនឃើញកិច្ចការ របាយការណ៍ ឬមតិយោបល់ទេ។ ពេលអ្នកត្រូវការជំនួយ ប្រធានក្រុមអាចបើកឱ្យ Admin មើលជាបណ្តោះអាសន្ន ហើយបិទវិញបានគ្រប់ពេល។ សមាជិកទាំងអស់ឃើញនៅពេលវាបើក។ (ដូចសេវាអនឡាញគ្រប់យ៉ាង អ្នកគ្រប់គ្រង server មានសិទ្ធិបច្ចេកទេស តែយើងមិនមើលទេ។)',
+          a: 'មិនបាន លុះត្រាតែប្រធានក្រុមអនុញ្ញាត។ Admin ឃើញតែព័ត៌មានគណនី មិនឃើញកិច្ចការ របាយការណ៍ ឬមតិទេ។ ប្រធានក្រុមអាចបើកឱ្យមើលបណ្តោះអាសន្ន ហើយបិទបានគ្រប់ពេល។ សមាជិកទាំងអស់ឃើញពេលវាបើក។ (អ្នកគ្រប់គ្រង server មានសិទ្ធិបច្ចេកទេស តែយើងមិនមើលទេ។)',
         },
         {
           q: 'បើខ្ញុំភ្លេចពាក្យសម្ងាត់?',
-          a: 'ប្រាប់ប្រធានក្រុមរបស់អ្នក (ឬ Admin ប្រសិនបើអ្នកជាប្រធានក្រុម)។ គាត់នឹងបង្កើតពាក្យសម្ងាត់បណ្តោះអាសន្នថ្មី ហើយអ្នកត្រូវប្តូរវាពេលចូលលើកក្រោយ។ អ្នកនឹងឃើញការជូនដំណឹងថាអ្នកណាបាន reset វា ហើយពាក្យសម្ងាត់ចាស់មិនអាចមើលឃើញទេ។',
+          a: 'ប្រាប់ប្រធានក្រុម (ឬ Admin បើអ្នកជាប្រធាន)។ គាត់បង្កើតពាក្យសម្ងាត់បណ្តោះអាសន្ន ហើយអ្នកត្រូវប្តូរវាពេលចូល។',
         },
         {
           q: 'ខ្ញុំអាចឱ្យគ្រូមើលវឌ្ឍនភាពបានទេ?',
-          a: 'បាន! អ្នកអាចបន្ថែមគ្រូជា "អ្នកមើល" ដែលអានបានតែប៉ុណ្ណោះ ឬទាញរបាយការណ៍សង្ខេបទៅបង្ហាញគាត់។',
+          a: 'បាន! បន្ថែមគ្រូជា "អ្នកមើល" (អានតែប៉ុណ្ណោះ) ឬទាញរបាយការណ៍ទៅបង្ហាញ។',
         },
         {
           q: 'ប្រើលើទូរសព្ទបានទេ?',
-          a: 'បាន! វាជាវេបសាយដែលដំណើរការលើទូរសព្ទ និងកុំព្យូទ័រ ដោយមិនចាំបាច់ដំឡើងកម្មវិធី។',
+          a: 'បាន! ជាវេបសាយ ប្រើលើទូរសព្ទ និងកុំព្យូទ័រ មិនបាច់ដំឡើង។',
         },
       ],
     },
     final: {
-      title: 'ត្រៀមខ្លួនឱ្យក្រុមរបស់អ្នកធ្វើការបានល្អជាងមុនហើយឬនៅ?',
-      text: 'សាកល្បងមើលដោយមិនបាច់ចុះឈ្មោះ ហើយបើពេញចិត្ត ទាក់ទងមកយើងតាម Telegram។',
+      title: 'ត្រៀមឱ្យក្រុមរបស់អ្នកធ្វើការល្អជាងមុនឬនៅ?',
+      text: 'សាកល្បងមុន មិនបាច់ចុះឈ្មោះ។ ពេញចិត្តហើយ ទាក់ទងតាម Telegram។',
     },
     footer: { rights: 'រក្សាសិទ្ធិគ្រប់យ៉ាង', back: 'ត្រឡប់ទៅទំព័រដើម' },
     creator: { label: 'បង្កើតដោយ' },
@@ -210,10 +210,10 @@ export const landing: Record<'km' | 'en', LandingCopy> = {
       title: 'Group projects',
       highlight: 'without the drama',
       subtitle:
-        'Know at once who did what, how far it has got, and who has not started. The team leader no longer has to do everything alone.',
+        'See who did what, how far it is, and who has not started.',
       explore: 'Try it now',
       exploreHint: 'No sign-up, sample data',
-      contact: 'Contact the Admin on Telegram',
+      contact: 'Contact us on Telegram',
       mock: {
         sample: 'Example',
         group: 'Website project',
@@ -231,41 +231,41 @@ export const landing: Record<'km' | 'en', LandingCopy> = {
       items: [
         {
           title: 'Some members do nothing',
-          text: 'Give clear tasks with deadlines. Who is doing what is visible in one place.',
+          text: 'Clear tasks with deadlines, all in one place.',
         },
         {
           title: 'Forgetting who promised what',
-          text: 'A bell tells you about new tasks, deadlines coming up and comments, so you do not dig through Telegram messages.',
+          text: 'A bell for new tasks, deadlines and comments.',
         },
         {
           title: 'The lecturer asks who did what',
-          text: 'Export a summary report of each member’s tasks to show your lecturer.',
+          text: 'Export a summary to show your lecturer.',
         },
       ],
     },
     steps: {
       title: 'Start in 3 easy steps',
       items: [
-        { title: 'Contact the Admin', text: 'Message us on Telegram and get your team leader account.' },
-        { title: 'Create your group', text: 'Add your members and assign tasks with deadlines.' },
-        { title: 'Follow up every day', text: 'Members post a daily update, you approve it, and progress is clear at a glance.' },
+        { title: 'Contact the Admin', text: 'Message us on Telegram for an account.' },
+        { title: 'Create your group', text: 'Add members and assign tasks.' },
+        { title: 'Follow up every day', text: 'Members update daily, you approve.' },
       ],
     },
     features: {
       title: 'What you get',
       items: [
-        { title: 'Daily updates', text: 'Write today’s to-do list in seconds and the progress percentage is worked out for you.' },
-        { title: 'Tasks and deadlines', text: 'Assign tasks, set priorities and see what is overdue.' },
-        { title: 'Leader approval', text: 'The leader reviews, approves and gives feedback on each piece of work.' },
-        { title: 'Notification bell', text: 'Hear straight away about new work, tasks to review and new comments.' },
-        { title: 'Comments on tasks', text: 'Discuss each task in its own thread, not mixed in with other messages.' },
-        { title: 'Khmer, and works on phones', text: 'Khmer and English, light and dark mode, and it works well on a phone.' },
+        { title: 'Daily updates', text: 'Write your to-do list; we work out the %.' },
+        { title: 'Tasks and deadlines', text: 'Set priority and spot what is late.' },
+        { title: 'Team tasks', text: 'Assign to everyone, see each person’s %.' },
+        { title: 'Leader approval', text: 'Review, approve and give feedback.' },
+        { title: 'Notifications', text: 'Hear at once about new work or comments.' },
+        { title: 'Khmer, and on phones', text: 'Khmer/English, light/dark, works well on a phone.' },
       ],
     },
     pricing: {
       title: 'Simple plans',
-      subtitle: 'Members use it for free. The team leader pays, and can split the cost with the group.',
-      pilot: 'The first groups get one month free in return for your feedback.',
+      subtitle: 'Members are free. The team leader pays.',
+      pilot: 'First groups get 1 month free for your feedback.',
       askPrice: 'Ask for the price',
       perSemester: '/ semester',
       perMonth: '/ month',
@@ -275,14 +275,14 @@ export const landing: Record<'km' | 'en', LandingCopy> = {
         demo: {
           name: 'Explore',
           description: 'Look around before you decide',
-          points: ['Sample data, view only', 'No sign-up', 'Free'],
+          points: ['Sample data (view only)', 'No sign-up', 'Free'],
           cta: 'Try it',
         },
         student: {
           badge: 'Recommended',
           name: 'Student team',
           description: 'For a class project group',
-          points: ['Tasks and deadlines', 'Daily updates and approval', 'Notification bell and comments', 'Summary report for your lecturer'],
+          points: ['Tasks and progress %', 'Daily updates and approval', 'Notifications and comments', 'Report for your lecturer'],
           cta: 'Contact us on Telegram',
         },
       },
@@ -290,7 +290,7 @@ export const landing: Record<'km' | 'en', LandingCopy> = {
     sponsor: {
       eyebrow: 'An early-stage project',
       title: 'Help Sameakki grow with Khmer students',
-      text: 'We are building step by step and want it to get better for students across the country. If a school, a company or anyone would like to sponsor, your support helps us add new features and keep this service available to students.',
+      text: 'We build step by step. Your support helps us add features and keep this service available to students.',
       roadmapTitle: 'What we want to add next',
       roadmap: [
         { title: 'Phone notifications', text: 'Send notifications through Telegram, even when the app is closed.' },
@@ -300,9 +300,9 @@ export const landing: Record<'km' | 'en', LandingCopy> = {
       ],
       benefitsTitle: 'Sponsors receive',
       benefits: [
-        'Your students or staff use it free, for the number of groups we agree on',
-        'Your name or logo on this page as a sponsor',
-        'Ask for the features you need first',
+        'Free use for your students or staff (agreed number of groups)',
+        'Your name or logo on this page',
+        'Request the features you need first',
       ],
       cta: 'Contact us to sponsor',
       message: 'Hello, I am interested in sponsoring Sameakki.',
@@ -317,11 +317,11 @@ export const landing: Record<'km' | 'en', LandingCopy> = {
       items: [
         {
           q: 'Do members have to pay?',
-          a: 'No! Only the team leader has the paid account. Members you add use it for free, up to the number your plan allows.',
+          a: 'No! Only the team leader pays. Members use it free, up to the plan’s limit.',
         },
         {
           q: 'How do I pay and get an account?',
-          a: 'Tap the Telegram button and send a message. The Admin tells you how to pay and creates your team leader account.',
+          a: 'Tap the Telegram button and send a message. The Admin tells you how to pay and creates your account.',
         },
         {
           q: 'Who can see my group’s information?',
@@ -329,25 +329,25 @@ export const landing: Record<'km' | 'en', LandingCopy> = {
         },
         {
           q: 'Can the Admin see my work and discussions?',
-          a: 'No, unless your team leader allows it. The Admin only sees account details (name, plan, number of members), not your tasks, updates or comments. When you need help, the leader can open it to the Admin for a limited time and turn it off at any time. Every member can see when it is on. (As with any online service, whoever runs the server technically has access to stored data, but we do not look.)',
+          a: 'No, unless your team leader allows it. The Admin only sees account details, not tasks, updates or comments. The leader can open it for a limited time and turn it off any time. Every member sees when it is on. (Whoever runs the server technically has access to stored data, but we do not look.)',
         },
         {
           q: 'What if I forget my password?',
-          a: 'Tell your team leader (or the Admin if you are the leader). They create a new temporary password, and you must change it the next time you log in. You get a notification showing who reset it, and old passwords can never be read.',
+          a: 'Tell your team leader (or the Admin if you are the leader). They set a temporary password, and you change it when you log in.',
         },
         {
           q: 'Can my lecturer see our progress?',
-          a: 'Yes! Add your lecturer as a "viewer", who can read but not change anything, or export the summary report and show it to them.',
+          a: 'Yes! Add your lecturer as a "viewer" (read only), or export the report and show it.',
         },
         {
           q: 'Does it work on a phone?',
-          a: 'Yes! It is a website that works on phones and computers, with nothing to install.',
+          a: 'Yes! It is a website for phones and computers. Nothing to install.',
         },
       ],
     },
     final: {
-      title: 'Ready for your team to work better?',
-      text: 'Try it with no sign-up, and if you like it, message us on Telegram.',
+      title: 'Ready for better teamwork?',
+      text: 'Try it with no sign-up. Like it? Message us on Telegram.',
     },
     footer: { rights: 'All rights reserved', back: 'Back to home' },
     creator: { label: 'Built by' },

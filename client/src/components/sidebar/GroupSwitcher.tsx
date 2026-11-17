@@ -1,6 +1,7 @@
 import React, { useRef, useState } from 'react';
 import { useApp } from '../../context/AppContext';
-import { useDismiss } from '../../lib/useDismiss';
+import { useDismiss } from '../../lib/useDismiss';
+
 import { Icons } from '../icons';
 
 interface GroupSwitcherProps {
@@ -75,7 +76,7 @@ export const GroupSwitcher: React.FC<GroupSwitcherProps> = ({ isCollapsed, onOpe
                       <span className="block truncate font-medium text-black">{groupName(group)}</span>
                       <span className="block truncate text-xs text-neutral-500">{group.courseOrProject}</span>
                     </span>
-                    {selected && <Icons.confirm className="size-4 shrink-0 text-brand" />}
+                    {selected && <Icons.confirm className="size-4 shrink-0 text-brand-ink" />}
                   </button>
                 </li>
               );
@@ -94,7 +95,7 @@ export const GroupSwitcher: React.FC<GroupSwitcherProps> = ({ isCollapsed, onOpe
               <button
                 type="button"
                 onClick={run(onOpenCreateGroup)}
-                className="flex w-full items-center gap-2 rounded-lg px-2.5 py-2 text-sm font-medium text-brand transition-colors hover:bg-brand-soft"
+                className="flex w-full items-center gap-2 rounded-lg px-2.5 py-2 text-sm font-medium text-brand-ink transition-colors hover:bg-brand-soft"
               >
                 <Icons.add className="size-4" />
                 {t.createGroup}

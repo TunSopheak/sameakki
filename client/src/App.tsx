@@ -1,3 +1,4 @@
+import { GuidePage } from './components/guide/GuidePage';
 import React, { useEffect, useState } from 'react';
 import { AppProvider, useApp } from './context/AppContext';
 import { Sidebar } from './components/Sidebar';
@@ -77,7 +78,7 @@ const MainApp: React.FC = () => {
         <Header activeTab={activeTab} onNavigate={handleTabChange} />
 
         <main className="flex-1 pb-8 lg:pb-16">
-          {activeTab !== 'admin' && (
+          {activeTab !== 'admin' && activeTab !== 'guide' && (
             <GroupBanner
               onOpenCreateGroup={() => setIsCreateGroupOpen(true)}
               onOpenJoinGroup={() => setIsJoinGroupOpen(true)}
@@ -90,7 +91,7 @@ const MainApp: React.FC = () => {
           <div key={activeTab} className="animate-rise max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             {activeTab === 'dashboard' && (
               <div className="space-y-6">
-                <DailyStandupBox />
+                <DailyStandupBox onOpenGuide={() => handleTabChange('guide')} />
 
                 <OverviewDashboard
                   onGoToTab={tab => handleTabChange(tab)}
@@ -106,12 +107,14 @@ const MainApp: React.FC = () => {
 
             {activeTab === 'daily' && (
               <div className="space-y-6">
-                <DailyStandupBox />
+                <DailyStandupBox onOpenGuide={() => handleTabChange('guide')} />
                 <DailyFeed />
               </div>
             )}
 
             {activeTab === 'admin' && <AdminOverview />}
+
+            {activeTab === 'guide' && <GuidePage />}
 
             {activeTab === 'members' && (
               <MembersList onOpenLeaveGroup={id => setLeaveGroupId(id)} />

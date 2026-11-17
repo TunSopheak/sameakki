@@ -1,8 +1,11 @@
+import { useEscape } from '../lib/useEscape';
+import { groupDescription } from '../lib/defaults';
 import React from 'react';
 import { createPortal } from 'react-dom';
 import type { DailyLogStatus, Role, Task, User } from '@shared/types';
 import { useApp } from '../context/AppContext';
 import { localDateOf, todayLocal } from '../lib/dates';
+import { taskTotals } from '../lib/stats';
 import { printPage } from '../lib/printPage';
 import { Icons } from './icons';
 import { APP_NAME } from '../lib/brand';
@@ -19,15 +22,14 @@ const HEAD_ROW = 'border-b-2 border-brand bg-neutral-100 font-bold text-black pr
 /** The group report page. */
 export const AssignmentReportModal: React.FC<AssignmentReportModalProps> = ({ isOpen, onClose }) => {
   const { activeGroup, activeGroupMembers, activeGroupTasks, activeGroupDailyLogs, users, language, t } = useApp();
+  useEscape(isOpen, onClose);
 
   if (!isOpen || !activeGroup) return null;
 
   const km = language === 'km';
   const nameOf = (user?: User) => (user ? (km && user.nameKm ? user.nameKm : user.name) : '');
   const leader = users.find(u => u.id === activeGroup.leaderId);
-  const totalTasks = activeGroupTasks.length;
-  const approvedTasks = activeGroupTasks.filter(task => task.status === 'approved').length;
-  const progressPercent = totalTasks > 0 ? Math.round((approvedTasks / totalTasks) * 100) : 0;
+  const { total: totalTasks, approved: approvedTasks, percent: progressPercent } = taskTotals(activeGroupTasks);
 
   const colon = t.colon;
   const reference = `SM/${activeGroup.code}/${todayLocal().replaceAll('-', '')}`;
@@ -70,7 +72,7 @@ export const AssignmentReportModal: React.FC<AssignmentReportModalProps> = ({ is
 
         <div className="space-y-8 p-8 print:p-0">
           <div className="keep-together text-center">
-            <p className="text-xs font-bold tracking-widest text-brand">{APP_NAME}</p>
+            <p className="text-xs font-bold tracking-widest text-brand-ink">{APP_NAME}</p>
             <div className="mx-auto mt-2 h-px w-24 bg-brand" />
             <h1 className="mt-4 text-xl font-bold leading-snug text-black">{t.reportOfficial}</h1>
             <p className="mt-1 text-base font-semibold text-black">{km && activeGroup.nameKm ? activeGroup.nameKm : activeGroup.name}</p>
@@ -83,7 +85,7 @@ export const AssignmentReportModal: React.FC<AssignmentReportModalProps> = ({ is
                 [t.reportRef, reference, t.reportDate, todayLocal()],
                 [t.reportCode, activeGroup.code, t.reportCategory, activeGroup.category || '—'],
                 [t.reportLeader, `${nameOf(leader)}${leader?.email ? ` · ${leader.email}` : ''}`, t.reportPeriod, `${localDateOf(activeGroup.createdAt)} → ${activeGroup.deadline || t.reportNoDeadline}`],
-                [t.reportSummary, `${activeGroupMembers.length} ${t.reportMembersCount} · ${totalTasks} ${t.colTasks} · ${approvedTasks} ${t.reportApprovedCount}`, t.reportProgress, `${progressPercent}%`],
+                [t.reportSummary, `${activeGroupMembers.length} ${t.reportMembersCount} · ${totalTasks} ${t.colTasks} · ${approvedTasks} ${t.reportApprovedCount}`, t.reportColApproved, `${progressPercent}%`],
               ].map(([k1, v1, k2, v2]) => (
                 <tr key={k1}>
                   <th className="w-[15%] bg-neutral-100 px-3 py-2 font-bold text-black print:bg-transparent">{k1}{colon}</th>
@@ -94,10 +96,10 @@ export const AssignmentReportModal: React.FC<AssignmentReportModalProps> = ({ is
               ))}
             </tbody>
           </table>
-          {activeGroup.description && (
+          {groupDescription(activeGroup.description, t) && (
             <p className="text-xs leading-relaxed text-neutral-700">
               <span className="font-bold text-black">{t.reportPurpose}{colon} </span>
-              {activeGroup.description}
+              {groupDescription(activeGroup.description, t)}
             </p>
           )}
 
@@ -159,7 +161,7 @@ export const AssignmentReportModal: React.FC<AssignmentReportModalProps> = ({ is
                     <td className="px-3 py-2.5 text-neutral-700">{nameOf(activeGroupMembers.find(m => m.id === task.assignedTo)) || t.ganttNobody}</td>
                     <td className="px-3 py-2.5 text-neutral-600">{task.dueDate}</td>
                     <td className="px-3 py-2.5">
-                      <span className={`inline-block rounded-lg px-2 py-0.5 text-[11px] font-bold ${task.status === 'approved' ? 'bg-brand text-white print:border print:border-brand print:bg-transparent print:text-brand' : 'bg-neutral-200 text-black print:border print:border-neutral-500 print:bg-transparent'}`}>
+                      <span className={`inline-block rounded-lg px-2 py-0.5 text-[11px] font-bold ${task.status === 'approved' ? 'bg-brand text-white print:border print:border-brand print:bg-transparent print:text-brand-ink' : 'bg-neutral-200 text-black print:border print:border-neutral-500 print:bg-transparent'}`}>
                         {taskStatus[task.status]}
                       </span>
                     </td>

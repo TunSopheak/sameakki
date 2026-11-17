@@ -32,7 +32,7 @@ async function request<T = void>(method: string, path: string, body?: unknown): 
 
 const get = <T>(path: string) => request<T>('GET', path);
 const post = <T = void>(path: string, body: unknown = {}) => request<T>('POST', path, body);
-const patch = (path: string, body: unknown) => request('PATCH', path, body);
+const patch = <T = void>(path: string, body: unknown) => request<T>('PATCH', path, body);
 const put = <T = void>(path: string, body: unknown) => request<T>('PUT', path, body);
 const del = (path: string) => request('DELETE', path);
 
@@ -53,6 +53,7 @@ export const api = {
 
   comments: (kind: CommentKind, id: string) => get<Comment[]>(`${commentPath(kind, id)}/comments`),
   addComment: (kind: CommentKind, id: string, body: string) => post<Comment>(`${commentPath(kind, id)}/comments`, { body }),
+  editComment: (commentId: string, body: string) => patch<Comment>(`/comments/${commentId}`, { body }),
   deleteComment: (commentId: string) => del(`/comments/${commentId}`),
 
   notifications: () => get<NotificationsResponse>('/notifications'),
@@ -118,6 +119,7 @@ export const api = {
   deleteTask: (taskId: string) => del(`/tasks/${taskId}`),
   deleteTeamTask: (groupId: string, batchId: string) => del(`/groups/${groupId}/task-batches/${batchId}`),
 
+  editDailyLog: (logId: string, rawContent: string) => patch(`/daily-logs/${logId}`, { rawContent }),
   createDailyLog: (groupId: string, rawContent: string, date: string) =>
     post<{ id: string }>(`/groups/${groupId}/daily-logs`, { rawContent, date }),
   toggleDailyLogItem: (logId: string, itemId: string) => post(`/daily-logs/${logId}/items/${itemId}/toggle`),

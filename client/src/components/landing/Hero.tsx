@@ -17,12 +17,12 @@ export const Hero: React.FC = () => {
 
       <div className="text-center lg:text-left">
         <Reveal>
-          <p className="text-xs font-semibold tracking-wide text-brand">{hero.eyebrow}</p>
+          <p className="text-xs font-semibold tracking-wide text-brand-ink">{hero.eyebrow}</p>
         </Reveal>
         <Reveal delay={100}>
           <h1 className="mt-4 text-4xl font-bold leading-tight tracking-tight sm:text-6xl sm:leading-tight">
             {hero.title}
-            <span className="block text-brand">{hero.highlight}</span>
+            <span className="block text-brand-ink">{hero.highlight}</span>
           </h1>
         </Reveal>
         <Reveal delay={220}>

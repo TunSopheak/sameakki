@@ -3,7 +3,8 @@ import { Brand } from '../Brand';
 import { PreferenceToggles } from '../PreferenceToggles';
 import { navigate } from '../../lib/route';
 import { useLanding, useScrollProgress } from './hooks';
-import { scrollToSection } from './ui';
+import { scrollToSection } from './ui';
+
 import { Icons } from '../icons';
 
 export const LandingHeader: React.FC = () => {
@@ -24,7 +25,7 @@ export const LandingHeader: React.FC = () => {
       }`}
     >
       <div className={`mx-auto flex max-w-5xl items-center justify-between gap-3 px-4 transition-all duration-300 sm:px-6 ${scrolled ? 'py-2.5' : 'py-5'}`}>
-        <Brand short />
+        <Brand short compactMobile />
 
         <nav className="hidden items-center gap-1 md:flex" aria-label="Sections">
           {links.map(link => (

@@ -2,7 +2,7 @@
 # so paste its connection string as DATABASE_URL in the Render dashboard.
 services:
   - type: web
-    name: leadersync
+    name: sameakki
     runtime: node
     plan: free
     buildCommand: npm ci --include=dev && npm run build

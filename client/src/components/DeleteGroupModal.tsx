@@ -1,3 +1,4 @@
+import { useEscape } from '../lib/useEscape';
 import React from 'react';
 import { useApp } from '../context/AppContext';
 import { Icons } from './icons';
@@ -9,6 +10,7 @@ interface DeleteGroupModalProps {
 
 export const DeleteGroupModal: React.FC<DeleteGroupModalProps> = ({ groupId, onClose }) => {
   const { groups, deleteGroup, t } = useApp();
+  useEscape(!!groupId, onClose);
 
   if (!groupId) return null;
   const targetGroup = groups.find(g => g.id === groupId);

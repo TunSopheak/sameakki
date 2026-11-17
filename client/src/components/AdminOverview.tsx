@@ -7,7 +7,8 @@ import { GroupsTable } from './admin/GroupsTable';
 import { UsersTable } from './admin/UsersTable';
 import { AccountModal } from './admin/AccountModal';
 import { LandingSettingsModal } from './admin/LandingSettingsModal';
-import { TempPasswordModal } from './TempPasswordModal';
+import { TempPasswordModal } from './TempPasswordModal';
+
 import { Icons } from './icons';
 
 const ONLINE_MINUTES = 10;
@@ -89,7 +90,8 @@ export const AdminOverview: React.FC = () => {
     { label: t.adminOnline, value: users.filter(u => minutesAgo(u.lastSeenAt) <= ONLINE_MINUTES).length, icon: Icons.activeUser },
     { label: t.adminActiveWeek, value: users.filter(u => minutesAgo(u.lastSeenAt) <= ACTIVE_DAYS * 24 * 60).length, icon: Icons.admin },
     { label: t.adminGroups, value: data.groups.filter(g => g.isActive).length, icon: Icons.members },
-    { label: t.adminPending, value: users.filter(u => !u.registered).length, icon: Icons.addMember },
+    // Same rule as the table filter
+    { label: t.adminNever, value: users.filter(u => !u.lastSeenAt).length, icon: Icons.addMember },
   ];
 
   return (
@@ -111,10 +113,13 @@ export const AdminOverview: React.FC = () => {
         </button>
         <button
           onClick={() => setAccountModal('new')}
+          aria-label={t.adminCreateLeader}
+          title={t.adminCreateLeader}
           className="inline-flex items-center gap-1.5 rounded-lg bg-brand px-3 py-2 text-xs font-semibold text-white hover:bg-brand-dark"
         >
           <Icons.add className="size-3.5" />
-          {t.adminCreateLeader}
+          <span className="sm:hidden">{t.adminCreateLeaderShort}</span>
+          <span className="hidden sm:inline">{t.adminCreateLeader}</span>
         </button>
         <button
           onClick={load}
@@ -130,7 +135,7 @@ export const AdminOverview: React.FC = () => {
       </div>
 
       {error && (
-        <div role="alert" className="rounded-lg border border-brand bg-brand-soft p-3 text-xs font-medium text-brand">
+        <div role="alert" className="rounded-lg border border-brand bg-brand-soft p-3 text-xs font-medium text-brand-ink">
           {error}
         </div>
       )}
@@ -152,7 +157,7 @@ export const AdminOverview: React.FC = () => {
       <div className="flex flex-wrap gap-2">
         {ROLES.map(role => (
           <span key={role} className="rounded-full bg-neutral-100 px-3 py-1 text-xs font-semibold text-neutral-700">
-            {roleLabel[role]} · <span className="text-brand">{users.filter(u => u.role === role).length}</span>
+            {roleLabel[role]} · <span className="text-brand-ink">{users.filter(u => u.role === role).length}</span>
           </span>
         ))}
       </div>

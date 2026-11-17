@@ -3,7 +3,8 @@ import type { AdminGroupRow } from '@shared/types';
 import { formatDateTime } from '../../lib/dates';
 import { useTableView } from '../../lib/useTableView';
 import { useApp } from '../../context/AppContext';
-import { FilterSelect, Pager, RowAction, SearchBox, SortHeader } from '../TableParts';
+import { FilterSelect, Pager, RowAction, SearchBox, SortHeader } from '../TableParts';
+
 import { Icons } from '../icons';
 
 interface GroupsTableProps {
@@ -69,14 +70,14 @@ export const GroupsTable: React.FC<GroupsTableProps> = ({ groups, onDelete }) =>
                   {group.supportAccessUntil && (
                     <span
                       title={t.supportOpenBadge}
-                      className="ml-2 inline-flex items-center gap-1 rounded-full bg-brand-soft px-2 py-0.5 text-[11px] font-semibold text-brand"
+                      className="ml-2 inline-flex items-center gap-1 rounded-full bg-brand-soft px-2 py-0.5 text-[11px] font-semibold text-brand-ink"
                     >
                       <Icons.admin className="size-3" />
                       {t.supportOpenBadge}
                     </span>
                   )}
                 </td>
-                <td className="px-4 py-3 font-mono text-neutral-700">{group.code}</td>
+                <td className="px-4 py-3 font-mono-numbers text-neutral-700">{group.code}</td>
                 <td className="px-4 py-3 text-neutral-700">{group.leaderName ?? '-'}</td>
                 <td className="px-4 py-3 text-neutral-700">{group.memberCount}</td>
                 <td className="px-4 py-3 text-neutral-700">{group.taskCount}</td>

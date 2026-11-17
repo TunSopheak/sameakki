@@ -1,3 +1,6 @@
+import { DailyLogEditor } from './daily/DailyLogEditor';
+import { ReactionBar } from './ReactionBar';
+import { dailyLogPercent } from '../lib/stats';
 import React, { useState } from 'react';
 import { useApp } from '../context/AppContext';
 import { formatDateTime } from '../lib/dates';
@@ -26,6 +29,7 @@ export const DailyFeed: React.FC = () => {
 
   const [filterMode, setFilterMode] = useState<'all' | 'in_progress' | 'completed' | 'approved'>('all');
   const [activeLeaderNoteId, setActiveLeaderNoteId] = useState<string | null>(null);
+  const [editingId, setEditingId] = useState<string | null>(null);
   const [leaderFeedbackText, setLeaderFeedbackText] = useState<{ [id: string]: string }>({});
 
   const filteredLogs = activeGroupDailyLogs.filter(log => {
@@ -48,8 +52,6 @@ export const DailyFeed: React.FC = () => {
     initialSort: { key: 'newest', dir: 'desc' },
     pageSize: 8,
   });
-
-  const availableEmojis = ['👏', '🔥', '👍', '🚀', '💡'];
 
   const handleApproveWithNote = (logId: string) => {
     const note = leaderFeedbackText[logId]?.trim();
@@ -128,11 +130,8 @@ export const DailyFeed: React.FC = () => {
             const isAuthor = log.userId === currentUser.id;
             // After approval only a leader can still change the checklist
             const canEditChecklist = isTeamLead || (isAuthor && canContribute && log.status !== 'approved');
-            const completedItemsCount = log.items.filter(i => i.done).length;
-            const totalItemsCount = log.items.length;
-            const calcPercent = totalItemsCount > 0
-              ? Math.round((completedItemsCount / totalItemsCount) * 100)
-              : log.overallDone ? 100 : 50;
+            const canEditText = canEditChecklist && editingId !== log.id;
+            const calcPercent = dailyLogPercent(log.items);
 
             return (
               <div
@@ -162,6 +161,7 @@ export const DailyFeed: React.FC = () => {
                         <span className="flex items-center gap-1 text-neutral-500">
                           <Icons.date className="size-3 text-neutral-400" />
                           <span>{formatDateTime(log.timestamp)}</span>
+                          {log.editedAt && <span className="italic">· {t.commentEdited}</span>}
                         </span>
                       </div>
                     </div>
@@ -183,10 +183,20 @@ export const DailyFeed: React.FC = () => {
                     {log.status === 'in_progress' && (
                       <span className="inline-flex items-center gap-1 text-xs font-medium text-neutral-800 bg-neutral-100 px-2.5 py-0.5 rounded-lg">
                         <span>{t.logInProgress}</span>
-                        <span className="font-mono font-bold">({calcPercent}%)</span>
+                        {calcPercent !== null && <span className="font-mono-numbers font-bold">({calcPercent}%)</span>}
                       </span>
                     )}
 
+                    {canEditText && (
+                      <button
+                        onClick={() => setEditingId(log.id)}
+                        className="text-neutral-500 hover:text-black p-1 rounded-lg transition-colors cursor-pointer"
+                        title={t.dailyEdit}
+                        aria-label={t.dailyEdit}
+                      >
+                        <Icons.edit className="size-3.5" />
+                      </button>
+                    )}
                     {(isAuthor || isTeamLead) && (
                       <button
                         onClick={() => {
@@ -203,6 +213,9 @@ export const DailyFeed: React.FC = () => {
                   </div>
                 </div>
 
+                {editingId === log.id ? (
+                  <DailyLogEditor log={log} onClose={() => setEditingId(null)} />
+                ) : (
                 <div className="py-4 space-y-1.5">
                   {log.items.length > 0 ? (
                     <div className="space-y-1.5">
@@ -231,7 +244,7 @@ export const DailyFeed: React.FC = () => {
                             </span>
                             {item.progressTag && (
                               <span
-                                className={`font-mono text-[11px] font-bold px-1.5 py-0.5 rounded-lg ${
+                                className={`font-mono-numbers text-[11px] font-bold px-1.5 py-0.5 rounded-lg ${
                                   item.done
                                     ? 'bg-neutral-200 text-neutral-800'
                                     : 'bg-brand text-white'
@@ -250,6 +263,7 @@ export const DailyFeed: React.FC = () => {
                     </p>
                   )}
                 </div>
+                )}
 
                 {log.leaderChecked && log.leaderNote && (
                   <div className="p-3 mb-3 bg-neutral-50 rounded-lg text-xs flex items-start gap-2.5 text-black">
@@ -323,41 +337,7 @@ export const DailyFeed: React.FC = () => {
                     )}
                   </div>
 
-                  <div className="flex items-center gap-1.5">
-                    {log.reactions.map(r => {
-                      const userHasReacted = r.userIds.includes(currentUser.id);
-                      return (
-                        <button
-                          key={r.emoji}
-                          onClick={() => addReactionToDailyLog(log.id, r.emoji)}
-                          disabled={!canContribute}
-                          className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs transition-colors enabled:cursor-pointer ${
-                            userHasReacted
-                              ? 'bg-brand text-white'
-                              : 'bg-neutral-100 text-neutral-700 hover:bg-neutral-200'
-                          }`}
-                        >
-                          <span>{r.emoji}</span>
-                          <span className="font-mono text-[11px]">{r.count}</span>
-                        </button>
-                      );
-                    })}
-
-                    <div className="flex items-center gap-0.5 pl-1">
-                      {canContribute && availableEmojis.map(emoji => {
-                        if (log.reactions.some(r => r.emoji === emoji)) return null;
-                        return (
-                          <button
-                            key={emoji}
-                            onClick={() => addReactionToDailyLog(log.id, emoji)}
-                            className="p-1 text-neutral-400 hover:text-black hover:scale-125 transition-all text-xs cursor-pointer"
-                          >
-                            {emoji}
-                          </button>
-                        );
-                      })}
-                    </div>
-                  </div>
+                  <ReactionBar reactions={log.reactions} canReact={canContribute} onToggle={emoji => addReactionToDailyLog(log.id, emoji)} />
                 </div>
 
                 <div className="pt-3">

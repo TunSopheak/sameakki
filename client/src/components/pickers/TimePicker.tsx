@@ -4,7 +4,6 @@ import { Icons } from '../icons';
 import { FloatingPanel } from './FloatingPanel';
 
 interface TimePickerProps {
-  /** HH:mm, 24 hours */
   value: string;
   onChange: (value: string) => void;
   disabled?: boolean;
@@ -18,7 +17,6 @@ const pad = (n: number) => String(n).padStart(2, '0');
 const Column: React.FC<{ label: string; items: string[]; selected: string; onPick: (item: string) => void }> = ({ label, items, selected, onPick }) => {
   const box = useRef<HTMLDivElement>(null);
 
-  // Start with the chosen value in view
   useEffect(() => {
     const el = box.current?.querySelector<HTMLElement>('[aria-selected="true"]');
     if (box.current && el) box.current.scrollTop = el.offsetTop - box.current.clientHeight / 2 + el.clientHeight / 2;
@@ -47,14 +45,14 @@ const Column: React.FC<{ label: string; items: string[]; selected: string; onPic
   );
 };
 
-/** A time field with quick picks and hour and minute lists. */
+/** Time field with quick times and hour/minute lists. */
 export const TimePicker: React.FC<TimePickerProps> = ({ value, onChange, disabled, className = '' }) => {
   const { t } = useApp();
   const [open, setOpen] = useState(false);
   const anchorRef = useRef<HTMLButtonElement>(null);
 
   const [hour, minute] = (value || '09:00').split(':');
-  // Steps of five minutes, plus the exact minute when the time is something else
+  // Five-minute steps, plus the current minute
   const minutes = Array.from({ length: 12 }, (_, i) => pad(i * 5));
   if (!minutes.includes(minute)) minutes.push(minute), minutes.sort();
 

@@ -8,7 +8,7 @@ const PROGRESS = 68;
 const STATE_STYLE = {
   done: 'bg-brand text-white',
   doing: 'bg-neutral-100 text-neutral-800',
-  late: 'bg-brand-soft text-brand',
+  late: 'bg-brand-soft text-brand-ink',
 } as const;
 
 /** A fake sample board. All names are made up. */

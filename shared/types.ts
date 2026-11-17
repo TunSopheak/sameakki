@@ -62,6 +62,7 @@ export interface DailyLog {
   overallDone: boolean;
   status: DailyLogStatus;
   completedAt?: string;
+  editedAt?: string;
   leaderChecked: boolean;
   leaderNote?: string;
   approvedBy?: string;
@@ -76,9 +77,11 @@ export interface Comment {
   userId: string;
   userName: string;
   userNameKm?: string;
+  userRole: Role;
   avatar?: string;
   body: string;
   createdAt: string;
+  editedAt?: string;
 }
 
 export interface Task {
@@ -98,9 +101,9 @@ export interface Task {
   completedAt?: string;
   approvedAt?: string;
   approvedBy?: string;
-  /** 0-100. 0 is to do, 100 is submitted for review */
+  /** 0 to 100 */
   progress: number;
-  /** Shared by the tasks that were given to several people at once */
+  /** Same for the tasks given to several people */
   batchId?: string;
   memberNotes?: string;
   leaderFeedback?: string;
@@ -116,7 +119,7 @@ export interface Group {
   courseOrProject: string;
   leaderId: string;
   memberIds: string[];
-  /** What each member does in this group (userId to specialty). Members without one are left out. */
+  /** Specialty of each member in this group */
   memberSpecialties?: Record<string, string>;
   createdAt: string;
   deadline?: string; // YYYY-MM-DD

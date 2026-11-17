@@ -1,3 +1,4 @@
+import { SelectMenu, SELECT_COMPACT } from '../pickers/SelectMenu';
 import React, { useMemo, useState } from 'react';
 import type { AdminUserRow, Role } from '@shared/types';
 import { formatDateTime } from '../../lib/dates';
@@ -43,7 +44,7 @@ export const UsersTable: React.FC<UsersTableProps> = ({ users, onDelete, onChang
         if (role !== 'all' && user.role !== role) return false;
         if (status === 'online') return minutesAgo(user.lastSeenAt) <= ONLINE_MINUTES;
         if (status === 'week') return minutesAgo(user.lastSeenAt) <= ACTIVE_DAYS * 24 * 60;
-        if (status === 'never') return user.registered && !user.lastSeenAt;
+        if (status === 'never') return !user.lastSeenAt;
         if (status === 'pending') return !user.registered;
         return true;
       }),
@@ -67,7 +68,7 @@ export const UsersTable: React.FC<UsersTableProps> = ({ users, onDelete, onChang
     const expired = !!user.expiresAt && new Date(user.expiresAt).getTime() < Date.now();
     return (
       <div className="space-y-0.5">
-        <p className={expired ? 'font-semibold text-brand' : undefined}>
+        <p className={expired ? 'font-semibold text-brand-ink' : undefined}>
           {user.expiresAt ? `${expired ? `${t.adminExpired} · ` : ''}${user.expiresAt.slice(0, 10)}` : t.adminNeverExpires}
         </p>
         {user.role === 'team_lead' && (
@@ -144,20 +145,23 @@ export const UsersTable: React.FC<UsersTableProps> = ({ users, onDelete, onChang
                       <div className="min-w-0">
                         <p className="truncate font-semibold text-black">{language === 'km' && user.nameKm ? user.nameKm : user.name}</p>
                         <p className="truncate text-neutral-500">{user.email}</p>
+                        <p className="truncate text-[11px] text-neutral-400 md:hidden">{roleLabel[user.role]} · {lastSeen(user)}</p>
                       </div>
                     </div>
                   </td>
                   <td className="px-4 py-3">
                     {canEdit ? (
-                      <select
+                      <SelectMenu
                         value={user.role}
-                        onChange={e => onChangeRole(user, e.target.value as Role)}
-                        className="rounded-lg border border-neutral-200 bg-white px-2 py-1 text-xs font-medium text-black focus:border-brand focus:outline-none"
-                      >
-                        <option value="team_lead">{roleLabel.team_lead}</option>
-                        <option value="member">{roleLabel.member}</option>
-                        <option value="viewer">{roleLabel.viewer}</option>
-                      </select>
+                        label={t.memberRole}
+                        className={SELECT_COMPACT}
+                        onChange={role => onChangeRole(user, role)}
+                        options={[
+                          { value: 'team_lead', label: roleLabel.team_lead },
+                          { value: 'member', label: roleLabel.member },
+                          { value: 'viewer', label: roleLabel.viewer },
+                        ]}
+                      />
                     ) : (
                       <span className="font-medium text-neutral-700">{roleLabel[user.role]}</span>
                     )}

@@ -68,6 +68,34 @@ dailyLogsRouter.post('/groups/:groupId/daily-logs', async (req, res) => {
   res.status(201).json({ id });
 });
 
+const editSchema = z.object({ rawContent: z.string().trim().min(1).max(10000) });
+
+dailyLogsRouter.patch('/daily-logs/:logId', async (req, res) => {
+  const user = req.user!;
+  const db = await getDb();
+  const { log, items, access, isAuthor } = await loadLog(db, user, req.params.logId);
+  assertWritable(access);
+  assert((isAuthor && access.canContribute) || access.canLead, 'Only the author can edit this update.');
+  if (log.status === 'approved' && !access.canLead) throw badRequest('This update has already been approved.');
+  const { rawContent } = editSchema.parse(req.body);
+
+  const { title, items: edited } = parseRawLogContent(rawContent);
+  // Ticks already made stay ticked
+  const ticked = new Set(items.filter(i => i.done).map(i => i.text));
+  const next = edited.map(item => ({ ...item, done: item.done || ticked.has(item.text) }));
+  const allDone = next.length > 0 && next.every(i => i.done);
+  const status = log.status === 'approved' ? 'approved' : allDone ? 'completed' : 'in_progress';
+
+  await db.query(
+    `UPDATE daily_logs SET title = $2, raw_content = $3, items = $4::jsonb, status = $5,
+            completed_at = CASE WHEN $6::boolean THEN COALESCE(completed_at, now()) ELSE NULL END,
+            edited_at = now()
+      WHERE id = $1`,
+    [log.id, title, rawContent, JSON.stringify(next), status, allDone]
+  );
+  res.status(204).end();
+});
+
 dailyLogsRouter.post('/daily-logs/:logId/items/:itemId/toggle', async (req, res) => {
   const user = req.user!;
   const db = await getDb();

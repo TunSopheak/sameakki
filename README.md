@@ -56,6 +56,15 @@ Free hosting sleeps when idle. To keep it awake, add one UptimeRobot HTTP monito
 
 Then run `npm run admin:reset:prod -- <username> <password>` once against the production database. A `Dockerfile` and `docker-compose.yml` are included for Docker.
 
+**Run everything in Docker** (app + PostgreSQL + pgAdmin):
+
+```bash
+docker compose up -d --build        # app at http://localhost:3001
+docker exec -it sameakki-app-1 node dist/server/db/resetAdmin.js <username> <password>   # create the Super Admin
+```
+
+The database is `localhost:5433` (user, password and database are all `sameakki`) and pgAdmin is `http://localhost:5050`; both only accept connections from your own computer. The ports 3001 and 5433 are used so they do not clash with `npm run dev` (3000) or a PostgreSQL installed on Windows (5432). To start again with an empty database: `docker compose down -v`.
+
 ## Commands
 
 | Command | Does |
@@ -66,6 +75,7 @@ Then run `npm run admin:reset:prod -- <username> <password>` once against the pr
 | `npm test` | Unit tests |
 | `npm run db:create` | Create the database |
 | `npm run admin:reset` | Set the Super Admin login |
+| `npm run docs:guide` | Rebuild `docs/user-guide.*.md` from `client/src/locales/guide.ts` |
 
 ## Roles
 

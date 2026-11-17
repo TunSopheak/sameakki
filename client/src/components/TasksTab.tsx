@@ -6,7 +6,7 @@ import { TaskBoard } from './TaskBoard';
 import { Icons } from './icons';
 
 type View = 'list' | 'timeline';
-const STORAGE_KEY = 'leadersync_tasks_view';
+const STORAGE_KEY = 'sameakki_tasks_view';
 
 const readView = (): View => {
   try {

@@ -43,9 +43,7 @@ const createTaskSchema = z
     module: z.string().trim().max(120).optional(),
     description: z.string().trim().max(5000).optional(),
     assignedTo: z.string().uuid().optional(),
-    // Several chosen people; each gets their own task
     assigneeIds: z.array(z.string().uuid()).min(1).max(200).optional(),
-    // One separate task per member, so everyone tracks and completes their own copy
     assignToAll: z.boolean().default(false),
     priority: z.enum(TASK_PRIORITIES).default('medium'),
     startDate: isoDate.optional(),
@@ -102,7 +100,7 @@ tasksRouter.post('/groups/:groupId/tasks', async (req, res) => {
   const ids = await db.transaction(async tx => {
     let assignees: { id: string; name: string }[];
     if (input.assignToAll) {
-      // Everyone who can work on tasks (viewers cannot)
+      // Viewers cannot do tasks
       const { rows } = await tx.query(
         `SELECT u.id, u.name FROM group_members m JOIN users u ON u.id = m.user_id
           WHERE m.group_id = $1 AND u.role <> 'viewer' ORDER BY u.name`,
@@ -130,7 +128,7 @@ tasksRouter.post('/groups/:groupId/tasks', async (req, res) => {
           access.groupId,
           input.title,
           input.module || 'General',
-          input.description || 'Deliver specified module requirements.',
+          input.description || '',
           person.id,
           user.id,
           input.priority,
@@ -147,7 +145,7 @@ tasksRouter.post('/groups/:groupId/tasks', async (req, res) => {
         targetId: rows[0].id,
         targetTitle: input.title,
         description: `assigned task "${input.title}" to ${person.name} (Due: ${input.dueDate})`,
-        descriptionKm: `បានចាត់តាំងកិច្ចការ "${input.title}" ជូន ${person.name} (Deadline៖ ${input.dueDate})`,
+        descriptionKm: `បានចាត់តាំងកិច្ចការ "${input.title}" ជូន ${person.name} (ថ្ងៃកំណត់៖ ${input.dueDate})`,
         metadata: { newValue: input.dueDate },
       });
       if (person.id !== user.id) {
@@ -168,10 +166,7 @@ tasksRouter.post('/groups/:groupId/tasks', async (req, res) => {
   res.status(201).json({ id: ids[0], ids });
 });
 
-/**
- * Moves a task to a status. The one place that keeps status, progress and the leader's
- * notification in step, so the status buttons and the progress slider cannot disagree.
- */
+/** Single place that sets status and progress, and notifies the leads. */
 async function applyStatus(
   tx: Queryable,
   user: User,
@@ -180,7 +175,7 @@ async function applyStatus(
   opts: { memberNotes?: string; progress?: number }
 ) {
   const isDone = status === 'ready_for_review';
-  // Without an explicit value: to do is 0%, done is 100%, and "in progress" keeps what was reached
+  // Default: to do 0%, done 100%, in progress keeps its value
   const progress = opts.progress ?? (status === 'todo' ? 0 : isDone ? 100 : Math.min(task.progress ?? 0, 99));
   await tx.query(
     `UPDATE tasks SET status = $2,
@@ -242,7 +237,7 @@ const progressSchema = z.object({
   memberNotes: z.string().trim().max(5000).optional(),
 });
 
-// Same rights as the status buttons: the assignee, or any team lead
+// Assignee or a team lead
 tasksRouter.patch('/tasks/:taskId/progress', async (req, res) => {
   const user = req.user!;
   const db = await getDb();
@@ -253,7 +248,7 @@ tasksRouter.patch('/tasks/:taskId/progress', async (req, res) => {
   if (task.status === 'approved') throw badRequest('This task has already been approved.');
   const input = progressSchema.parse(req.body);
 
-  // 0% is to do, 100% is submitted for review, anything between is in progress
+  // 0% to do, 100% for review, else in progress
   const status = input.progress === 0 ? 'todo' : input.progress === 100 ? 'ready_for_review' : 'in_progress';
   await db.transaction(tx => applyStatus(tx, user, task, status, { memberNotes: input.memberNotes, progress: input.progress }));
 
@@ -392,7 +387,6 @@ tasksRouter.post('/tasks/:taskId/approve', async (req, res) => {
   res.status(204).end();
 });
 
-// A team task is one task per member; the leader removes them all together
 tasksRouter.delete('/groups/:groupId/task-batches/:batchId', async (req, res) => {
   const user = req.user!;
   const db = await getDb();

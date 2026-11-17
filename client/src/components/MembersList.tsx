@@ -1,3 +1,4 @@
+import { SelectMenu, SELECT_COMPACT } from './pickers/SelectMenu';
 import { SpecialtyCell } from './SpecialtyCell';
 import React, { useState } from 'react';
 import { useApp } from '../context/AppContext';
@@ -193,15 +194,17 @@ export const MembersList: React.FC<MembersListProps> = () => {
 
               <div className="flex flex-wrap items-center gap-2 text-xs">
                 {isSuperAdmin && !isCurrentUser ? (
-                  <select
+                  <SelectMenu
                     value={member.role}
-                    onChange={e => updateUserRole(member.id, e.target.value as Role)}
-                    className="rounded-lg border border-neutral-200 bg-white px-2 py-1.5 text-sm font-medium text-black"
-                  >
-                    <option value="team_lead">{t.teamLeadBadge}</option>
-                    <option value="member">{t.memberBadge}</option>
-                    <option value="viewer">{t.viewerBadge}</option>
-                  </select>
+                    label={t.memberRole}
+                    className={SELECT_COMPACT}
+                    onChange={role => updateUserRole(member.id, role)}
+                    options={[
+                      { value: 'team_lead', label: t.teamLeadBadge },
+                      { value: 'member', label: t.memberBadge },
+                      { value: 'viewer', label: t.viewerBadge },
+                    ]}
+                  />
                 ) : (
                   <span className={`inline-flex items-center gap-1 rounded-lg px-2 py-1 font-semibold ${roleBadge.color}`}>
                     {roleBadge.icon}
@@ -299,15 +302,17 @@ export const MembersList: React.FC<MembersListProps> = () => {
 
                     <td className="py-4 px-4">
                       {isSuperAdmin && !isCurrentUser ? (
-                        <select
+                        <SelectMenu
                           value={member.role}
-                          onChange={e => updateUserRole(member.id, e.target.value as Role)}
-                          className="text-xs bg-white border border-neutral-200 rounded-lg px-2 py-1 text-black font-medium focus:outline-none focus:ring-1 focus:ring-brand/40 cursor-pointer"
-                        >
-                          <option value="team_lead">{t.teamLeadBadge}</option>
-                          <option value="member">{t.memberBadge}</option>
-                          <option value="viewer">{t.viewerBadge}</option>
-                        </select>
+                          label={t.memberRole}
+                          className={SELECT_COMPACT}
+                          onChange={role => updateUserRole(member.id, role)}
+                          options={[
+                            { value: 'team_lead', label: t.teamLeadBadge },
+                            { value: 'member', label: t.memberBadge },
+                            { value: 'viewer', label: t.viewerBadge },
+                          ]}
+                        />
                       ) : (
                         <span
                           className={`inline-flex items-center gap-1 text-[11px] font-semibold px-2 py-0.5 rounded-lg ${roleBadge.color}`}
@@ -337,7 +342,7 @@ export const MembersList: React.FC<MembersListProps> = () => {
                     </td>
 
                     <td className="py-4 px-4 text-center">
-                      <span className="font-mono font-bold text-black">
+                      <span className="font-mono-numbers font-bold text-black">
                         {completedTasksCount}/{assignedTasksCount}
                       </span>
                     </td>

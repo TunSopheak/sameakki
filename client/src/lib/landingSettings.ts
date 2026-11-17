@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { DEFAULT_LANDING_SETTINGS, type LandingSettings } from '@shared/landing';
 import { api } from './api';
 
-const CACHE_KEY = 'leadersync-landing-settings';
+const CACHE_KEY = 'sameakki-landing-settings';
 
 const readCache = (): LandingSettings | null => {
   try {

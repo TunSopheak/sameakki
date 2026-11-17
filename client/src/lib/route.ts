@@ -4,8 +4,8 @@ import { useEffect, useState } from 'react';
 export type Route = '/' | '/login' | '/about';
 
 const KNOWN: Route[] = ['/', '/login', '/about'];
-const CHANGE = 'leadersync:route';
-const RETURNING_KEY = 'leadersync_returning';
+const CHANGE = 'sameakki:route';
+const RETURNING_KEY = 'sameakki_returning';
 
 const isRoute = (value: unknown): value is Route => (KNOWN as unknown[]).includes(value);
 

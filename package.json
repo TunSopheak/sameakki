@@ -1,5 +1,5 @@
 {
-  "name": "leadersync",
+  "name": "sameakki",
   "private": true,
   "version": "1.0.0",
   "description": "Sameakki - team & task manager (React + Express + PostgreSQL)",
@@ -16,6 +16,7 @@
     "build:server": "esbuild server/index.ts server/db/resetAdmin.ts --bundle --platform=node --format=esm --target=node20 --packages=external --outdir=dist/server",
     "start": "node dist/server/index.js",
     "db:create": "tsx server/db/createDatabase.ts",
+    "docs:guide": "tsx docs/exportGuide.ts",
     "admin:reset": "tsx server/db/resetAdmin.ts",
     "admin:reset:prod": "node dist/server/db/resetAdmin.js",
     "test": "tsx --test tests/*.test.ts",

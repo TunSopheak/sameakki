@@ -11,7 +11,7 @@ const ROADMAP_ICONS = [BellRing, QrCode, Smartphone, Users];
 const SponsorChip: React.FC<{ sponsor: Sponsor }> = ({ sponsor }) => {
   const className = 'rounded-full bg-neutral-100 px-4 py-2 text-sm font-semibold transition-colors';
   return sponsor.url ? (
-    <a href={sponsor.url} target="_blank" rel="noopener noreferrer" className={`${className} hover:bg-brand-soft hover:text-brand`}>
+    <a href={sponsor.url} target="_blank" rel="noopener noreferrer" className={`${className} hover:bg-brand-soft hover:text-brand-ink`}>
       {sponsor.name}
     </a>
   ) : (
@@ -29,7 +29,7 @@ export const SponsorSection: React.FC<{ settings: LandingSettings; ready: boolea
         <div className="rounded-2xl border border-neutral-200 bg-white p-7 sm:p-12">
           <div className="grid gap-10 md:grid-cols-2 md:gap-14">
             <div>
-              <p className="inline-flex items-center gap-1.5 text-xs font-semibold text-brand">
+              <p className="inline-flex items-center gap-1.5 text-xs font-semibold text-brand-ink">
                 <Rocket className="size-3.5" />
                 {sponsor.eyebrow}
               </p>
@@ -39,7 +39,7 @@ export const SponsorSection: React.FC<{ settings: LandingSettings; ready: boolea
               <ul className="mt-6 space-y-2.5">
                 {sponsor.benefits.map(item => (
                   <li key={item} className="flex items-start gap-2.5 text-sm text-neutral-800">
-                    <Heart className="mt-0.5 size-4 shrink-0 text-brand" />
+                    <Heart className="mt-0.5 size-4 shrink-0 text-brand-ink" />
                     {item}
                   </li>
                 ))}
@@ -59,7 +59,7 @@ export const SponsorSection: React.FC<{ settings: LandingSettings; ready: boolea
                   const Icon = ROADMAP_ICONS[i];
                   return (
                     <li key={item.title} className="group flex items-start gap-4 rounded-xl p-3 transition-all duration-300 hover:translate-x-1 hover:bg-neutral-50">
-                      <span className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-brand-soft text-brand transition-all duration-300 group-hover:bg-brand group-hover:text-white">
+                      <span className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-brand-soft text-brand-ink transition-all duration-300 group-hover:bg-brand group-hover:text-white">
                         <Icon className="size-4" />
                       </span>
                       <div>

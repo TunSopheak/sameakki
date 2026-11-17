@@ -3,17 +3,16 @@ import { useApp } from '../context/AppContext';
 
 interface TaskProgressProps {
   value: number;
-  /** Only people who may update the task get the slider. */
   editable: boolean;
   onCommit: (value: number) => Promise<void> | void;
 }
 
 const QUICK = [25, 50, 75, 100];
 
-/** A task's progress: a bar for everyone, plus a slider and quick buttons for those who can update it. */
+/** Progress bar, with a slider for people who can update it. */
 export const TaskProgress: React.FC<TaskProgressProps> = ({ value, editable, onCommit }) => {
   const { t } = useApp();
-  // What the slider shows while it is being dragged or while the save is on its way
+  // Value while dragging or saving
   const [draft, setDraft] = useState<number | null>(null);
   const shown = draft ?? value;
 

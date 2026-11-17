@@ -9,13 +9,13 @@ interface SpecialtyCellProps {
   onSave: (value: string) => void;
 }
 
-/** A member's specialty in this group. Leads (and the member themself) click it to change it. */
+/** Specialty in this group, click to edit. */
 export const SpecialtyCell: React.FC<SpecialtyCellProps> = ({ value, canEdit, onSave }) => {
   const { t } = useApp();
   const [editing, setEditing] = useState(false);
   const [draft, setDraft] = useState('');
 
-  const shown = value || 'General';
+  const shown = value || t.reportGeneral;
   if (!canEdit) return <span>{shown}</span>;
 
   if (!editing) {
@@ -30,7 +30,7 @@ export const SpecialtyCell: React.FC<SpecialtyCellProps> = ({ value, canEdit, on
         className="group/edit inline-flex max-w-full cursor-pointer items-center gap-1 text-left"
       >
         <span className="truncate">{shown}</span>
-        <Icons.edit className="size-3 shrink-0 text-neutral-400 transition-colors group-hover/edit:text-brand" />
+        <Icons.edit className="size-3 shrink-0 text-neutral-400 transition-colors group-hover/edit:text-brand-ink" />
       </button>
     );
   }
@@ -57,7 +57,7 @@ export const SpecialtyCell: React.FC<SpecialtyCellProps> = ({ value, canEdit, on
   );
 };
 
-/** Put once on a page that uses SpecialtyCell, so typing offers common roles. */
+/** Role suggestions for the specialty input. */
 export const SpecialtySuggestions: React.FC = () => (
   <datalist id="specialty-suggestions">
     {SPECIALTY_SUGGESTIONS.map(item => (

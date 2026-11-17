@@ -5,16 +5,25 @@ import { useMediaQuery } from '../../lib/useMediaQuery';
 interface FloatingPanelProps {
   open: boolean;
   onClose: () => void;
-  /** The control the panel opens from; clicks on it do not count as "outside". */
   anchorRef: RefObject<HTMLElement | null>;
   label: string;
   children: React.ReactNode;
 }
 
-/**
- * Opens next to its control on a computer, and as a bottom sheet on a phone.
- * It is drawn on <body>, so a dialog with its own scrolling never clips it.
- */
+const GAP = 6;
+const EDGE = 8;
+
+// Below the anchor, or above it when there is no room
+const placePanel = (anchor: DOMRect, width: number, height: number) => {
+  const below = anchor.bottom + GAP;
+  const fitsBelow = below + height <= window.innerHeight - EDGE;
+  const fitsAbove = anchor.top - GAP - height > EDGE;
+  const top = fitsBelow || !fitsAbove ? Math.max(EDGE, Math.min(below, window.innerHeight - height - EDGE)) : anchor.top - GAP - height;
+  const left = Math.max(EDGE, Math.min(anchor.left, window.innerWidth - width - EDGE));
+  return { top, left };
+};
+
+/** Menu beside the control on desktop, bottom sheet on phones. Drawn on body so dialogs never clip it. */
 export const FloatingPanel: React.FC<FloatingPanelProps> = ({ open, onClose, anchorRef, label, children }) => {
   const wide = useMediaQuery('(min-width: 640px)');
   const panelRef = useRef<HTMLDivElement>(null);
@@ -25,13 +34,7 @@ export const FloatingPanel: React.FC<FloatingPanelProps> = ({ open, onClose, anc
     const place = () => {
       const anchor = anchorRef.current?.getBoundingClientRect();
       const panel = panelRef.current;
-      if (!anchor || !panel) return;
-      const { offsetHeight: h, offsetWidth: w } = panel;
-      const below = anchor.bottom + 6;
-      // Flip above the control when there is no room underneath
-      const top = below + h > window.innerHeight - 8 && anchor.top - 6 - h > 8 ? anchor.top - 6 - h : Math.max(8, Math.min(below, window.innerHeight - h - 8));
-      const left = Math.max(8, Math.min(anchor.left, window.innerWidth - w - 8));
-      setPos({ top, left });
+      if (anchor && panel) setPos(placePanel(anchor, panel.offsetWidth, panel.offsetHeight));
     };
     place();
     window.addEventListener('resize', place);
@@ -52,7 +55,7 @@ export const FloatingPanel: React.FC<FloatingPanelProps> = ({ open, onClose, anc
       if (panelRef.current?.contains(target) || anchorRef.current?.contains(target)) return;
       if (wide) onClose();
     };
-    // Capture phase: Escape closes only the picker, not the dialog behind it
+    // Capture phase, so Escape closes only this panel and not the dialog under it
     const onKeyDown = (e: KeyboardEvent) => {
       if (e.key !== 'Escape') return;
       e.stopPropagation();

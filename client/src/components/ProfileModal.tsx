@@ -1,3 +1,4 @@
+import { useEscape } from '../lib/useEscape';
 import { createPortal } from 'react-dom';
 import React, { useEffect, useState } from 'react';
 import { api } from '../lib/api';
@@ -16,7 +17,8 @@ const input =
 
 export const ProfileModal: React.FC<ProfileModalProps> = ({ isOpen, onClose }) => {
   const { currentUser, updateProfile, updateMemberSpecialty, activeGroup, activeGroupMembers, language, t } = useApp();
-  // Inside a group the specialty belongs to that group; without one it is the account's own
+  useEscape(isOpen, onClose);
+  // Specialty is per group, or the account one without a group
   const membership = activeGroupMembers.find(m => m.id === currentUser.id);
   const [name, setName] = useState('');
   const [nameKm, setNameKm] = useState('');
@@ -40,7 +42,7 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({ isOpen, onClose }) =
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isOpen]);
 
-  // Only a filled-in password section counts; opening it and leaving it empty changes nothing
+  // An empty password section changes nothing
   const wantsPassword = showPassword && (currentPassword !== '' || newPassword !== '');
 
   if (!isOpen) return null;
@@ -137,7 +139,7 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({ isOpen, onClose }) =
             </div>
 
             {error && (
-              <p role="alert" className="rounded-lg border border-brand bg-brand-soft p-2.5 text-xs font-medium text-brand">
+              <p role="alert" className="rounded-lg border border-brand bg-brand-soft p-2.5 text-xs font-medium text-brand-ink">
                 {error}
               </p>
             )}

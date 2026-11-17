@@ -7,7 +7,7 @@ import path from 'node:path';
 
 // Set before the app reads its settings, and never a real database (see the check in before()).
 process.env.DATABASE_URL = '';
-process.env.PGLITE_DIR = fs.mkdtempSync(path.join(os.tmpdir(), 'leadersync-migration-'));
+process.env.PGLITE_DIR = fs.mkdtempSync(path.join(os.tmpdir(), 'sameakki-migration-'));
 process.env.NODE_ENV = 'test';
 
 let query: (sql: string, params?: unknown[]) => Promise<any[]>;

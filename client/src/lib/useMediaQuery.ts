@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 
-/** Follows a CSS media query, e.g. useMediaQuery('(min-width: 640px)'). */
+/** True while the media query matches. */
 export const useMediaQuery = (query: string) => {
   const [matches, setMatches] = useState(() => window.matchMedia(query).matches);
 

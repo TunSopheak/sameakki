@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useState } from 'react';
 
 type Theme = 'light' | 'dark';
-const KEY = 'leadersync-theme';
+const KEY = 'sameakki-theme';
 
 const saved = (): Theme | null => {
   try {

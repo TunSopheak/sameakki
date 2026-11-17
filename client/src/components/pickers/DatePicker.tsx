@@ -12,14 +12,12 @@ interface DatePickerProps {
   max?: string;
   required?: boolean;
   disabled?: boolean;
-  /** Lets the person empty the field. */
   clearable?: boolean;
   placeholder?: string;
-  /** Looks of the field itself, so it matches the inputs around it. */
   className?: string;
 }
 
-/** A date field that opens a calendar: beside the field on a computer, as a bottom sheet on a phone. */
+/** Date field with a calendar popup. */
 export const DatePicker: React.FC<DatePickerProps> = ({ value, onChange, min, max, required, disabled, clearable, placeholder, className = '' }) => {
   const { t, language } = useApp();
   const [open, setOpen] = useState(false);
@@ -46,7 +44,7 @@ export const DatePicker: React.FC<DatePickerProps> = ({ value, onChange, min, ma
         <Icons.date className="size-4 shrink-0 text-neutral-400" />
       </button>
 
-      {/* Lets the browser's own "please fill in this field" message work on a required date */}
+      {/* So the browser required message works */}
       {required && <input tabIndex={-1} aria-hidden required value={value} onChange={() => undefined} className="pointer-events-none absolute inset-0 opacity-0" />}
 
       <FloatingPanel open={open} onClose={() => setOpen(false)} anchorRef={anchorRef} label={t.dpSelectDate}>

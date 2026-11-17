@@ -1,4 +1,4 @@
-/** Roles offered while typing a specialty. Any text is still allowed. */
+/** Suggestions for the specialty input. */
 export const SPECIALTY_SUGGESTIONS = [
   'Project Manager',
   'Supervisor',

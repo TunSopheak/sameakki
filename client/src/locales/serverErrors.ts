@@ -79,6 +79,8 @@ export const SERVER_ERRORS_KM: Record<string, string> = {
   'Group not found.': 'រកមិនឃើញក្រុមនេះទេ។',
   'Daily update not found.': 'រកមិនឃើញ ToDo ប្រចាំថ្ងៃនេះទេ។',
   'Comment not found.': 'រកមិនឃើញមតិនេះទេ។',
+  'Only the author can edit this update.': 'មានតែម្ចាស់ ToDo ប៉ុណ្ណោះដែលអាចកែបាន។',
+  'You can only edit your own comments.': 'អ្នកអាចកែបានតែមតិរបស់ខ្លួនប៉ុណ្ណោះ។',
   'Checklist item not found.': 'រកមិនឃើញធាតុ checklist នេះទេ។',
   'Notification not found.': 'រកមិនឃើញការជូនដំណឹងនេះទេ។',
   'User not found.': 'រកមិនឃើញអ្នកប្រើប្រាស់នេះទេ។',
@@ -110,7 +112,7 @@ const PATTERNS: [RegExp, (...m: string[]) => string][] = [
 
 const storedLanguage = () => {
   try {
-    return localStorage.getItem('leadersync_language') === 'en' ? 'en' : 'km';
+    return localStorage.getItem('sameakki_language') === 'en' ? 'en' : 'km';
   } catch {
     return 'km';
   }

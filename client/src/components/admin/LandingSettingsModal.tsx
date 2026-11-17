@@ -1,3 +1,5 @@
+import { useEscape } from '../../lib/useEscape';
+import { SelectMenu, SELECT_FIELD } from '../pickers/SelectMenu';
 import React, { useEffect, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { LANDING_LIMITS, PRICE_TERMS, type PriceTerm } from '@shared/landing';
@@ -21,6 +23,7 @@ interface FormState {
 /** Edit the plan and sponsors on the landing page. */
 export const LandingSettingsModal: React.FC<{ onClose: () => void }> = ({ onClose }) => {
   const { t, language } = useApp();
+  useEscape(true, onClose);
   const [form, setForm] = useState<FormState | null>(null);
   const [error, setError] = useState('');
   const [saving, setSaving] = useState(false);
@@ -85,7 +88,7 @@ export const LandingSettingsModal: React.FC<{ onClose: () => void }> = ({ onClos
         </div>
 
         {error && (
-          <div role="alert" className="mb-4 rounded-lg border border-brand bg-brand-soft p-3 text-xs font-medium text-brand">
+          <div role="alert" className="mb-4 rounded-lg border border-brand bg-brand-soft p-3 text-xs font-medium text-brand-ink">
             {error}
           </div>
         )}
@@ -105,13 +108,13 @@ export const LandingSettingsModal: React.FC<{ onClose: () => void }> = ({ onClos
                 </label>
                 <label className="block">
                   <span className="mb-1 block text-xs font-bold text-black">{t.landingTerm}</span>
-                  <select value={form.studentTerm} onChange={e => set('studentTerm', e.target.value as PriceTerm)} className={fieldClass}>
-                    {PRICE_TERMS.map(term => (
-                      <option key={term} value={term}>
-                        {termLabel[term]}
-                      </option>
-                    ))}
-                  </select>
+                  <SelectMenu
+                    value={form.studentTerm}
+                    label={t.landingTerm}
+                    className={SELECT_FIELD}
+                    onChange={term => set('studentTerm', term)}
+                    options={PRICE_TERMS.map(term => ({ value: term, label: termLabel[term] }))}
+                  />
                 </label>
               </div>
 

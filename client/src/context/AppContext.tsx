@@ -81,6 +81,7 @@ interface AppContextType {
 
   addSimpleDailyLog: (rawContent: string) => Promise<void>;
   toggleDailyTodoItem: (logId: string, itemId: string) => Promise<void>;
+  editDailyLog: (logId: string, rawContent: string) => Promise<void>;
   markDailyLogDone: (logId: string) => Promise<void>;
   approveDailyLog: (logId: string, feedback?: string) => Promise<void>;
   deleteDailyLog: (logId: string) => Promise<void>;
@@ -112,8 +113,8 @@ interface AppContextType {
 
 // localStorage keeps UI preferences only
 const STORAGE_KEYS = {
-  ACTIVE_GROUP: 'leadersync_active_group',
-  LANGUAGE: 'leadersync_language',
+  ACTIVE_GROUP: 'sameakki_active_group',
+  LANGUAGE: 'sameakki_language',
 };
 
 const POLL_INTERVAL_MS = 30_000;
@@ -214,7 +215,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const derived = useMemo(() => {
     const memberIds = new Set(activeGroup?.memberIds ?? []);
     return {
-      // What a person does is set per group; the account's own value is only the fallback
+      // Specialty is per group, the account one is the fallback
       activeGroupMembers: users.filter(u => memberIds.has(u.id)).map(u => ({ ...u, specialty: activeGroup?.memberSpecialties?.[u.id] ?? u.specialty })),
       activeGroupTasks: tasks.filter(t => t.groupId === resolvedGroupId),
       activeGroupDailyLogs: dailyLogs.filter(d => d.groupId === resolvedGroupId),
@@ -347,6 +348,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
     addSimpleDailyLog: rawContent => run(() => api.createDailyLog(resolvedGroupId, rawContent, todayLocal())),
     toggleDailyTodoItem: (logId, itemId) => quiet(run(() => api.toggleDailyLogItem(logId, itemId))),
+    editDailyLog: (logId, rawContent) => run(() => api.editDailyLog(logId, rawContent)),
     markDailyLogDone: logId => quiet(run(() => api.completeDailyLog(logId))),
     approveDailyLog: (logId, feedback) => quiet(run(() => api.approveDailyLog(logId, feedback))),
     deleteDailyLog: logId => quiet(run(() => api.deleteDailyLog(logId))),

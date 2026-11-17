@@ -5,6 +5,7 @@
   --color-brand: #840015;
   --color-brand-dark: #66000f;
   --color-brand-soft: #fceaed;
+  --color-brand-ink: #840015;
   --color-black: #1a1410;
 
   /* Warm greys replace Tailwind's cool neutral scale */
@@ -12,8 +13,8 @@
   --color-neutral-100: #f3f0ec;
   --color-neutral-200: #e3ddd6;
   --color-neutral-300: #d3cbc2;
-  --color-neutral-400: #9a9088;
-  --color-neutral-500: #6f645b;
+  --color-neutral-400: #71675e;
+  --color-neutral-500: #5d524a;
   --color-neutral-600: #4a3f37;
   --color-neutral-700: #3b322c;
   --color-neutral-800: #2a221d;
@@ -35,12 +36,13 @@ html.dark {
   --color-brand: #c42a42;
   --color-brand-dark: #a01f35;
   --color-brand-soft: #3a1119;
+  --color-brand-ink: #f4808f;
   --color-neutral-50: #14100d;
   --color-neutral-100: #2a221d;
   --color-neutral-200: #3a312a;
   --color-neutral-300: #4d4239;
-  --color-neutral-400: #8c8178;
-  --color-neutral-500: #a89d94;
+  --color-neutral-400: #a1968d;
+  --color-neutral-500: #b0a59c;
   --color-neutral-600: #c4bab1;
   --color-neutral-700: #d6cdc5;
   --color-neutral-800: #e8e1da;
@@ -82,6 +84,12 @@ html.dark .angkor-watermark {
 
   input, textarea, select, button {
     font-family: inherit;
+  }
+
+  input::placeholder,
+  textarea::placeholder {
+    color: var(--color-neutral-400);
+    opacity: 1;
   }
 
   ::selection {
@@ -176,6 +184,9 @@ html {
   from { transform: translateY(100%); }
   to { transform: none; }
 }
+@keyframes react-pop {
+  50% { transform: scale(1.35); }
+}
 @keyframes tip-in {
   from { opacity: 0; margin-left: -6px; }
   to { opacity: 1; margin-left: 0; }
@@ -194,6 +205,7 @@ html {
 .modal-panel { animation: pop 0.3s var(--ease-out) both; }
 .picker-pop { animation: picker-pop 0.16s var(--ease-out) both; }
 .sheet-up { animation: sheet-up 0.3s var(--ease-out) both; }
+.react-pop { animation: react-pop 0.25s var(--ease-out); }
 .tip-in { animation: tip-in 0.16s var(--ease-out) both; }
 .logo-float:hover { animation: float 1.2s ease-in-out infinite; }
 .logo-breathe { animation: breathe 1.6s ease-in-out infinite; }

@@ -1,15 +1,19 @@
+import { moduleName, taskDescription } from '../lib/defaults';
 import React, { useState } from 'react';
 import { useApp } from '../context/AppContext';
 import { daysUntil } from '../lib/dates';
-import type { Task, TaskPriority, TaskStatus } from '../types';
+import type { TaskPriority, TaskStatus } from '../types';
 import { User as UserIcon } from 'lucide-react';
 import { Avatar } from './Avatar';
 import { FilterSelect, Pager, SearchBox } from './TableParts';
+import { SelectMenu, SELECT_FILTER } from './pickers/SelectMenu';
 import { useTableView } from '../lib/useTableView';
 import { CommentThread } from './CommentThread';
 import { EditableDate } from './EditableDate';
 import { TaskProgress } from './TaskProgress';
+import { TeamTaskBanner } from './TeamTaskBanner';
 import { TeamTaskCard } from './TeamTaskCard';
+import { groupTeamTasks, type TaskLine } from '../lib/stats';
 import { Icons } from './icons';
 
 interface TaskBoardProps {
@@ -46,7 +50,6 @@ export const TaskBoard: React.FC<TaskBoardProps> = ({
   const [completionNote, setCompletionNote] = useState('');
   const [approvingTaskId, setApprovingTaskId] = useState<string | null>(null);
   const [leaderFeedback, setLeaderFeedback] = useState('');
-  const [reassigningTaskId, setReassigningTaskId] = useState<string | null>(null);
   // Viewers cannot work on tasks
   const assignableMembers = activeGroupMembers.filter(m => m.role !== 'viewer');
 
@@ -71,32 +74,9 @@ export const TaskBoard: React.FC<TaskBoardProps> = ({
     return true;
   });
 
-  // Progress of tasks that were given to several people at once
-  const batchStats = new Map<string, { done: number; total: number; sum: number; tasks: Task[] }>();
-  for (const task of activeGroupTasks) {
-    if (!task.batchId) continue;
-    const entry = batchStats.get(task.batchId) ?? { done: 0, total: 0, sum: 0, tasks: [] };
-    entry.total += 1;
-    entry.sum += task.progress;
-    entry.tasks.push(task);
-    if (task.status === 'ready_for_review' || task.status === 'approved') entry.done += 1;
-    batchStats.set(task.batchId, entry);
-  }
-
-  // A task given to several people is one card, unless the list is already narrowed to a person or to that team task
-  type Row = { task: Task; team?: Task[] };
+  // A team task is one card, unless the list is narrowed to a person or one team task
   const groupTeams = batchFilter === null && assigneeFilter === 'all';
-  const rows: Row[] = [];
-  const seenBatches = new Set<string>();
-  for (const task of filteredTasks) {
-    if (groupTeams && task.batchId) {
-      if (seenBatches.has(task.batchId)) continue;
-      seenBatches.add(task.batchId);
-      rows.push({ task, team: batchStats.get(task.batchId)!.tasks });
-    } else {
-      rows.push({ task });
-    }
-  }
+  const rows: TaskLine[] = groupTeams ? groupTeamTasks(filteredTasks, activeGroupTasks) : filteredTasks.map(task => ({ task }));
 
   const PRIORITY_ORDER = { urgent: 0, high: 1, medium: 2, low: 3 } as const;
   const STATUS_ORDER = { todo: 0, in_progress: 1, ready_for_review: 2, approved: 3 } as const;
@@ -184,41 +164,26 @@ export const TaskBoard: React.FC<TaskBoardProps> = ({
         <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
           <SearchBox value={searchQuery} onChange={setSearchQuery} placeholder={t.searchTasks} />
           <div className="flex flex-wrap items-center gap-2">
-            <div className="flex items-center gap-1 bg-white border border-neutral-200 rounded-lg px-2 py-1.5 text-xs">
-              <Icons.group className="size-3 text-neutral-500" />
-              <select
-                value={categoryFilter}
-                onChange={e => setCategoryFilter(e.target.value)}
-                className="bg-transparent text-xs text-black focus:outline-none cursor-pointer"
-              >
-                <option value="all">
-                  {t.filterAllCategories}
-                </option>
-                {categories.map(cat => (
-                  <option key={cat} value={cat}>
-                    {cat}
-                  </option>
-                ))}
-              </select>
-            </div>
+            <SelectMenu
+              value={categoryFilter}
+              label={t.categoryLabel}
+              className={SELECT_FILTER}
+              icon={<Icons.group className="size-3.5 text-neutral-500" />}
+              onChange={setCategoryFilter}
+              options={[{ value: 'all', label: t.filterAllCategories }, ...categories.map(cat => ({ value: cat, label: moduleName(cat, t) }))]}
+            />
 
-            <div className="flex items-center gap-1 bg-white border border-neutral-200 rounded-lg px-2 py-1.5 text-xs">
-              <UserIcon className="size-3 text-neutral-500" />
-              <select
-                value={assigneeFilter}
-                onChange={e => setAssigneeFilter(e.target.value)}
-                className="bg-transparent text-xs text-black focus:outline-none cursor-pointer"
-              >
-                <option value="all">
-                  {t.filterAllAssignees}
-                </option>
-                {activeGroupMembers.map(u => (
-                  <option key={u.id} value={u.id}>
-                    {u.name}
-                  </option>
-                ))}
-              </select>
-            </div>
+            <SelectMenu
+              value={assigneeFilter}
+              label={t.colAssignee}
+              className={SELECT_FILTER}
+              icon={<UserIcon className="size-3.5 text-neutral-500" />}
+              onChange={setAssigneeFilter}
+              options={[
+                { value: 'all', label: t.filterAllAssignees },
+                ...activeGroupMembers.map(u => ({ value: u.id, label: u.name, avatar: <Avatar name={u.name} avatar={u.avatar} className="size-6" /> })),
+              ]}
+            />
 
             {isTeamLead && (
               <button
@@ -350,23 +315,9 @@ export const TaskBoard: React.FC<TaskBoardProps> = ({
         )}
       </div>
 
-      {batchFilter && batchStats.get(batchFilter) && (() => {
-        const { total, sum, done } = batchStats.get(batchFilter)!;
-        return (
-          <div className="flex flex-wrap items-center gap-3 rounded-xl border border-brand/20 bg-brand-soft px-4 py-2.5 text-xs text-brand">
-            <Icons.members className="size-4 shrink-0" />
-            <span className="font-semibold">
-              {t.teamTaskViewing} · {t.teamTaskPeople.replace('{n}', String(total))}
-            </span>
-            <span className="font-bold font-mono-numbers">
-              {Math.round(sum / total)}% · {t.teamTaskDone.replace('{done}', String(done)).replace('{total}', String(total))}
-            </span>
-            <button type="button" onClick={() => setBatchFilter(null)} className="ml-auto cursor-pointer font-semibold hover:underline">
-              {t.teamTaskBack}
-            </button>
-          </div>
-        );
-      })()}
+      {batchFilter && (
+        <TeamTaskBanner tasks={activeGroupTasks.filter(task => task.batchId === batchFilter)} onBack={() => setBatchFilter(null)} />
+      )}
 
       {filteredTasks.length === 0 ? (
         <div className="bg-white rounded-xl border border-neutral-200 p-12 text-center">
@@ -396,7 +347,7 @@ export const TaskBoard: React.FC<TaskBoardProps> = ({
         </div>
       ) : (
         <>
-        <div className="stagger grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className="stagger grid grid-cols-1 items-start gap-4 md:grid-cols-2">
           {view.pageRows.map(row => {
             const task = row.task;
             if (row.team) {
@@ -407,7 +358,7 @@ export const TaskBoard: React.FC<TaskBoardProps> = ({
                   tasks={row.team}
                   users={users}
                   priority={getPriorityBadge(task.priority)}
-                  deadline={{ text: deadlineInfo.text, overdue: !!deadlineInfo.isOverdue }}
+                  deadline={row.team.every(item => item.status === 'ready_for_review' || item.status === 'approved') ? null : { text: deadlineInfo.text, overdue: !!deadlineInfo.isOverdue }}
                   onProgress={(id, value) => updateTaskProgress(id, value)}
                   onOpenIndividual={() => setBatchFilter(task.batchId!)}
                   onDelete={() => deleteTeamTask(task.batchId!)}
@@ -437,7 +388,7 @@ export const TaskBoard: React.FC<TaskBoardProps> = ({
                       className="text-xs font-semibold text-black bg-neutral-100 hover:bg-neutral-200 px-2 py-0.5 rounded-lg cursor-pointer transition-colors"
                       title={t.titleFilterCategory}
                     >
-                      {task.module}
+                      {moduleName(task.module, t)}
                     </button>
 
                     <div className="flex items-center gap-2">
@@ -474,7 +425,7 @@ export const TaskBoard: React.FC<TaskBoardProps> = ({
                       {task.title}
                     </h3>
                     <p className="text-xs text-neutral-600 mt-1 line-clamp-3 leading-relaxed">
-                      {task.description}
+                      {taskDescription(task.description, t)}
                     </p>
                   </div>
                 </div>
@@ -505,7 +456,7 @@ export const TaskBoard: React.FC<TaskBoardProps> = ({
                 )}
 
                 <div className="pt-3 space-y-3">
-                  <div className="flex items-center justify-between text-xs gap-2">
+                  <div className="flex flex-wrap items-center justify-between gap-x-3 gap-y-2 text-xs">
                     <div
                       onClick={() => setAssigneeFilter(assignee.id)}
                       className="flex items-center gap-2 cursor-pointer group"
@@ -523,45 +474,32 @@ export const TaskBoard: React.FC<TaskBoardProps> = ({
                     </div>
 
                     {isTeamLead && task.status !== 'approved' && (
-                      reassigningTaskId === task.id ? (
-                        <select
-                          autoFocus
-                          // A member who left is no longer in the list
-                          value={assignableMembers.some(m => m.id === task.assignedTo) ? task.assignedTo : ''}
-                          onChange={e => {
-                            reassignTask(task.id, e.target.value);
-                            setReassigningTaskId(null);
-                          }}
-                          onBlur={() => setReassigningTaskId(null)}
-                          className="max-w-[120px] rounded-lg border border-neutral-200 bg-white px-1.5 py-1 text-[11px] text-black focus:outline-none focus:ring-1 focus:ring-brand/40"
-                        >
-                          <option value="" disabled>
-                            {t.taskAssignTo}
-                          </option>
-                          {assignableMembers.map(m => (
-                            <option key={m.id} value={m.id}>
-                              {m.name}
-                            </option>
-                          ))}
-                        </select>
-                      ) : (
-                        <button
-                          onClick={() => setReassigningTaskId(task.id)}
-                          className="text-[11px] font-semibold text-neutral-500 hover:text-black hover:underline cursor-pointer"
-                        >
-                          {t.reassignTask}
-                        </button>
-                      )
+                      <SelectMenu
+                        // A member who left is no longer in the list
+                        value={assignableMembers.some(m => m.id === task.assignedTo) ? task.assignedTo : ''}
+                        label={t.taskAssignTo}
+                        display={t.reassignTask}
+                        className="inline-flex items-center gap-1 text-[11px] font-semibold text-neutral-500 transition-colors hover:text-black"
+                        onChange={id => reassignTask(task.id, id)}
+                        options={assignableMembers.map(m => ({
+                          value: m.id,
+                          label: m.name,
+                          avatar: <Avatar name={m.name} avatar={m.avatar} className="size-6" />,
+                        }))}
+                      />
                     )}
 
-                    <div className="text-right">
+                    <div className="ml-auto text-right">
                       <EditableDate value={task.dueDate} canEdit={isTeamLead} onSave={date => updateTaskDeadline(task.id, date)} size="sm" className="justify-end">
                         <Icons.date className="size-3.5 text-neutral-500" />
                         <span>
-                          <span className="block font-mono font-medium text-black">
+                          <span className="block whitespace-nowrap font-mono-numbers font-medium text-black">
                             {task.dueDate} {task.dueTime}
                           </span>
-                          <span className="text-[11px] font-semibold text-neutral-700">{deadlineInfo.text}</span>
+                          {/* Submitted or approved work is not counted down or called late */}
+                          {task.status !== 'approved' && task.status !== 'ready_for_review' && (
+                            <span className={`text-[11px] font-semibold ${deadlineInfo.isOverdue ? 'text-brand-ink' : 'text-neutral-700'}`}>{deadlineInfo.text}</span>
+                          )}
                         </span>
                       </EditableDate>
                     </div>

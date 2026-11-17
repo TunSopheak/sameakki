@@ -1,3 +1,4 @@
+import { useEscape } from '../../lib/useEscape';
 import React, { useState } from 'react';
 import { createPortal } from 'react-dom';
 import type { AdminUserRow } from '@shared/types';
@@ -76,6 +77,7 @@ export const AccountModal: React.FC<AccountModalProps> = ({ user, onClose, onSav
     }
   };
 
+  useEscape(!created, onClose);
   if (created) return <TempPasswordModal {...created} onClose={onClose} />;
 
   // Shown on <body> so an animated parent does not break fixed

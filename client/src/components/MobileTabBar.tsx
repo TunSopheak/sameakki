@@ -1,5 +1,6 @@
-import React, { useEffect, useState } from 'react';
+import React from 'react';
 import { useApp } from '../context/AppContext';
+import { useHideOnScroll } from '../lib/useHideOnScroll';
 import type { Tab } from './sidebar/SidebarNav';
 import { Icons } from './icons';
 
@@ -9,48 +10,7 @@ interface MobileTabBarProps {
   onOpenMenu: () => void;
 }
 
-/** True while the page is scrolled down; flips back as soon as the user scrolls up. */
-const useHideOnScroll = () => {
-  const [hidden, setHidden] = useState(false);
-
-  useEffect(() => {
-    let last = window.scrollY;
-    let frame = 0;
-    const onScroll = () => {
-      cancelAnimationFrame(frame);
-      frame = requestAnimationFrame(() => {
-        const y = window.scrollY;
-        const delta = y - last;
-        if (y <= 120) {
-          setHidden(false);
-          last = y;
-          return;
-        }
-        // Ignore tiny jitters and iOS rubber-banding at the very top and bottom
-        if (Math.abs(delta) > 8) {
-          const atBottom = window.innerHeight + y >= document.documentElement.scrollHeight - 4;
-          setHidden(delta > 0 && y > 120 && !atBottom);
-          last = y;
-        }
-      });
-    };
-    window.addEventListener('scroll', onScroll, { passive: true });
-    return () => {
-      cancelAnimationFrame(frame);
-      window.removeEventListener('scroll', onScroll);
-    };
-  }, []);
-
-  return [hidden, () => setHidden(false)] as const;
-};
-
-const tap = () => {
-  try {
-    navigator.vibrate?.(8);
-  } catch {
-    /* not supported */
-  }
-};
+const tap = () => navigator.vibrate?.(8);
 
 /** Floating bottom tabs on phones. */
 export const MobileTabBar: React.FC<MobileTabBarProps> = ({ activeTab, onSelect, onOpenMenu }) => {
@@ -78,7 +38,6 @@ export const MobileTabBar: React.FC<MobileTabBarProps> = ({ activeTab, onSelect,
       }`}
     >
       <div className="relative grid grid-cols-5 rounded-2xl border border-neutral-200/80 bg-white/85 p-1 shadow-[0_10px_30px_-8px_rgb(26_20_16/0.28)] backdrop-blur-xl">
-        {/* One pill glides to the selected tab (5 equal columns, so a plain % shift is enough) */}
         <span
           aria-hidden
           style={{ transform: `translateX(${Math.max(activeIndex, 0) * 100}%)` }}
@@ -99,7 +58,7 @@ export const MobileTabBar: React.FC<MobileTabBarProps> = ({ activeTab, onSelect,
                 onSelect(id);
               }}
               aria-current={active ? 'page' : undefined}
-              className={`${item} ${active ? 'text-brand' : 'text-neutral-500'}`}
+              className={`${item} ${active ? 'text-brand-ink' : 'text-neutral-500'}`}
             >
               <Icon className={`${iconClass} ${active ? '-translate-y-0.5 scale-110' : 'group-active:scale-90'}`} />
               <span className={`w-full truncate text-center transition-[font-weight] ${active ? 'font-bold' : ''}`}>{label}</span>
