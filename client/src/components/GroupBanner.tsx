@@ -4,6 +4,7 @@ import { useApp } from '../context/AppContext';
 import { daysUntil } from '../lib/dates';
 import { ChevronDown } from 'lucide-react';
 import { EditableDate } from './EditableDate';
+import { SelectMenu } from './pickers/SelectMenu';
 import { Icons } from './icons';
 
 interface GroupBannerProps {
@@ -159,37 +160,20 @@ export const GroupBanner: React.FC<GroupBannerProps> = ({
                 )}
               </div>
 
-              {canManageGroup ? (
-                <select
-                  value={activeGroup.status}
-                  aria-label={t.groupStatusLabel}
-                  title={t.groupStatusLabel}
-                  onChange={e => {
-                    const next = e.target.value as typeof activeGroup.status;
-                    if (next === 'archived' && !confirm(t.archiveGroupConfirm)) return;
-                    updateGroupStatus(activeGroup.id, next);
-                  }}
-                  className="cursor-pointer rounded-lg bg-neutral-100 px-2 py-0.5 text-xs font-medium text-neutral-800 focus:outline-none focus:ring-1 focus:ring-brand/40"
-                >
-                  <option value="active">{t.activeGroups}</option>
-                  <option value="completed">{t.groupCompleted}</option>
-                  <option value="archived">{t.groupArchived}</option>
-                </select>
-              ) : (
-                <span
-                  className={`text-xs px-2.5 py-0.5 rounded-lg font-medium ${
-                    activeGroup.status === 'completed'
-                      ? 'bg-neutral-900 text-white'
-                      : 'bg-neutral-100 text-neutral-800'
-                  }`}
-                >
-                  {activeGroup.status === 'completed'
-                    ? t.groupCompleted
-                    : activeGroup.status === 'archived'
-                      ? t.groupArchived
-                      : t.activeGroups}
-                </span>
-              )}
+              <SelectMenu
+                value={activeGroup.status}
+                label={t.groupStatusLabel}
+                disabled={!canManageGroup}
+                options={[
+                  { value: 'active', label: t.activeGroups, description: t.groupActiveHint, dot: 'bg-emerald-500' },
+                  { value: 'completed', label: t.groupCompleted, description: t.groupCompletedHint, dot: 'bg-neutral-800' },
+                  { value: 'archived', label: t.groupArchived, description: t.groupArchivedHint, dot: 'bg-neutral-400' },
+                ]}
+                onChange={next => {
+                  if (next === 'archived' && !confirm(t.archiveGroupConfirm)) return;
+                  updateGroupStatus(activeGroup.id, next);
+                }}
+              />
 
               <EditableDate value={activeGroup.deadline || ''} canEdit={canManageGroup} onSave={date => updateGroupDeadline(activeGroup.id, date)}>
                 <span className="inline-flex items-center gap-1 rounded-lg bg-neutral-100 px-2.5 py-0.5 text-xs font-medium text-neutral-800 group-hover/edit:bg-neutral-200">
