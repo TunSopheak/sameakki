@@ -1,3 +1,4 @@
+import { GUIDE_PATHS, renderGuidePage, renderSitemap } from './seo/guidePage';
 import fs from 'node:fs';
 import path from 'node:path';
 import express from 'express';
@@ -83,10 +84,20 @@ export function createApp() {
     app.get('/robots.txt', (req, res) => {
       res.type('text/plain').send(['User-agent: *', 'Allow: /', 'Disallow: /api/', '', `Sitemap: ${originOf(req)}/sitemap.xml`, ''].join('\n'));
     });
+    // The date of the last build, so search engines know when the pages changed
+    const lastmod = fs.statSync(indexHtml).mtime.toISOString().slice(0, 10);
     app.get('/sitemap.xml', (req, res) => {
-      const xml = `<?xml version="1.0" encoding="UTF-8"?><urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"><url><loc>${originOf(req)}/</loc></url></urlset>`;
-      res.type('application/xml').send(xml);
+      res.setHeader('Cache-Control', 'public, max-age=3600');
+      res.type('application/xml').send(renderSitemap(originOf(req), lastmod));
     });
+
+    // Public guide pages that search engines can read without running the app
+    for (const language of ['km', 'en'] as const) {
+      app.get(GUIDE_PATHS[language], (req, res) => {
+        res.setHeader('Cache-Control', 'public, max-age=3600');
+        res.type('html').send(renderGuidePage(language, originOf(req)));
+      });
+    }
 
     // Hashed assets are cached for a year
     app.use(

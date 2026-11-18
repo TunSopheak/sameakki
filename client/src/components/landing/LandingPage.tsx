@@ -17,7 +17,7 @@ import { APP_NAME } from '../../lib/brand';
 export const LandingPage: React.FC = () => {
   useLandingPageClass();
   useLandingMeta();
-  const { copy } = useLanding();
+  const { copy, language } = useLanding();
   const { settings, ready } = useLandingSettings();
 
   return (
@@ -37,6 +37,11 @@ export const LandingPage: React.FC = () => {
 
       <footer className="space-y-6 px-4 pb-10 text-center text-xs text-neutral-500">
         <CreatorCard />
+        <p>
+          <a href={language === 'km' ? '/guide' : '/en/guide'} className="font-semibold text-brand-ink hover:underline">
+            {copy.footer.guide}
+          </a>
+        </p>
         <p>© {new Date().getFullYear()} {APP_NAME} · {copy.footer.rights}</p>
       </footer>
     </div>

@@ -48,7 +48,7 @@ export interface LandingCopy {
   meta: { title: string; description: string };
   faq: { title: string; items: { q: string; a: string }[] };
   final: { title: string; text: string };
-  footer: { rights: string; back: string };
+  footer: { rights: string; back: string; guide: string };
   creator: { label: string };
 }
 
@@ -199,7 +199,7 @@ export const landing: Record<'km' | 'en', LandingCopy> = {
       title: 'ត្រៀមឱ្យក្រុមរបស់អ្នកធ្វើការល្អជាងមុនឬនៅ?',
       text: 'សាកល្បងមុន មិនបាច់ចុះឈ្មោះ។ ពេញចិត្តហើយ ទាក់ទងតាម Telegram។',
     },
-    footer: { rights: 'រក្សាសិទ្ធិគ្រប់យ៉ាង', back: 'ត្រឡប់ទៅទំព័រដើម' },
+    footer: { rights: 'រក្សាសិទ្ធិគ្រប់យ៉ាង', back: 'ត្រឡប់ទៅទំព័រដើម', guide: 'របៀបសរសេរ ToDo និងប្រើសាមគ្គី' },
     creator: { label: 'បង្កើតដោយ' },
   },
 
@@ -349,7 +349,7 @@ export const landing: Record<'km' | 'en', LandingCopy> = {
       title: 'Ready for better teamwork?',
       text: 'Try it with no sign-up. Like it? Message us on Telegram.',
     },
-    footer: { rights: 'All rights reserved', back: 'Back to home' },
+    footer: { rights: 'All rights reserved', back: 'Back to home', guide: 'How to write a daily ToDo and use Sameakki' },
     creator: { label: 'Built by' },
   },
 };

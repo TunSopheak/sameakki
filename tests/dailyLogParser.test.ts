@@ -45,3 +45,8 @@ test('plain lines with no "-" after the title are still tasks', () => {
   const { items } = parseRawLogContent('Web\nfix bug\nadd footer');
   assert.deepEqual(items.map(i => i.text), ['fix bug', 'add footer']);
 });
+
+test('a line with only "-" or an empty box is not a task', () => {
+  const { items } = parseRawLogContent('Web\n-\n- [ ]\n- real task');
+  assert.deepEqual(items.map(i => i.text), ['real task']);
+});

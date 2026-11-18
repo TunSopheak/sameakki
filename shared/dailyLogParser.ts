@@ -50,6 +50,8 @@ export const parseRawLogContent = (rawText: string): { title: string; items: Dai
 
     const done = /\[[xX]\]/.test(text) || progressTag === '100%';
     text = text.replace(/\[[xX\s]\]/g, '').trim();
+    // A bare "-" or "[ ]" with no words is not a task
+    if (!text) return;
 
     items.push({
       id: `item_${seed}_${idx}`,

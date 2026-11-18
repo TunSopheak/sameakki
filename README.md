@@ -25,6 +25,15 @@ Mobile app
 
 **Approval.** A leader approves a ToDo or task that is waiting for review. Approved work is locked for everyone, the leader too. A leader taps **Reopen to edit** to change it, and it goes back to review.
 
+## Search (SEO)
+
+The app is a single-page app, so search engines get plain HTML from the server:
+
+- `/guide` (Khmer) and `/en/guide` (English) are built from `client/src/locales/guide.ts` by `server/seo/guidePage.ts`. They have a title, description, canonical and `hreflang` links, and structured data (TechArticle, HowTo, FAQPage, BreadcrumbList).
+- `/sitemap.xml` lists the home page and both guides, and `/robots.txt` points to it.
+- The home page has its meta tags and JSON-LD in `client/index.html`; the landing page switches them to the visitor's language.
+- After a deploy, add the site to Google Search Console and request indexing for `/`, `/guide` and `/en/guide`.
+
 ## Run locally
 
 Needs Node.js 20.19+ and a PostgreSQL database (pgAdmin works fine).
