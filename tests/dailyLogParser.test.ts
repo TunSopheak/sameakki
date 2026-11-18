@@ -27,3 +27,21 @@ test('numbered and bulleted lines are cleaned', () => {
 test('empty text gives a default title and no items', () => {
   assert.deepEqual(parseRawLogContent('  \n '), { title: 'Daily Update', items: [] });
 });
+
+test('the heading is optional: only "-" lines are tasks', () => {
+  const { title, items } = parseRawLogContent('- fix header\n- add footer');
+  assert.equal(title, 'Daily Update');
+  assert.deepEqual(items.map(i => i.text), ['fix header', 'add footer']);
+});
+
+test('more headings group the tasks below them', () => {
+  const { title, items } = parseRawLogContent('Final project\nWebsite\n- login\n- footer\nMobile app\n- home');
+  assert.equal(title, 'Final project');
+  assert.deepEqual(items.map(i => i.group), ['Website', 'Website', 'Mobile app']);
+  assert.deepEqual(items.map(i => i.text), ['login', 'footer', 'home']);
+});
+
+test('plain lines with no "-" after the title are still tasks', () => {
+  const { items } = parseRawLogContent('Web\nfix bug\nadd footer');
+  assert.deepEqual(items.map(i => i.text), ['fix bug', 'add footer']);
+});

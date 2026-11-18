@@ -64,7 +64,7 @@ export const TeamTaskCard: React.FC<TeamTaskCardProps> = ({ tasks, users, priori
         </div>
 
         <h3 className="text-base font-bold tracking-tight text-black">{first.title}</h3>
-        <p className="line-clamp-3 text-xs leading-relaxed text-neutral-600">{taskDescription(first.description, t)}</p>
+        <p className="line-clamp-3 whitespace-pre-line break-words text-xs leading-relaxed text-neutral-600">{taskDescription(first.description, t)}</p>
       </div>
 
       <div>

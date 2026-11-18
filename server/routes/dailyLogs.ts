@@ -76,7 +76,7 @@ dailyLogsRouter.patch('/daily-logs/:logId', async (req, res) => {
   const { log, items, access, isAuthor } = await loadLog(db, user, req.params.logId);
   assertWritable(access);
   assert((isAuthor && access.canContribute) || access.canLead, 'Only the author can edit this update.');
-  if (log.status === 'approved' && !access.canLead) throw badRequest('This update has already been approved.');
+  if (log.status === 'approved') throw badRequest('This update is approved and locked. A leader can reopen it to make changes.');
   const { rawContent } = editSchema.parse(req.body);
 
   const { title, items: edited } = parseRawLogContent(rawContent);
@@ -102,7 +102,7 @@ dailyLogsRouter.post('/daily-logs/:logId/items/:itemId/toggle', async (req, res)
   const { log, items, access, isAuthor } = await loadLog(db, user, req.params.logId);
   assertWritable(access);
   assert((isAuthor && access.canContribute) || access.canLead, 'Only the author can update this checklist.');
-  if (log.status === 'approved' && !access.canLead) throw badRequest('This update has already been approved.');
+  if (log.status === 'approved') throw badRequest('This update is approved and locked. A leader can reopen it to make changes.');
 
   const item = items.find(i => i.id === req.params.itemId);
   if (!item) throw notFound('Checklist item not found.');
@@ -139,7 +139,7 @@ dailyLogsRouter.post('/daily-logs/:logId/complete', async (req, res) => {
   const { log, items, access, isAuthor } = await loadLog(db, user, req.params.logId);
   assertWritable(access);
   assert((isAuthor && access.canContribute) || access.canLead, 'Only the author can complete this update.');
-  if (log.status === 'approved' && !access.canLead) throw badRequest('This update has already been approved.');
+  if (log.status === 'approved') throw badRequest('This update is approved and locked. A leader can reopen it to make changes.');
   if (log.status !== 'in_progress') {
     res.status(204).end();
     return;
@@ -205,6 +205,32 @@ dailyLogsRouter.post('/daily-logs/:logId/approve', async (req, res) => {
         params: { title: log.title, feedback: input.feedback },
       });
     }
+  });
+
+  res.status(204).end();
+});
+
+dailyLogsRouter.post('/daily-logs/:logId/reopen', async (req, res) => {
+  const user = req.user!;
+  const db = await getDb();
+  const { log, access } = await loadLog(db, user, req.params.logId);
+  assertWritable(access);
+  assert(access.canLead, 'Only team leads can reopen daily updates.');
+  if (log.status !== 'approved') throw badRequest('Only an approved update can be reopened.');
+
+  await db.transaction(async tx => {
+    await tx.query(
+      `UPDATE daily_logs SET status = 'completed', leader_checked = false, leader_note = NULL, approved_by = NULL WHERE id = $1`,
+      [log.id]
+    );
+    await logActivity(tx, user, {
+      groupId: log.group_id,
+      type: 'daily_todo_completed',
+      targetId: log.id,
+      targetTitle: log.title,
+      description: `reopened daily ToDo: "${log.title}"`,
+      descriptionKm: `បានបើក ToDo ប្រចាំថ្ងៃឡើងវិញ៖ "${log.title}"`,
+    });
   });
 
   res.status(204).end();

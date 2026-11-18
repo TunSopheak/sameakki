@@ -1,10 +1,17 @@
 import type { DailyTodoItem } from './types';
 
+const BULLET = /^(?:[-*•]|\d+[.)])\s*/;
+const isBullet = (line: string) => BULLET.test(line);
+
 /**
  * Turns a daily update into a title and checklist items.
- *   Project name            <- first line is the title
- *   - task one - 80%        <- one item per line, optional progress
+ *   Project name            <- a line without "-" is a heading (the first one is the title)
+ *   - task one - 80%        <- a line starting with "-" is a task to tick, optional progress
  *   - [x] task two          <- [x] or 100% means done
+ *   Another part            <- more headings group the tasks under them
+ *   - task three
+ * The heading is optional: a list of only "-" lines is just tasks.
+ * A plain line with no "-" is also read as a task, unless a "-" line follows it (then it is a heading).
  */
 export const parseRawLogContent = (rawText: string): { title: string; items: DailyTodoItem[] } => {
   const lines = rawText.split('\n').map(l => l.trim()).filter(Boolean);
@@ -12,14 +19,31 @@ export const parseRawLogContent = (rawText: string): { title: string; items: Dai
     return { title: 'Daily Update', items: [] };
   }
 
-  const title = lines[0].replace(/^[-*•#\s]+/, '').trim() || 'Daily Update';
   const seed = Date.now().toString(36);
+  const clean = (line: string) => line.replace(/^[-*•#\s]+/, '').trim();
 
-  const items: DailyTodoItem[] = lines.slice(1).map((line, idx) => {
+  let title = 'Daily Update';
+  let start = 0;
+  if (!isBullet(lines[0])) {
+    title = clean(lines[0]) || title;
+    start = 1;
+  }
+
+  let group: string | undefined;
+  const items: DailyTodoItem[] = [];
+
+  lines.slice(start).forEach((line, idx) => {
+    const next = lines[start + idx + 1];
+    // A plain line followed by a "-" line starts a new group
+    if (!isBullet(line) && next !== undefined && isBullet(next)) {
+      group = clean(line) || group;
+      return;
+    }
+
     const pctMatch = line.match(/[-–—]\s*(\d{1,3}%)\s*$/) || line.match(/\((\d{1,3}%)\)\s*$/);
     const progressTag = pctMatch ? pctMatch[1] : undefined;
 
-    let text = line.replace(/^(?:[-*•]|\d+[.)])\s*/, '').trim();
+    let text = line.replace(BULLET, '').trim();
     if (progressTag) {
       text = text.replace(/[-–—]\s*\d{1,3}%\s*$/, '').replace(/\(\d{1,3}%\)\s*$/, '').trim();
     }
@@ -27,12 +51,13 @@ export const parseRawLogContent = (rawText: string): { title: string; items: Dai
     const done = /\[[xX]\]/.test(text) || progressTag === '100%';
     text = text.replace(/\[[xX\s]\]/g, '').trim();
 
-    return {
+    items.push({
       id: `item_${seed}_${idx}`,
       text,
       done,
+      ...(group ? { group } : {}),
       ...(progressTag ? { progressTag } : {}),
-    };
+    });
   });
 
   return { title, items };

@@ -30,49 +30,35 @@ You can start in 4 easy steps.
 
 A ToDo tells the team what you are doing today. Write it in the one box on the home page or on "Daily ToDo".
 
-1. Line 1 is the project name or a title. It is not a task. (The box always shows an example.)
-2. The next lines are tasks, one task per line, starting with "-".
-3. Want to show progress? Write "- 80%" at the end of the line.
-4. Already done? Add [x] or 100%.
-5. As you type, a "Preview" appears under the text. Check it, then tap "Post ToDo" (or press Ctrl+Enter).
+1. Write a "main point" on its own line, without "-". It can be the project name or one part of the project.
+2. Under it, list the small things to tick. Start each with "-", one per line.
+3. Do not need a main point? Write only "-" lines. Each line becomes a task to tick.
+4. One project with several parts? Add more main points. The tasks under each one are grouped together.
+5. Want to show progress? Write "- 80%" at the end of the line. Already done? Add [x] or 100%.
+6. As you type, a "Preview" appears under the text. Check it, then tap "Post ToDo" (or press Ctrl+Enter).
 
 **Example**
 
 ```
-Website project
+Final project
+Website
 - Design the login page - 80%
-- Write the user guide
 - [x] Set up the database
+Mobile app
+- Build the home screen
 ```
 
 **Wrong**
 
 ```
-- Design the login page
-- Write the guide
-```
-
-**Right**
-
-```
-Website project
-- Design the login page
-- Write the guide
-```
-
-Line 1 is read as the project name. A task written there is missing from the list.
-
-**Wrong**
-
-```
-Website project
+Website
 - Design 80%
 ```
 
 **Right**
 
 ```
-Website project
+Website
 - Design - 80%
 ```
 
@@ -81,14 +67,14 @@ The "-" must come before the number. "(80%)" works too.
 **Wrong**
 
 ```
-Website project
+Website
 - Design 80% and then continue
 ```
 
 **Right**
 
 ```
-Website project
+Website
 - Design and continue - 80%
 ```
 
@@ -97,14 +83,14 @@ The percent must be the very last thing on the line, or it is not read.
 **Wrong**
 
 ```
-Website project
+Website
 - Design, write, test
 ```
 
 **Right**
 
 ```
-Website project
+Website
 - Design
 - Write
 - Test
@@ -127,7 +113,7 @@ You can edit a ToDo you already posted. No need to delete it and write again.
 4. Want to tick or untick? Tap the task in the list.
 5. Ticked every task? The ToDo is marked done by itself. Or tap "Mark as done" so your leader can review it.
 
-> **Note:** After your leader approves, only the leader can edit.
+> **Note:** Once your leader approves, the ToDo is locked and nobody can edit it. A leader can tap "Reopen to edit" if a change is needed.
 
 > **Note:** Want to remove it completely? Tap the bin.
 
@@ -140,7 +126,7 @@ Your leader gives you tasks, and you tell the team how far you are.
 2. Tap "Start" when you begin.
 3. Drag the "Progress" bar or tap 25% 50% 75%. It saves by itself, no save button needed.
 4. Finished? Tap "Done" (100%) or "Done, send for review". It goes to your leader.
-5. Wait for approval. Once approved, the task is closed.
+5. Wait for approval. Once approved, the task is locked and its progress cannot change unless your leader reopens it.
 
 > **Note:** Red means overdue. Ask a question by leaving a comment on the task.
 
@@ -188,7 +174,7 @@ You may be a "viewer", who can only read. Or the leader's plan ended and the gro
 
 **The ToDo is approved but you want to change it?**
 
-Ask your leader. Only a leader can edit it now.
+Ask your leader. They must tap "Reopen to edit" first, then you can change it.
 
 **The ToDo percent is wrong?**
 

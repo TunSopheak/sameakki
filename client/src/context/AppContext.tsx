@@ -84,6 +84,7 @@ interface AppContextType {
   editDailyLog: (logId: string, rawContent: string) => Promise<void>;
   markDailyLogDone: (logId: string) => Promise<void>;
   approveDailyLog: (logId: string, feedback?: string) => Promise<void>;
+  reopenDailyLog: (logId: string) => Promise<void>;
   deleteDailyLog: (logId: string) => Promise<void>;
   addReactionToDailyLog: (logId: string, emoji: string) => Promise<void>;
 
@@ -105,6 +106,7 @@ interface AppContextType {
   rescheduleTask: (taskId: string, startDate: string, dueDate: string) => Promise<void>;
   reassignTask: (taskId: string, assignedTo: string) => Promise<void>;
   approveTask: (taskId: string, leaderFeedback?: string) => Promise<void>;
+  reopenTask: (taskId: string) => Promise<void>;
   deleteTask: (taskId: string) => Promise<void>;
   deleteTeamTask: (batchId: string) => Promise<void>;
 
@@ -351,6 +353,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     editDailyLog: (logId, rawContent) => run(() => api.editDailyLog(logId, rawContent)),
     markDailyLogDone: logId => quiet(run(() => api.completeDailyLog(logId))),
     approveDailyLog: (logId, feedback) => quiet(run(() => api.approveDailyLog(logId, feedback))),
+    reopenDailyLog: logId => quiet(run(() => api.reopenDailyLog(logId))),
     deleteDailyLog: logId => quiet(run(() => api.deleteDailyLog(logId))),
     addReactionToDailyLog: (logId, emoji) => quiet(run(() => api.toggleReaction(logId, emoji))),
 
@@ -361,6 +364,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     rescheduleTask: (taskId, startDate, dueDate) => quiet(run(() => api.scheduleTask(taskId, startDate, dueDate))),
     updateTaskDeadline: (taskId, dueDate, dueTime) => quiet(run(() => api.updateTaskDeadline(taskId, dueDate, dueTime))),
     approveTask: (taskId, feedback) => quiet(run(() => api.approveTask(taskId, feedback))),
+    reopenTask: taskId => quiet(run(() => api.reopenTask(taskId))),
     deleteTask: taskId => quiet(run(() => api.deleteTask(taskId))),
     deleteTeamTask: batchId => quiet(run(() => api.deleteTeamTask(resolvedGroupId, batchId))),
 

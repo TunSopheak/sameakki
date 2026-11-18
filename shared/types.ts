@@ -42,6 +42,7 @@ export interface DailyTodoItem {
   text: string;
   done: boolean;
   progressTag?: string; // e.g. '80%'
+  group?: string; // heading the task was written under
 }
 
 export interface DailyLogReaction {

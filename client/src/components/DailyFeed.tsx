@@ -20,6 +20,7 @@ export const DailyFeed: React.FC = () => {
     toggleDailyTodoItem,
     markDailyLogDone,
     approveDailyLog,
+    reopenDailyLog,
     deleteDailyLog,
     addReactionToDailyLog,
     t,
@@ -128,8 +129,8 @@ export const DailyFeed: React.FC = () => {
             };
 
             const isAuthor = log.userId === currentUser.id;
-            // After approval only a leader can still change the checklist
-            const canEditChecklist = isTeamLead || (isAuthor && canContribute && log.status !== 'approved');
+            // An approved update is locked for everyone until a leader reopens it
+            const canEditChecklist = log.status !== 'approved' && (isTeamLead || (isAuthor && canContribute));
             const canEditText = canEditChecklist && editingId !== log.id;
             const calcPercent = dailyLogPercent(log.items);
 
@@ -219,9 +220,12 @@ export const DailyFeed: React.FC = () => {
                 <div className="py-4 space-y-1.5">
                   {log.items.length > 0 ? (
                     <div className="space-y-1.5">
-                      {log.items.map(item => (
+                      {log.items.map((item, i) => (
+                        <React.Fragment key={item.id}>
+                        {item.group && item.group !== log.items[i - 1]?.group && (
+                          <p className="px-2 pt-2 text-[11px] font-bold uppercase tracking-wide text-neutral-500">{item.group}</p>
+                        )}
                         <div
-                          key={item.id}
                           onClick={() => canEditChecklist && toggleDailyTodoItem(log.id, item.id)}
                           className={`flex items-start gap-2.5 p-2 rounded-lg transition-colors text-xs ${
                             canEditChecklist ? 'cursor-pointer' : 'cursor-default'
@@ -255,6 +259,7 @@ export const DailyFeed: React.FC = () => {
                             )}
                           </div>
                         </div>
+                        </React.Fragment>
                       ))}
                     </div>
                   ) : (
@@ -323,6 +328,17 @@ export const DailyFeed: React.FC = () => {
                       >
                         <Icons.confirm className="size-3.5" />
                         <span>{t.btnMarkDone}</span>
+                      </button>
+                    )}
+
+                    {isTeamLead && log.status === 'approved' && (
+                      <button
+                        onClick={() => reopenDailyLog(log.id)}
+                        title={t.approvedLockedHint}
+                        className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-white hover:bg-neutral-100 text-black border border-neutral-200 rounded-lg font-semibold text-xs transition-colors cursor-pointer"
+                      >
+                        <Icons.edit className="size-3.5" />
+                        <span>{t.btnReopen}</span>
                       </button>
                     )}
 

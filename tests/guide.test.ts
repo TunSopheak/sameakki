@@ -18,7 +18,8 @@ for (const language of ['km', 'en'] as const) {
     assert.ok(title.length > 0);
     assert.equal(items.length, 3);
     assert.equal(items[0].progressTag, '80%');
-    assert.equal(items[2].done, true, '[x] marks a task as done');
+    assert.equal(items[1].done, true, '[x] marks a task as done');
+    assert.notEqual(items[2].group, items[0].group, 'a second main point starts a new group');
 
     for (const mistake of daily.mistakes!) {
       assert.ok(understood(mistake.right) > understood(mistake.wrong), `"${mistake.right.split('\n')[0]}" is read better than "${mistake.wrong.split('\n')[0]}"`);

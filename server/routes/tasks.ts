@@ -222,9 +222,7 @@ tasksRouter.patch('/tasks/:taskId/status', async (req, res) => {
   assertWritable(access);
   const isAssignee = task.assigned_to === user.id && access.canContribute;
   assert(isAssignee || access.canLead, 'Only the assignee or a team lead can update this task.');
-  if (task.status === 'approved' && !access.canLead) {
-    throw badRequest('This task has already been approved.');
-  }
+  if (task.status === 'approved') throw badRequest('This task is approved and locked. A leader can reopen it to make changes.');
   const input = statusSchema.parse(req.body);
 
   await db.transaction(tx => applyStatus(tx, user, task, input.status, { memberNotes: input.memberNotes }));
@@ -320,6 +318,7 @@ tasksRouter.patch('/tasks/:taskId/deadline', async (req, res) => {
   const { task, access } = await loadTask(db, user, req.params.taskId);
   assertWritable(access);
   assert(access.canLead, 'Only team leads can change task deadlines.');
+  if (task.status === 'approved') throw badRequest('An approved task cannot be rescheduled. Reopen it first.');
   const input = deadlineSchema.parse(req.body);
 
   const startDate = task.start_date <= input.dueDate ? task.start_date : input.dueDate;
@@ -338,6 +337,7 @@ tasksRouter.patch('/tasks/:taskId/schedule', async (req, res) => {
   const { task, access } = await loadTask(db, user, req.params.taskId);
   assertWritable(access);
   assert(access.canLead, 'Only team leads can change the schedule.');
+  if (task.status === 'approved') throw badRequest('An approved task cannot be rescheduled. Reopen it first.');
   const input = scheduleSchema.parse(req.body);
 
   await db.transaction(tx => applySchedule(tx, user, task, input));
@@ -382,6 +382,29 @@ tasksRouter.post('/tasks/:taskId/approve', async (req, res) => {
         params: { title: task.title, feedback: input.feedback },
       });
     }
+  });
+
+  res.status(204).end();
+});
+
+tasksRouter.post('/tasks/:taskId/reopen', async (req, res) => {
+  const user = req.user!;
+  const db = await getDb();
+  const { task, access } = await loadTask(db, user, req.params.taskId);
+  assertWritable(access);
+  assert(access.canLead, 'Only team leads can reopen tasks.');
+  if (task.status !== 'approved') throw badRequest('Only an approved task can be reopened.');
+
+  await db.transaction(async tx => {
+    await tx.query(`UPDATE tasks SET status = 'ready_for_review', approved_at = NULL, approved_by = NULL WHERE id = $1`, [task.id]);
+    await logActivity(tx, user, {
+      groupId: task.group_id,
+      type: 'task_completed',
+      targetId: task.id,
+      targetTitle: task.title,
+      description: `reopened task "${task.title}" for changes`,
+      descriptionKm: `បានបើកកិច្ចការ "${task.title}" ឡើងវិញដើម្បីកែ`,
+    });
   });
 
   res.status(204).end();

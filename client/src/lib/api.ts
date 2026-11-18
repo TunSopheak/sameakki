@@ -116,6 +116,7 @@ export const api = {
   updateTaskDeadline: (taskId: string, dueDate: string, dueTime?: string) =>
     patch(`/tasks/${taskId}/deadline`, { dueDate, dueTime }),
   approveTask: (taskId: string, feedback?: string) => post(`/tasks/${taskId}/approve`, { feedback }),
+  reopenTask: (taskId: string) => post(`/tasks/${taskId}/reopen`),
   deleteTask: (taskId: string) => del(`/tasks/${taskId}`),
   deleteTeamTask: (groupId: string, batchId: string) => del(`/groups/${groupId}/task-batches/${batchId}`),
 
@@ -125,6 +126,7 @@ export const api = {
   toggleDailyLogItem: (logId: string, itemId: string) => post(`/daily-logs/${logId}/items/${itemId}/toggle`),
   completeDailyLog: (logId: string) => post(`/daily-logs/${logId}/complete`),
   approveDailyLog: (logId: string, feedback?: string) => post(`/daily-logs/${logId}/approve`, { feedback }),
+  reopenDailyLog: (logId: string) => post(`/daily-logs/${logId}/reopen`),
   deleteDailyLog: (logId: string) => del(`/daily-logs/${logId}`),
   toggleReaction: (logId: string, emoji: string) => post(`/daily-logs/${logId}/reactions`, { emoji }),
 };

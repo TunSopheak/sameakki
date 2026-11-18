@@ -391,6 +391,13 @@ test('a task can be given to someone else, and an archived group is view-only', 
   await m2.patch(`/api/tasks/${task}/status`, { status: 'ready_for_review' });
   await lead.post(`/api/tasks/${task}/approve`, {});
   assert.equal((await lead.patch(`/api/tasks/${task}/assignee`, { assignedTo: ids.m1 })).status, 400);
+  assert.equal((await lead.patch(`/api/tasks/${task}/status`, { status: 'in_progress' })).status, 400, 'approved means locked');
+  assert.equal((await m2.post(`/api/tasks/${task}/reopen`)).status, 403, 'only a lead can reopen');
+  assert.equal((await lead.post(`/api/tasks/${task}/reopen`)).status, 204);
+  assert.equal((await lead.post(`/api/tasks/${task}/reopen`)).status, 400, 'only an approved task can be reopened');
+  assert.equal((await lead.patch(`/api/tasks/${task}/status`, { status: 'in_progress' })).status, 204, 'editable again after reopening');
+  await m2.patch(`/api/tasks/${task}/status`, { status: 'ready_for_review' });
+  await lead.post(`/api/tasks/${task}/approve`, {});
 
   // Archiving makes the group read-only for everyone, and opening it again undoes that
   assert.equal((await lead.patch(`/api/groups/${ids.g1}`, { status: 'archived' })).status, 204);
@@ -775,7 +782,7 @@ test('the old cookie name still signs people in, and logging out clears both', a
   assert.equal(withNew.status, 200);
 });
 
-test('a posted ToDo can be edited by its author or a lead, until it is approved', async () => {
+test('a posted ToDo can be edited by its author or a lead, until it is approved and locked', async () => {
   const { lead, m1 } = sessions;
   const url = (id: string) => `/api/daily-logs/${id}`;
   const post = await m1.post(`/api/groups/${ids.g1}/daily-logs`, { rawContent: 'Login\n- Wireframe\n- Colors' });
@@ -796,6 +803,11 @@ test('a posted ToDo can be edited by its author or a lead, until it is approved'
 
   await lead.post(`${url(id)}/approve`, { note: 'ok' });
   assert.equal((await m1.patch(url(id), { rawContent: 'Changed' })).status, 400, 'the author cannot edit after approval');
-  assert.equal((await lead.patch(url(id), { rawContent: 'Changed\n- one' })).status, 204);
-  assert.equal((await read()).status, 'approved');
+  assert.equal((await lead.patch(url(id), { rawContent: 'Changed\n- one' })).status, 400, 'approved means locked, even for the lead');
+  assert.equal((await m1.post(`${url(id)}/reopen`)).status, 403, 'only a lead can reopen');
+  assert.equal((await lead.post(`${url(id)}/reopen`)).status, 204);
+  assert.equal((await read()).status, 'completed');
+  assert.equal((await lead.post(`${url(id)}/reopen`)).status, 400, 'only an approved update can be reopened');
+  assert.equal((await m1.patch(url(id), { rawContent: 'Changed\n- one' })).status, 204, 'editable again after reopening');
+  assert.equal((await read()).status, 'in_progress');
 });

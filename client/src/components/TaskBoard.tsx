@@ -35,6 +35,7 @@ export const TaskBoard: React.FC<TaskBoardProps> = ({
     deleteTeamTask,
     updateTaskDeadline,
     approveTask,
+    reopenTask,
     reassignTask,
     deleteTask,
     t,
@@ -424,7 +425,7 @@ export const TaskBoard: React.FC<TaskBoardProps> = ({
                     >
                       {task.title}
                     </h3>
-                    <p className="text-xs text-neutral-600 mt-1 line-clamp-3 leading-relaxed">
+                    <p className="text-xs text-neutral-600 mt-1 line-clamp-3 leading-relaxed whitespace-pre-line break-words">
                       {taskDescription(task.description, t)}
                     </p>
                   </div>
@@ -490,7 +491,7 @@ export const TaskBoard: React.FC<TaskBoardProps> = ({
                     )}
 
                     <div className="ml-auto text-right">
-                      <EditableDate value={task.dueDate} canEdit={isTeamLead} onSave={date => updateTaskDeadline(task.id, date)} size="sm" className="justify-end">
+                      <EditableDate value={task.dueDate} canEdit={isTeamLead && task.status !== 'approved'} onSave={date => updateTaskDeadline(task.id, date)} size="sm" className="justify-end">
                         <Icons.date className="size-3.5 text-neutral-500" />
                         <span>
                           <span className="block whitespace-nowrap font-mono-numbers font-medium text-black">
@@ -547,6 +548,17 @@ export const TaskBoard: React.FC<TaskBoardProps> = ({
                         >
                           <Icons.confirm className="size-3.5" />
                           <span>{t.btnMarkDone}</span>
+                        </button>
+                      )}
+
+                      {isTeamLead && task.status === 'approved' && (
+                        <button
+                          onClick={() => reopenTask(task.id)}
+                          title={t.approvedLockedHint}
+                          className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-black bg-white hover:bg-neutral-100 border border-neutral-200 rounded-lg transition-colors cursor-pointer"
+                        >
+                          <Icons.edit className="size-3.5" />
+                          <span>{t.btnReopen}</span>
                         </button>
                       )}
 

@@ -27,8 +27,11 @@ export const DailyPreview: React.FC<{ text: string }> = ({ text }) => {
         <p className="text-xs text-neutral-500">{t.dailyPreviewNoTasks}</p>
       ) : (
         <ul className="space-y-1">
-          {items.map(item => (
-            <li key={item.id} className="flex items-start gap-2 text-sm">
+          {items.map((item, i) => (
+            <li key={item.id} className={`flex flex-wrap items-start gap-2 text-sm ${item.group && item.group !== items[i - 1]?.group ? 'mt-2' : ''}`}>
+              {item.group && item.group !== items[i - 1]?.group && (
+                <span className="basis-full text-[11px] font-bold uppercase tracking-wide text-neutral-500">{item.group}</span>
+              )}
               {item.done ? <Icons.daily className="mt-0.5 size-4 shrink-0 text-brand-ink" /> : <Icons.todoOpen className="mt-0.5 size-4 shrink-0 text-neutral-500" />}
               <span className={`min-w-0 flex-1 break-words ${item.done ? 'text-neutral-500 line-through' : 'text-black'}`}>{item.text}</span>
               {item.progressTag && <span className="shrink-0 rounded-md bg-neutral-100 px-1.5 py-0.5 text-[11px] font-bold text-black font-mono-numbers">{item.progressTag}</span>}
