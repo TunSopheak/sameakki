@@ -114,17 +114,52 @@ export function useLandingPageClass() {
   }, []);
 }
 
-/** Sets the browser tab title and the search description in the visitor's language, and puts them back on leaving. */
+/** Sets the tab title, search and share texts, page language and FAQ data in the visitor's language, and puts them back on leaving. */
 export function useLandingMeta() {
-  const { copy } = useLanding();
+  const { copy, language } = useLanding();
   useEffect(() => {
-    const description = document.querySelector<HTMLMetaElement>('meta[name="description"]');
-    const before = { title: document.title, description: description?.content ?? '' };
+    const root = document.documentElement;
+    const meta = (selector: string) => document.querySelector<HTMLMetaElement>(selector);
+    const targets = [
+      { el: meta('meta[name="description"]'), value: copy.meta.description },
+      { el: meta('meta[property="og:title"]'), value: copy.meta.title },
+      { el: meta('meta[property="og:description"]'), value: copy.meta.description },
+      { el: meta('meta[name="twitter:title"]'), value: copy.meta.title },
+      { el: meta('meta[name="twitter:description"]'), value: copy.meta.description },
+      { el: meta('meta[property="og:locale"]'), value: language === 'km' ? 'km_KH' : 'en_US' },
+    ];
+    const before = targets.map(({ el }) => el?.content ?? '');
+    const beforeTitle = document.title;
+    const beforeLang = root.lang;
+
     document.title = copy.meta.title;
-    if (description) description.content = copy.meta.description;
+    root.lang = language;
+    targets.forEach(({ el, value }) => {
+      if (el) el.content = value;
+    });
+
+    // The questions on the page, in a form search engines read
+    const faq = document.createElement('script');
+    faq.type = 'application/ld+json';
+    faq.textContent = JSON.stringify({
+      '@context': 'https://schema.org',
+      '@type': 'FAQPage',
+      inLanguage: language,
+      mainEntity: copy.faq.items.map(item => ({
+        '@type': 'Question',
+        name: item.q,
+        acceptedAnswer: { '@type': 'Answer', text: item.a },
+      })),
+    });
+    document.head.appendChild(faq);
+
     return () => {
-      document.title = before.title;
-      if (description) description.content = before.description;
+      document.title = beforeTitle;
+      root.lang = beforeLang;
+      targets.forEach(({ el }, n) => {
+        if (el) el.content = before[n];
+      });
+      faq.remove();
     };
-  }, [copy]);
+  }, [copy, language]);
 }

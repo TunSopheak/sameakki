@@ -159,8 +159,8 @@ export const landing: Record<'km' | 'en', LandingCopy> = {
       sponsorsTitle: 'ដៃគូឧបត្ថម្ភរបស់យើង',
     },
     meta: {
-      title: 'Sameakki សាមគ្គី - ប្រព័ន្ធគ្រប់គ្រងក្រុម និងកិច្ចការសម្រាប់និស្សិត',
-      description: 'សាមគ្គី ជួយប្រធានក្រុមនិស្សិតតាមដានកិច្ចការ ថ្ងៃកំណត់ និងវឌ្ឍនភាពរបស់សមាជិកនៅមួយកន្លែង។ សាកល្បងមើលដោយមិនចាំបាច់ចុះឈ្មោះ។',
+      title: 'សាមគ្គី Sameakki - គ្រប់គ្រងកិច្ចការក្រុម និង ToDo ប្រចាំថ្ងៃ សម្រាប់និស្សិត',
+      description: 'សាមគ្គី ជួយក្រុមនិស្សិតចាត់កិច្ចការ កំណត់ថ្ងៃកំណត់ សរសេរ ToDo ប្រចាំថ្ងៃ និងតាមដានវឌ្ឍនភាពសមាជិកនៅមួយកន្លែង។ សាកល្បងមើលដោយមិនចាំបាច់ចុះឈ្មោះ។',
     },
     faq: {
       title: 'សំណួរញឹកញាប់',
@@ -309,8 +309,8 @@ export const landing: Record<'km' | 'en', LandingCopy> = {
       sponsorsTitle: 'Our sponsors',
     },
     meta: {
-      title: 'Sameakki - Team and task manager for students',
-      description: 'Sameakki helps student team leaders follow tasks, deadlines and every member’s progress in one place. Try it without signing up.',
+      title: 'Sameakki សាមគ្គី – Team Task Manager & Daily ToDo for Students',
+      description: 'Sameakki helps student teams assign tasks, set deadlines, post a daily ToDo and track every member’s progress in one place. Try it without signing up.',
     },
     faq: {
       title: 'Frequently asked questions',

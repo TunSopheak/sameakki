@@ -1,0 +1,12 @@
+{
+  "name": "Sameakki សាមគ្គី",
+  "short_name": "Sameakki",
+  "description": "Team task manager and daily ToDo for students",
+  "lang": "km",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#840015",
+  "icons": [{ "src": "/favicon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" }]
+}
