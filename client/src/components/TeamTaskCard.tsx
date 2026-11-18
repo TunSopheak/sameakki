@@ -1,3 +1,4 @@
+import { ExpandableText } from './ExpandableText';
 import React, { useState } from 'react';
 import { useApp } from '../context/AppContext';
 import { moduleName, taskDescription } from '../lib/defaults';
@@ -64,7 +65,7 @@ export const TeamTaskCard: React.FC<TeamTaskCardProps> = ({ tasks, users, priori
         </div>
 
         <h3 className="text-base font-bold tracking-tight text-black">{first.title}</h3>
-        <p className="line-clamp-3 whitespace-pre-line break-words text-xs leading-relaxed text-neutral-600">{taskDescription(first.description, t)}</p>
+        <ExpandableText text={taskDescription(first.description, t)} className="text-xs leading-relaxed text-neutral-600" />
       </div>
 
       <div>

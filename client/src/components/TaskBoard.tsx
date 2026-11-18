@@ -1,3 +1,4 @@
+import { ExpandableText } from './ExpandableText';
 import { moduleName, taskDescription } from '../lib/defaults';
 import React, { useState } from 'react';
 import { useApp } from '../context/AppContext';
@@ -425,9 +426,7 @@ export const TaskBoard: React.FC<TaskBoardProps> = ({
                     >
                       {task.title}
                     </h3>
-                    <p className="text-xs text-neutral-600 mt-1 line-clamp-3 leading-relaxed whitespace-pre-line break-words">
-                      {taskDescription(task.description, t)}
-                    </p>
+                    <ExpandableText text={taskDescription(task.description, t)} className="mt-1 text-xs leading-relaxed text-neutral-600" />
                   </div>
                 </div>
 
