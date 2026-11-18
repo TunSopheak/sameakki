@@ -130,6 +130,8 @@ Your leader gives you tasks, and you tell the team how far you are.
 
 > **Note:** Red means overdue. Ask a question by leaving a comment on the task.
 
+> **Note:** Long description? Tap "Show more" under the task to read all of it (for example, a list of things to install).
+
 <a id="team"></a>
 ## 5. Team tasks (for everyone)
 
@@ -154,7 +156,7 @@ One task that every member must do, for example "Install the software".
 1. Create a group, then add members ("Add member"). The temporary password is shown only once, so copy it now.
 2. Assign work with the "New task" button. Pick "One person", "Choose" or "Everyone".
 3. Change a deadline by tapping the date. Change the person with "Reassign".
-4. Review and approve ToDos and tasks marked "Waiting for review".
+4. Review and approve ToDos and tasks marked "Waiting for review". Approved work is locked. To change it, tap "Reopen to edit".
 5. Open "Report" and tap "Print / PDF" to get a summary for your lecturer.
 
 <a id="help"></a>

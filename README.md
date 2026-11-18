@@ -4,7 +4,26 @@ Team and assignment tracker in Khmer and English. Leaders create groups, assign 
 
 **Stack:** React 19, Vite, Tailwind 4 · Node.js, Express 5, TypeScript · PostgreSQL
 
-**Features:** Khmer and English, light and dark mode (☾/☀ button in the header; remembers your choice and follows the system setting at first), avatars, Super Admin page with soft delete and restore, mobile tab bar.
+**Features:** Khmer and English (flag menu in the header), light and dark mode (☾/☀ button in the header; remembers your choice and follows the system setting at first), avatars, Super Admin page with soft delete and restore, mobile tab bar.
+
+## How it works
+
+**Daily ToDo.** Members write one text box. A line without `-` is a main point, and a line starting with `-` is a task to tick. Main points are optional.
+
+```
+Final project          <- first main point = the title
+Website                <- more main points group the tasks below them
+- Design the login page - 80%
+- [x] Set up the database
+Mobile app
+- Build the home screen
+```
+
+`- 80%` or `(80%)` at the end of a line sets progress, and `[x]` or `100%` marks it done. A list of only `-` lines also works. The rules live in `shared/dailyLogParser.ts`, and the preview under the box uses the same code.
+
+**Tasks.** A leader assigns a task to one person, some people or everyone. The assignee moves the progress bar (0% to do, 100% sends it for review). Descriptions keep their line breaks, and long ones have a "Show more" button.
+
+**Approval.** A leader approves a ToDo or task that is waiting for review. Approved work is locked for everyone, the leader too. A leader taps **Reopen to edit** to change it, and it goes back to review.
 
 ## Run locally
 
@@ -82,8 +101,8 @@ The database is `localhost:5433` (user, password and database are all `sameakki`
 | | Super Admin | Team Lead | Member | Viewer |
 | --- | :-: | :-: | :-: | :-: |
 | Create and delete groups, manage members | ✅ | | | |
-| Assign and approve tasks and standups | ✅ | ✅ | | |
-| Post standups, update own tasks | ✅ | ✅ | ✅ | |
+| Assign, approve and reopen tasks and daily ToDos | ✅ | ✅ | | |
+| Post daily ToDos, update own tasks | ✅ | ✅ | ✅ | |
 | View the group | ✅ | ✅ | ✅ | ✅ |
 
 A Team Lead's powers apply only in groups they belong to. Permissions are enforced by the API.
