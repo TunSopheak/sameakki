@@ -89,6 +89,73 @@ async function applySchedule(
   }
 }
 
+/** Creates the tasks of one input (one per person) inside a transaction. Returns their ids. */
+async function createTasksIn(tx: Queryable, user: User, groupId: string, input: z.infer<typeof createTaskSchema>): Promise<string[]> {
+  let assignees: { id: string; name: string }[];
+  if (input.assignToAll) {
+    // Viewers cannot do tasks
+    const { rows } = await tx.query(
+      `SELECT u.id, u.name FROM group_members m JOIN users u ON u.id = m.user_id
+        WHERE m.group_id = $1 AND u.role <> 'viewer' ORDER BY u.name`,
+      [groupId]
+    );
+    if (rows.length === 0) throw badRequest('This group has no members to assign.');
+    assignees = rows;
+  } else {
+    const wanted = [...new Set(input.assigneeIds ?? [input.assignedTo!])];
+    assignees = [];
+    for (const userId of wanted) {
+      const assignee = await loadAssignee(tx, groupId, userId);
+      assignees.push({ id: userId, name: assignee.name });
+    }
+  }
+  const batchId = assignees.length > 1 ? randomUUID() : null;
+
+  const created: string[] = [];
+  for (const person of assignees) {
+    const { rows } = await tx.query(
+      `INSERT INTO tasks (group_id, title, module, description, assigned_to, assigned_by, priority, due_date, due_time, start_date, batch_id)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8::date, $9, LEAST(COALESCE($10::date, (now() AT TIME ZONE $11)::date), $8::date), $12)
+       RETURNING id`,
+      [
+        groupId,
+        input.title,
+        input.module || 'General',
+        input.description || '',
+        person.id,
+        user.id,
+        input.priority,
+        input.dueDate,
+        input.dueTime || '23:59',
+        input.startDate ?? null,
+        TIME_ZONE,
+        batchId,
+      ]
+    );
+    await logActivity(tx, user, {
+      groupId: groupId,
+      type: 'task_assigned',
+      targetId: rows[0].id,
+      targetTitle: input.title,
+      description: `assigned task "${input.title}" to ${person.name} (Due: ${input.dueDate})`,
+      descriptionKm: `បានចាត់តាំងកិច្ចការ "${input.title}" ជូន ${person.name} (ថ្ងៃកំណត់៖ ${input.dueDate})`,
+      metadata: { newValue: input.dueDate },
+    });
+    if (person.id !== user.id) {
+      await notify(tx, {
+        userId: person.id,
+        type: 'task_assigned',
+        groupId: groupId,
+        targetId: rows[0].id,
+        actorName: user.name,
+        params: { title: input.title, dueDate: input.dueDate },
+      });
+    }
+    created.push(rows[0].id);
+  }
+  return created;
+}
+
 tasksRouter.post('/groups/:groupId/tasks', async (req, res) => {
   const user = req.user!;
   const db = await getDb();
@@ -97,73 +164,29 @@ tasksRouter.post('/groups/:groupId/tasks', async (req, res) => {
   assert(access.canLead, 'Only team leads can assign tasks.');
   const input = createTaskSchema.parse(req.body);
 
-  const ids = await db.transaction(async tx => {
-    let assignees: { id: string; name: string }[];
-    if (input.assignToAll) {
-      // Viewers cannot do tasks
-      const { rows } = await tx.query(
-        `SELECT u.id, u.name FROM group_members m JOIN users u ON u.id = m.user_id
-          WHERE m.group_id = $1 AND u.role <> 'viewer' ORDER BY u.name`,
-        [access.groupId]
-      );
-      if (rows.length === 0) throw badRequest('This group has no members to assign.');
-      assignees = rows;
-    } else {
-      const wanted = [...new Set(input.assigneeIds ?? [input.assignedTo!])];
-      assignees = [];
-      for (const userId of wanted) {
-        const assignee = await loadAssignee(tx, access.groupId, userId);
-        assignees.push({ id: userId, name: assignee.name });
-      }
-    }
-    const batchId = assignees.length > 1 ? randomUUID() : null;
-
-    const created: string[] = [];
-    for (const person of assignees) {
-      const { rows } = await tx.query(
-        `INSERT INTO tasks (group_id, title, module, description, assigned_to, assigned_by, priority, due_date, due_time, start_date, batch_id)
-         VALUES ($1, $2, $3, $4, $5, $6, $7, $8::date, $9, LEAST(COALESCE($10::date, (now() AT TIME ZONE $11)::date), $8::date), $12)
-         RETURNING id`,
-        [
-          access.groupId,
-          input.title,
-          input.module || 'General',
-          input.description || '',
-          person.id,
-          user.id,
-          input.priority,
-          input.dueDate,
-          input.dueTime || '23:59',
-          input.startDate ?? null,
-          TIME_ZONE,
-          batchId,
-        ]
-      );
-      await logActivity(tx, user, {
-        groupId: access.groupId,
-        type: 'task_assigned',
-        targetId: rows[0].id,
-        targetTitle: input.title,
-        description: `assigned task "${input.title}" to ${person.name} (Due: ${input.dueDate})`,
-        descriptionKm: `បានចាត់តាំងកិច្ចការ "${input.title}" ជូន ${person.name} (ថ្ងៃកំណត់៖ ${input.dueDate})`,
-        metadata: { newValue: input.dueDate },
-      });
-      if (person.id !== user.id) {
-        await notify(tx, {
-          userId: person.id,
-          type: 'task_assigned',
-          groupId: access.groupId,
-          targetId: rows[0].id,
-          actorName: user.name,
-          params: { title: input.title, dueDate: input.dueDate },
-        });
-      }
-      created.push(rows[0].id);
-    }
-    return created;
-  });
+  const ids = await db.transaction(tx => createTasksIn(tx, user, access.groupId, input));
 
   res.status(201).json({ id: ids[0], ids });
+});
+
+const importSchema = z.object({ tasks: z.array(createTaskSchema).min(1).max(200) });
+
+// Many tasks at once (from a spreadsheet). All are created, or none.
+tasksRouter.post('/groups/:groupId/tasks/import', async (req, res) => {
+  const user = req.user!;
+  const db = await getDb();
+  const access = await getGroupAccess(db, user, req.params.groupId);
+  assertWritable(access);
+  assert(access.canLead, 'Only team leads can assign tasks.');
+  const { tasks } = importSchema.parse(req.body);
+
+  const ids = await db.transaction(async tx => {
+    const all: string[] = [];
+    for (const input of tasks) all.push(...(await createTasksIn(tx, user, access.groupId, input)));
+    return all;
+  });
+
+  res.status(201).json({ count: tasks.length, ids });
 });
 
 /** Single place that sets status and progress, and notifies the leads. */

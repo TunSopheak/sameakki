@@ -811,3 +811,26 @@ test('a posted ToDo can be edited by its author or a lead, until it is approved 
   assert.equal((await m1.patch(url(id), { rawContent: 'Changed\n- one' })).status, 204, 'editable again after reopening');
   assert.equal((await read()).status, 'in_progress');
 });
+
+test('importing tasks: leads only, and all rows are created or none', async () => {
+  const { lead, m1, m2 } = sessions;
+  const url = `/api/groups/${ids.g1}/tasks/import`;
+  const rows = [
+    { title: 'Import A', module: 'Team', assignToAll: true, dueDate: day(8) },
+    { title: 'Import B', assigneeIds: [ids.m1, ids.m2], dueDate: day(9), priority: 'high' },
+    { title: 'Import C', assignedTo: ids.m1, dueDate: day(10), dueTime: '18:00' },
+  ];
+  const count = async () => (await lead.get('/api/bootstrap')).body.tasks.filter((x: Json) => x.title.startsWith('Import ')).length;
+
+  assert.equal((await m1.post(url, { tasks: rows })).status, 403, 'members cannot import');
+  assert.equal((await lead.post(url, { tasks: [] })).status, 400, 'at least one task');
+  assert.equal((await lead.post(url, { tasks: [...rows, { title: 'Bad', assigneeIds: [ids.viewer], dueDate: day(8) }] })).status, 400);
+  assert.equal(await count(), 0, 'one bad row creates nothing');
+
+  const ok = await lead.post(url, { tasks: rows });
+  assert.equal(ok.status, 201);
+  assert.equal(ok.body.count, 3);
+  assert.ok((await count()) >= 3, 'Everyone makes one copy per member, so there are more than 3 tasks');
+  const told = (await m2.get('/api/notifications')).body.items.filter((i: Json) => i.type === 'task_assigned' && String(i.params.title).startsWith('Import '));
+  assert.ok(told.length >= 2, 'the people who got tasks are told');
+});

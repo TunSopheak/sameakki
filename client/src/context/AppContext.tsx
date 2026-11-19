@@ -1,3 +1,4 @@
+import type { ImportedTask } from '@shared/taskImport';
 import React, { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react';
 import type { ActivityEvent, BootstrapData, DailyLog, Group, Role, Task, TaskStatus, User } from '../types';
 import { translations, Language } from '../locales/translations';
@@ -104,6 +105,7 @@ interface AppContextType {
   updateTaskProgress: (taskId: string, progress: number) => Promise<void>;
   updateTaskDeadline: (taskId: string, newDueDate: string, newDueTime?: string) => Promise<void>;
   rescheduleTask: (taskId: string, startDate: string, dueDate: string) => Promise<void>;
+  importTasks: (tasks: ImportedTask[]) => Promise<void>;
   reassignTask: (taskId: string, assignedTo: string) => Promise<void>;
   approveTask: (taskId: string, leaderFeedback?: string) => Promise<void>;
   reopenTask: (taskId: string) => Promise<void>;
@@ -360,6 +362,9 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     assignTask: input => run(() => api.createTask(resolvedGroupId, input)),
     updateTaskProgress: (taskId, progress) => quiet(run(() => api.updateTaskProgress(taskId, progress))),
     updateTaskStatus: (taskId, status, notes) => quiet(run(() => api.updateTaskStatus(taskId, status, notes))),
+    importTasks: async tasks => {
+      await run(() => api.importTasks(resolvedGroupId, tasks), t.importDone.replace('{n}', String(tasks.length)));
+    },
     reassignTask: (taskId, assignedTo) => quiet(run(() => api.reassignTask(taskId, assignedTo))),
     rescheduleTask: (taskId, startDate, dueDate) => quiet(run(() => api.scheduleTask(taskId, startDate, dueDate))),
     updateTaskDeadline: (taskId, dueDate, dueTime) => quiet(run(() => api.updateTaskDeadline(taskId, dueDate, dueTime))),

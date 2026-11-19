@@ -136,6 +136,7 @@ export const guide: Record<'km' | 'en', GuideCopy> = {
         steps: [
           'បង្កើតក្រុម រួចបន្ថែមសមាជិក ("បន្ថែមសមាជិក")។ ពាក្យសម្ងាត់បណ្តោះអាសន្នបង្ហាញតែម្តង ដូច្នេះចម្លងវាភ្លាម។',
           'ចាត់កិច្ចការ៖ ប៊ូតុង "កំណត់កិច្ចការថ្មី"។ ជ្រើសម្នាក់ ជ្រើសរើស ឬទាំងអស់គ្នា។',
+          'មានកិច្ចការច្រើន? ចុច "នាំចូលកិច្ចការ" នៅទំព័រ "កិច្ចការ" រួចចម្លងតារាងពី Google Sheets ឬ Excel មកដាក់ (ឬជ្រើសឯកសារ CSV)។ ១ ជួរដេក = ១ កិច្ចការ។ ត្រូវមានជួរឈរ Task title និង Due date។ ជួរផ្សេង (Module, Assign to, Members, Priority, Start date, Due time, Details) ជាជម្រើស។ ប្រព័ន្ធបង្ហាញលទ្ធផលមុននាំចូល ហើយរំលងជួរដែលមានបញ្ហា។ ចុច "ទាញយកគំរូ" ដើម្បីបានទម្រង់ត្រូវ។',
           'ប្តូរថ្ងៃកំណត់ដោយចុចលើថ្ងៃ។ ប្តូរអ្នកទទួលដោយចុច "ប្តូរអ្នកទទួល"។',
           'ពិនិត្យ និងអនុម័ត ToDo និងកិច្ចការដែលមានស្លាក "រង់ចាំត្រួតពិនិត្យ"។ ពេលអនុម័តរួច វាត្រូវចាក់សោ។ ចង់កែ? ចុច "បើកឡើងវិញដើម្បីកែ"។',
           'បើកផ្ទាំង "របាយការណ៍" រួចចុច "បោះពុម្ព / PDF" ដើម្បីទទួលបានសេចក្តីសង្ខេបបង្ហាញគ្រូ។',
@@ -261,6 +262,7 @@ export const guide: Record<'km' | 'en', GuideCopy> = {
         steps: [
           'Create a group, then add members ("Add member"). The temporary password is shown only once, so copy it now.',
           'Assign work with the "New task" button. Pick "One person", "Choose" or "Everyone".',
+          'Many tasks? Tap "Import tasks" on the "Tasks" page, then paste a table from Google Sheets or Excel (or choose a CSV file). One row is one task. You need the columns Task title and Due date. Other columns (Module, Assign to, Members, Priority, Start date, Due time, Details) are optional. The app shows a preview first and skips rows with problems. Tap "Download template" to get the right layout.',
           'Change a deadline by tapping the date. Change the person with "Reassign".',
           'Review and approve ToDos and tasks marked "Waiting for review". Approved work is locked. To change it, tap "Reopen to edit".',
           'Open "Report" and tap "Print / PDF" to get a summary for your lecturer.',

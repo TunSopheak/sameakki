@@ -155,9 +155,10 @@ One task that every member must do, for example "Install the software".
 
 1. Create a group, then add members ("Add member"). The temporary password is shown only once, so copy it now.
 2. Assign work with the "New task" button. Pick "One person", "Choose" or "Everyone".
-3. Change a deadline by tapping the date. Change the person with "Reassign".
-4. Review and approve ToDos and tasks marked "Waiting for review". Approved work is locked. To change it, tap "Reopen to edit".
-5. Open "Report" and tap "Print / PDF" to get a summary for your lecturer.
+3. Many tasks? Tap "Import tasks" on the "Tasks" page, then paste a table from Google Sheets or Excel (or choose a CSV file). One row is one task. You need the columns Task title and Due date. Other columns (Module, Assign to, Members, Priority, Start date, Due time, Details) are optional. The app shows a preview first and skips rows with problems. Tap "Download template" to get the right layout.
+4. Change a deadline by tapping the date. Change the person with "Reassign".
+5. Review and approve ToDos and tasks marked "Waiting for review". Approved work is locked. To change it, tap "Reopen to edit".
+6. Open "Report" and tap "Print / PDF" to get a summary for your lecturer.
 
 <a id="help"></a>
 ## 8. Common questions

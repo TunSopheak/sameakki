@@ -107,6 +107,7 @@ export const api = {
     groupId: string,
     data: { title: string; module: string; description: string; assignedTo?: string; assigneeIds?: string[]; assignToAll?: boolean; priority: TaskPriority; startDate?: string; dueDate: string; dueTime?: string }
   ) => post<{ id: string; ids: string[] }>(`/groups/${groupId}/tasks`, data),
+  importTasks: (groupId: string, tasks: unknown[]) => post<{ count: number; ids: string[] }>(`/groups/${groupId}/tasks/import`, { tasks }),
   updateTaskStatus: (taskId: string, status: Exclude<TaskStatus, 'approved'>, memberNotes?: string) =>
     patch(`/tasks/${taskId}/status`, { status, memberNotes }),
   updateTaskProgress: (taskId: string, progress: number, memberNotes?: string) =>

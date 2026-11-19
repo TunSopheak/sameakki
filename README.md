@@ -23,6 +23,8 @@ Mobile app
 
 **Tasks.** A leader assigns a task to one person, some people or everyone. The assignee moves the progress bar (0% to do, 100% sends it for review). Descriptions keep their line breaks, and long ones have a "Show more" button.
 
+**Import tasks.** On the Tasks page a leader taps **Import tasks** and pastes a table from Google Sheets or Excel (or picks a CSV file). Needed columns: `Task title`, `Due date`. Optional: `Module`, `Assign to` (`Everyone` / `Choose`), `Members` (names or emails, comma separated), `Priority`, `Start date`, `Due time`, `Details`. A preview shows each row's problems, and rows with problems are skipped. Up to 200 rows are created in one go. The rules are in `shared/taskImport.ts`, and the API is `POST /api/groups/:id/tasks/import`.
+
 **Approval.** A leader approves a ToDo or task that is waiting for review. Approved work is locked for everyone, the leader too. A leader taps **Reopen to edit** to change it, and it goes back to review.
 
 ## Search (SEO)

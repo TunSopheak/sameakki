@@ -16,6 +16,7 @@ import { TeamTaskBanner } from './TeamTaskBanner';
 import { TeamTaskCard } from './TeamTaskCard';
 import { groupTeamTasks, type TaskLine } from '../lib/stats';
 import { Icons } from './icons';
+import { ImportTasksModal } from './ImportTasksModal';
 
 interface TaskBoardProps {
   onOpenAssignTask: () => void;
@@ -24,6 +25,7 @@ interface TaskBoardProps {
 export const TaskBoard: React.FC<TaskBoardProps> = ({
   onOpenAssignTask,
 }) => {
+  const [importOpen, setImportOpen] = useState(false);
   const {
     activeGroupTasks,
     activeGroupMembers,
@@ -188,13 +190,23 @@ export const TaskBoard: React.FC<TaskBoardProps> = ({
             />
 
             {isTeamLead && (
-              <button
-                onClick={onOpenAssignTask}
-                className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-white bg-brand hover:bg-brand-dark rounded-lg shadow-xs transition-colors cursor-pointer whitespace-nowrap"
-              >
-                <Icons.add className="size-3.5" />
-                <span>{t.assignNewTask}</span>
-              </button>
+              <>
+                <button
+                  onClick={() => setImportOpen(true)}
+                  className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-black bg-white hover:bg-neutral-100 border border-neutral-200 rounded-lg transition-colors cursor-pointer whitespace-nowrap"
+                >
+                  <Icons.excel className="size-3.5" />
+                  <span>{t.importTasks}</span>
+                </button>
+                <button
+                  onClick={onOpenAssignTask}
+                  className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-white bg-brand hover:bg-brand-dark rounded-lg shadow-xs transition-colors cursor-pointer whitespace-nowrap"
+                >
+                  <Icons.add className="size-3.5" />
+                  <span>{t.assignNewTask}</span>
+                </button>
+                <ImportTasksModal isOpen={importOpen} onClose={() => setImportOpen(false)} />
+              </>
             )}
           </div>
         </div>
