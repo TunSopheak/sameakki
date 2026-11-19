@@ -443,6 +443,7 @@ export const TaskBoard: React.FC<TaskBoardProps> = ({
                   onProgress={(id, value) => updateTaskProgress(id, value)}
                   onOpenIndividual={() => setBatchFilter(task.batchId!)}
                   onDelete={() => deleteTeamTask(task.batchId!)}
+                  onDeadline={date => updateTaskDeadline(task.id, date)}
                   onEdit={() => setEditing({ task: row.team!.find(item => item.status !== 'approved') ?? task, size: row.team!.length })}
                 />
               );

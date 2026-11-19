@@ -1067,3 +1067,23 @@ test('a person can choose their own username to sign in with', async () => {
   assert.equal((await profile(m2, 'Mem Two', 'mem.one')).status, 204, 'a removed name can be used again');
   assert.equal((await profile(m2, 'Mem Two', '')).status, 204);
 });
+
+test('a new due date on a team task changes it for everyone, except approved copies', async () => {
+  const { lead, m1, m2 } = sessions;
+  const read = async (id: string) => (await lead.get('/api/bootstrap')).body.tasks.find((x: Json) => x.id === id);
+  const ids3 = (await lead.post(`/api/groups/${ids.g1}/tasks`, { title: 'Team date', assigneeIds: [ids.m1, ids.m2], dueDate: day(12) })).body.ids as string[];
+
+  assert.equal((await m1.patch(`/api/tasks/${ids3[0]}/deadline`, { dueDate: day(20) })).status, 403, 'members cannot move a date');
+  assert.equal((await lead.patch(`/api/tasks/${ids3[0]}/deadline`, { dueDate: day(20), dueTime: '17:00' })).status, 204);
+  for (const id of ids3) {
+    const task = await read(id);
+    assert.deepEqual([task.dueDate, task.dueTime], [day(20), '17:00'], 'both copies moved');
+  }
+
+  // A copy that is already approved keeps its date
+  await m2.patch(`/api/tasks/${ids3[1]}/status`, { status: 'ready_for_review' });
+  await lead.post(`/api/tasks/${ids3[1]}/approve`, {});
+  assert.equal((await lead.patch(`/api/tasks/${ids3[0]}/deadline`, { dueDate: day(25) })).status, 204);
+  assert.equal((await read(ids3[0])).dueDate, day(25));
+  assert.equal((await read(ids3[1])).dueDate, day(20), 'approved work keeps its date');
+});

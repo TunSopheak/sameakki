@@ -5,6 +5,7 @@ import { moduleName, taskDescription } from '../lib/defaults';
 import { averageProgress } from '../lib/stats';
 import { STATUS_ORDER } from '../lib/taskStatus';
 import type { Task, User } from '../types';
+import { EditableDate } from './EditableDate';
 import { Icons } from './icons';
 import { TeamMemberRow } from './TeamMemberRow';
 
@@ -18,10 +19,12 @@ interface TeamTaskCardProps {
   onOpenIndividual: () => void;
   onDelete: () => void;
   onEdit: () => void;
+  /** A leader picks a new due date for everyone */
+  onDeadline: (date: string) => void;
 }
 
 /** One card for a task given to several people. */
-export const TeamTaskCard: React.FC<TeamTaskCardProps> = ({ tasks, users, priority, deadline, onProgress, onOpenIndividual, onDelete, onEdit }) => {
+export const TeamTaskCard: React.FC<TeamTaskCardProps> = ({ tasks, users, priority, deadline, onProgress, onOpenIndividual, onDelete, onEdit, onDeadline }) => {
   const { t, currentUser, isTeamLead, canContribute } = useApp();
   const [editing, setEditing] = useState<string | null>(null);
 
@@ -116,12 +119,23 @@ export const TeamTaskCard: React.FC<TeamTaskCardProps> = ({ tasks, users, priori
       </div>
 
       <div className="mt-auto flex items-center justify-between gap-2 border-t border-neutral-100 pt-3 text-xs">
-        <span className={`inline-flex items-center gap-1.5 font-medium ${deadline?.overdue ? 'text-brand-ink' : 'text-neutral-600'}`}>
-          <Icons.time className="size-3.5" />
-          {first.dueDate}
-          {first.dueTime ? ` ${first.dueTime}` : ''}
-          {deadline && ` · ${deadline.text}`}
-        </span>
+        <EditableDate
+          value={first.dueDate}
+          canEdit={isTeamLead && tasks.some(task => task.status !== 'approved')}
+          onSave={onDeadline}
+          className={`gap-2.5 rounded-lg border px-2.5 py-1.5 transition-colors ${
+            deadline?.overdue ? 'border-brand/30 bg-brand-soft' : 'border-neutral-200 bg-neutral-50'
+          } ${isTeamLead ? 'hover:border-brand/40 hover:bg-white' : ''}`}
+        >
+          <Icons.date className="size-4 shrink-0 text-neutral-500" />
+          <span className="flex flex-col leading-tight">
+            <span className="whitespace-nowrap font-mono-numbers text-xs font-semibold text-black">
+              {first.dueDate}
+              {first.dueTime ? ` · ${first.dueTime}` : ''}
+            </span>
+            {deadline && <span className={`text-[11px] font-semibold ${deadline.overdue ? 'text-brand-ink' : 'text-neutral-600'}`}>{deadline.text}</span>}
+          </span>
+        </EditableDate>
         <button type="button" onClick={onOpenIndividual} className="cursor-pointer font-semibold text-brand-ink hover:underline">
           {t.teamTaskOpen}
         </button>

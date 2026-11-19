@@ -333,6 +333,13 @@ tasksRouter.patch('/tasks/:taskId/assignee', async (req, res) => {
   res.status(204).end();
 });
 
+/** A team task is one card, so a new date applies to every copy that is not approved. */
+async function scheduleTargets(tx: Queryable, task: any): Promise<any[]> {
+  if (!task.batch_id) return [task];
+  const { rows } = await tx.query(`SELECT * FROM tasks WHERE batch_id = $1 AND is_active = 1 AND status <> 'approved'`, [task.batch_id]);
+  return rows.length > 0 ? rows : [task];
+}
+
 const deadlineSchema =z.object({ dueDate: isoDate, dueTime: time.optional() });
 
 tasksRouter.patch('/tasks/:taskId/deadline', async (req, res) => {
@@ -344,8 +351,12 @@ tasksRouter.patch('/tasks/:taskId/deadline', async (req, res) => {
   if (task.status === 'approved') throw badRequest('An approved task cannot be rescheduled. Reopen it first.');
   const input = deadlineSchema.parse(req.body);
 
-  const startDate = task.start_date <= input.dueDate ? task.start_date : input.dueDate;
-  await db.transaction(tx => applySchedule(tx, user, task, { startDate, dueDate: input.dueDate, dueTime: input.dueTime }));
+  await db.transaction(async tx => {
+    for (const target of await scheduleTargets(tx, task)) {
+      const startDate = target.start_date <= input.dueDate ? target.start_date : input.dueDate;
+      await applySchedule(tx, user, target, { startDate, dueDate: input.dueDate, dueTime: input.dueTime });
+    }
+  });
 
   res.status(204).end();
 });
@@ -363,6 +374,7 @@ tasksRouter.patch('/tasks/:taskId/schedule', async (req, res) => {
   if (task.status === 'approved') throw badRequest('An approved task cannot be rescheduled. Reopen it first.');
   const input = scheduleSchema.parse(req.body);
 
+  // The timeline moves one person's bar, so only this task changes (the due date chip changes the whole team task)
   await db.transaction(tx => applySchedule(tx, user, task, input));
   res.status(204).end();
 });
