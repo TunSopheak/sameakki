@@ -5,10 +5,10 @@ interface ExpandableTextProps {
   text: string;
   className?: string;
   /** Lines shown before "Show more" appears */
-  lines?: 3 | 4 | 5;
+  lines?: 2 | 3 | 4 | 5;
 }
 
-const CLAMP = { 3: 'line-clamp-3', 4: 'line-clamp-4', 5: 'line-clamp-5' } as const;
+const CLAMP = { 2: 'line-clamp-2', 3: 'line-clamp-3', 4: 'line-clamp-4', 5: 'line-clamp-5' } as const;
 
 /** Keeps line breaks. Long text is cut short with a "Show more" button, so nothing is hidden for good. */
 export const ExpandableText: React.FC<ExpandableTextProps> = ({ text, className = '', lines = 3 }) => {

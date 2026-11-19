@@ -361,7 +361,7 @@ export const TaskBoard: React.FC<TaskBoardProps> = ({
         </div>
       ) : (
         <>
-        <div className="stagger grid grid-cols-1 items-start gap-4 md:grid-cols-2">
+        <div className="stagger grid grid-cols-1 gap-4 md:grid-cols-2">
           {view.pageRows.map(row => {
             const task = row.task;
             if (row.team) {
@@ -393,7 +393,7 @@ export const TaskBoard: React.FC<TaskBoardProps> = ({
             return (
               <div
                 key={task.id}
-                className="lift bg-white rounded-xl border border-neutral-200 p-5 flex flex-col justify-between gap-4 shadow-xs"
+                className="lift flex h-full flex-col gap-4 rounded-xl border border-neutral-200 bg-white p-5 shadow-xs"
               >
                 <div className="space-y-2">
                   <div className="flex items-center justify-between gap-2">
@@ -438,7 +438,7 @@ export const TaskBoard: React.FC<TaskBoardProps> = ({
                     >
                       {task.title}
                     </h3>
-                    <ExpandableText text={taskDescription(task.description, t)} className="mt-1 text-xs leading-relaxed text-neutral-600" />
+                    <ExpandableText text={taskDescription(task.description, t)} lines={2} className="mt-1 text-xs leading-relaxed text-neutral-600" />
                   </div>
                 </div>
 
@@ -467,7 +467,7 @@ export const TaskBoard: React.FC<TaskBoardProps> = ({
                   </div>
                 )}
 
-                <div className="pt-3 space-y-3">
+                <div className="mt-auto space-y-3 border-t border-neutral-100 pt-3">
                   <div className="flex flex-wrap items-center justify-between gap-x-3 gap-y-2 text-xs">
                     <div
                       onClick={() => setAssigneeFilter(assignee.id)}

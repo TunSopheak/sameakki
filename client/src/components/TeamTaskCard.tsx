@@ -39,7 +39,7 @@ export const TeamTaskCard: React.FC<TeamTaskCardProps> = ({ tasks, users, priori
   );
 
   return (
-    <div className="lift flex flex-col gap-4 rounded-xl border border-neutral-200 bg-white p-5 shadow-xs">
+    <div className="lift flex h-full flex-col gap-4 rounded-xl border border-neutral-200 bg-white p-5 shadow-xs">
       <div className="space-y-2">
         <div className="flex items-center justify-between gap-2">
           <div className="flex min-w-0 items-center gap-1.5">
@@ -65,7 +65,7 @@ export const TeamTaskCard: React.FC<TeamTaskCardProps> = ({ tasks, users, priori
         </div>
 
         <h3 className="text-base font-bold tracking-tight text-black">{first.title}</h3>
-        <ExpandableText text={taskDescription(first.description, t)} className="text-xs leading-relaxed text-neutral-600" />
+        <ExpandableText text={taskDescription(first.description, t)} lines={2} className="text-xs leading-relaxed text-neutral-600" />
       </div>
 
       <div>
@@ -109,7 +109,7 @@ export const TeamTaskCard: React.FC<TeamTaskCardProps> = ({ tasks, users, priori
         </ul>
       </div>
 
-      <div className="flex items-center justify-between gap-2 border-t border-neutral-100 pt-3 text-xs">
+      <div className="mt-auto flex items-center justify-between gap-2 border-t border-neutral-100 pt-3 text-xs">
         <span className={`inline-flex items-center gap-1.5 font-medium ${deadline?.overdue ? 'text-brand-ink' : 'text-neutral-600'}`}>
           <Icons.time className="size-3.5" />
           {first.dueDate}
