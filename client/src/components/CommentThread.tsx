@@ -89,7 +89,7 @@ export const CommentThread: React.FC<CommentThreadProps> = ({ kind, targetId, co
       <button
         onClick={() => setOpen(o => !o)}
         aria-expanded={open}
-        className="inline-flex cursor-pointer items-center gap-1.5 font-semibold text-neutral-600 hover:text-black"
+        className={`inline-flex cursor-pointer items-center gap-1.5 rounded-full px-2.5 py-1 font-semibold transition-colors ${open ? 'bg-brand-soft text-brand-ink' : 'text-neutral-600 hover:bg-neutral-100 hover:text-black'}`}
       >
         <Icons.comments className="size-3.5" />
         {t.commentsLabel}
@@ -97,7 +97,7 @@ export const CommentThread: React.FC<CommentThreadProps> = ({ kind, targetId, co
       </button>
 
       {open && (
-        <div className="animate-rise mt-2 space-y-3 rounded-xl border border-neutral-200 bg-neutral-50 p-3 sm:p-4">
+        <div className="animate-rise mt-2 space-y-3 rounded-2xl border border-neutral-200 bg-neutral-50 p-3 sm:p-4">
           {items === null ? (
             <div className="space-y-3" aria-hidden>
               {[0, 1].map(i => (
@@ -111,14 +111,16 @@ export const CommentThread: React.FC<CommentThreadProps> = ({ kind, targetId, co
               ))}
             </div>
           ) : items.length > 0 ? (
-            <ul ref={listRef} className="max-h-80 space-y-3.5 overflow-y-auto pr-1">
+            <ul ref={listRef} className="max-h-96 space-y-3 overflow-y-auto pr-1">
               {items.map(comment => (
                 <CommentItem key={comment.id} comment={comment} onEdit={body => edit(comment, body)} onDelete={() => remove(comment)} />
               ))}
             </ul>
           ) : (
-            <div className="flex items-center justify-center gap-2 py-1 text-center text-neutral-500">
-              <Icons.comments className="size-4 text-neutral-400" />
+            <div className="flex items-center justify-center gap-2 py-2 text-center text-neutral-500">
+              <span className="grid size-8 place-items-center rounded-full bg-white text-brand-ink shadow-xs">
+                <Icons.comments className="size-4" />
+              </span>
               <p>{t.commentsEmpty}</p>
             </div>
           )}

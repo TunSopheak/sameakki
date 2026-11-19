@@ -12,6 +12,7 @@ import { ProblemsSection } from './ProblemsSection';
 import { SponsorSection } from './SponsorSection';
 import { StepsSection } from './StepsSection';
 import { APP_NAME } from '../../lib/brand';
+import { APP_VERSION } from '../../lib/version';
 
 /** The page shown before login. */
 export const LandingPage: React.FC = () => {
@@ -42,7 +43,7 @@ export const LandingPage: React.FC = () => {
             {copy.footer.guide}
           </a>
         </p>
-        <p>© {new Date().getFullYear()} {APP_NAME} · {copy.footer.rights}</p>
+        <p>© {new Date().getFullYear()} {APP_NAME} <span className="font-mono-numbers">v{APP_VERSION}</span> · {copy.footer.rights}</p>
       </footer>
     </div>
   );

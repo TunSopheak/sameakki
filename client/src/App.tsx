@@ -31,6 +31,8 @@ import { setPagePreset, type PagePreset } from './lib/pagePreset';
 import { hasLoggedInBefore, navigate, rememberLogin, useRoute } from './lib/route';
 import { LandingPage } from './components/landing/LandingPage';
 import { APP_NAME } from './lib/brand';
+import { CelebrationLayer } from './components/CelebrationLayer';
+import { APP_VERSION } from './lib/version';
 
 const MainApp: React.FC = () => {
   const { currentUser, t } = useApp();
@@ -130,6 +132,7 @@ const MainApp: React.FC = () => {
             <div className="flex items-center gap-2">
               <img src="/khmer/flag-of-cambodia.svg" alt="" width="24" height="15" className="flag-kh" />
               <span className="font-bold text-black">{APP_NAME}</span>
+              <span className="rounded-full bg-neutral-100 px-2 py-0.5 text-[11px] font-semibold text-neutral-600 font-mono-numbers" title={t.versionLabel}>v{APP_VERSION}</span>
               <span>·</span>
               <span>
                 {t.footerTagline}
@@ -232,6 +235,7 @@ export default function App() {
   return (
     <AppProvider>
       <AngkorWatermark />
+      <CelebrationLayer />
       <SessionGate />
     </AppProvider>
   );

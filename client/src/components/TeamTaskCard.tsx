@@ -71,7 +71,7 @@ export const TeamTaskCard: React.FC<TeamTaskCardProps> = ({ tasks, users, priori
         </div>
 
         <h3 className="text-base font-bold tracking-tight text-black">{first.title}</h3>
-        <ExpandableText text={taskDescription(first.description, t)} lines={2} className="text-xs leading-relaxed text-neutral-600" />
+        <ExpandableText text={taskDescription(first.description)} lines={2} className="text-xs leading-relaxed text-neutral-600" />
       </div>
 
       <div>

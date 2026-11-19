@@ -69,7 +69,7 @@ export const OverviewDashboard: React.FC<OverviewDashboardProps> = ({
     },
   });
   const cardClass = 'lift bg-white p-3.5 sm:p-5 rounded-xl border border-neutral-200 shadow-xs flex flex-col justify-between cursor-pointer focus-visible:outline-2 focus-visible:outline-brand';
-  const todayButton = 'flex min-w-28 flex-1 cursor-pointer items-baseline gap-2 rounded-lg border border-neutral-200 bg-white px-3 py-2 text-left transition-colors hover:bg-neutral-50 sm:flex-none';
+  const todayButton = 'flex min-w-28 flex-1 cursor-pointer items-baseline gap-2 rounded-lg border border-neutral-200 bg-white px-3 py-2 text-left transition-colors hover:bg-neutral-50';
 
   return (
     <div className="space-y-6">

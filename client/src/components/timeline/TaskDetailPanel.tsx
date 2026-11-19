@@ -1,3 +1,4 @@
+import { ExpandableText } from '../ExpandableText';
 import { taskDescription } from '../../lib/defaults';
 import React, { useEffect, useState } from 'react';
 import type { Task, User } from '@shared/types';
@@ -77,7 +78,9 @@ export const TaskDetailPanel: React.FC<TaskDetailPanelProps> = ({ task, assignee
         </button>
       </div>
 
-      <p className="mt-3 line-clamp-3 whitespace-pre-line break-words text-sm leading-relaxed text-neutral-600">{taskDescription(task.description, t)}</p>
+      <div className="mt-3">
+        <ExpandableText text={taskDescription(task.description)} lines={4} className="text-sm leading-relaxed text-neutral-600" />
+      </div>
 
       <div className="mt-4 grid items-end gap-3 sm:grid-cols-[1fr_1fr_auto]">
         <div className="block">

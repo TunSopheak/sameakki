@@ -1,7 +1,7 @@
 {
   "name": "sameakki",
   "private": true,
-  "version": "1.0.0",
+  "version": "0.9.0",
   "description": "Sameakki - team & task manager (React + Express + PostgreSQL)",
   "type": "module",
   "engines": {

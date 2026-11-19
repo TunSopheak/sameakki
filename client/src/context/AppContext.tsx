@@ -1,3 +1,4 @@
+import { celebrate } from '../lib/celebrate';
 import type { ImportedTask } from '@shared/taskImport';
 import React, { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react';
 import type { ActivityEvent, BootstrapData, DailyLog, Group, Role, Task, TaskStatus, User } from '../types';
@@ -373,6 +374,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       await run(async () => {
         const { count } = await api.approveTasks(resolvedGroupId, taskIds);
         showNotice('success', t.approveAllDone.replace('{n}', String(count)));
+        celebrate('approved');
       });
     },
     importTasks: async tasks => {
@@ -381,7 +383,14 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     reassignTask: (taskId, assignedTo) => quiet(run(() => api.reassignTask(taskId, assignedTo))),
     rescheduleTask: (taskId, startDate, dueDate) => quiet(run(() => api.scheduleTask(taskId, startDate, dueDate))),
     updateTaskDeadline: (taskId, dueDate, dueTime) => quiet(run(() => api.updateTaskDeadline(taskId, dueDate, dueTime))),
-    approveTask: (taskId, feedback) => quiet(run(() => api.approveTask(taskId, feedback))),
+    approveTask: async (taskId, feedback) => {
+      try {
+        await run(() => api.approveTask(taskId, feedback));
+        celebrate('approved');
+      } catch {
+        // run() already showed the error
+      }
+    },
     reopenTask: taskId => quiet(run(() => api.reopenTask(taskId))),
     deleteTask: taskId => quiet(run(() => api.deleteTask(taskId))),
     deleteTeamTask: batchId => quiet(run(() => api.deleteTeamTask(resolvedGroupId, batchId))),

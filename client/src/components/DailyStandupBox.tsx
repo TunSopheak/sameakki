@@ -3,6 +3,7 @@ import { useApp } from '../context/AppContext';
 import { DailyPreview } from './daily/DailyPreview';
 import { milestoneReached } from '@shared/streak';
 import { useStreaks } from '../lib/useStreaks';
+import { celebrate } from '../lib/celebrate';
 import { Icons } from './icons';
 
 interface DailyStandupBoxProps {
@@ -39,7 +40,10 @@ export const DailyStandupBox: React.FC<DailyStandupBoxProps> = ({ onOpenGuide })
       const fresh = await reload();
       const after = fresh?.members.find(m => m.userId === currentUser.id)?.current ?? before;
       const milestone = milestoneReached(before, after);
-      if (milestone) showSuccess(t.streakMilestone.replace('{n}', String(milestone)));
+      if (milestone) {
+        showSuccess(t.streakMilestone.replace('{n}', String(milestone)));
+        celebrate('milestone');
+      }
       setText('');
       setJustSubmitted(true);
       setTimeout(() => setJustSubmitted(false), 3000);
@@ -75,7 +79,7 @@ export const DailyStandupBox: React.FC<DailyStandupBoxProps> = ({ onOpenGuide })
               title={t.streakBest.replace('{n}', String(mine.best))}
               className="inline-flex items-center gap-1 rounded-full bg-white/15 px-2.5 py-0.5 font-semibold text-white"
             >
-              <Icons.streak className="size-3.5" />
+              <Icons.streak className={`size-3.5 ${mine.current > 0 ? 'flame' : ''}`} />
               {mine.current > 0 ? t.streakDays.replace('{n}', String(mine.current)) : t.streakStart}
             </span>
           )}

@@ -688,8 +688,14 @@ test('the notification list belongs to its owner', async () => {
   assert.ok(items.length > 0);
   assert.equal((await sessions.lead.post(`/api/notifications/${items[0].id}/read`)).status, 404, 'cannot mark someone else’s as read');
   assert.equal((await m1.post(`/api/notifications/${items[0].id}/read`)).status, 204);
+  const after = (await m1.get('/api/notifications')).body;
+  assert.ok(!after.items.some((i: Json) => i.id === items[0].id), 'a read notification is gone from the list');
+  assert.ok(after.items.every((i: Json) => i.read === false), 'only unread ones are listed');
+  assert.equal(after.unread, after.items.length, 'the number matches the list');
   assert.equal((await m1.post('/api/notifications/read-all')).status, 204);
-  assert.equal((await m1.get('/api/notifications')).body.unread, 0);
+  const empty = (await m1.get('/api/notifications')).body;
+  assert.equal(empty.unread, 0);
+  assert.deepEqual(empty.items, [], 'nothing is left once everything is read');
 });
 
 test('progress drives the status, and only the assignee or a lead may change it', async () => {

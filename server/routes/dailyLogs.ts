@@ -12,7 +12,7 @@ import { isoDate } from '../services/validation';
 
 export const dailyLogsRouter = Router();
 
-const ALLOWED_EMOJIS = ['👏', '🔥', '👍', '🚀', '💡'];
+const ALLOWED_EMOJIS = ['👏', '🔥', '👍', '❤️', '🎉', '🚀', '💡'];
 
 async function loadLog(db: Queryable, user: User, logId: string) {
   const { rows } = await db.query('SELECT * FROM daily_logs WHERE id = $1 AND is_active = 1', [logId]);

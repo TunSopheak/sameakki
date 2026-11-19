@@ -8,7 +8,7 @@ import { Icons } from './icons';
 /** "🔥 5" — the flame and the number of days */
 export const StreakFlame: React.FC<{ days: number; className?: string }> = ({ days, className = '' }) => (
   <span className={`inline-flex items-center gap-1 font-bold font-mono-numbers ${days > 0 ? 'text-brand-ink' : 'text-neutral-400'} ${className}`}>
-    <Icons.streak className="size-4" />
+    <Icons.streak className={`size-4 ${days > 0 ? 'flame' : ''}`} />
     {days}
   </span>
 );
@@ -87,7 +87,7 @@ export const StreakBoard: React.FC = () => {
           const person = activeGroupMembers.find(m => m.id === member.userId);
           return (
             <li key={member.userId} className={`flex items-center gap-2.5 rounded-lg px-2.5 py-2 ${isMe ? 'bg-brand-soft' : ''}`}>
-              <span className={`flex size-5 shrink-0 items-center justify-center rounded-full text-[10px] font-bold ${RANK_STYLE[rank] ?? 'bg-neutral-100 text-neutral-600'}`}>{rank + 1}</span>
+              <span className={`flex size-5 shrink-0 items-center justify-center rounded-full text-[10px] font-bold ${RANK_STYLE[rank] ?? 'bg-neutral-100 text-neutral-600'} ${rank === 0 && member.current > 0 ? 'gold-shine' : ''}`}>{rank + 1}</span>
               <Avatar name={member.name} avatar={person?.avatar} className="size-8 shrink-0" />
 
               <div className="min-w-0 flex-1">
@@ -103,7 +103,7 @@ export const StreakBoard: React.FC = () => {
                 <p className={`flex items-center gap-1 text-xs ${member.current > 0 ? 'font-semibold text-brand-ink' : 'text-neutral-400'}`}>
                   {member.current > 0 ? (
                     <>
-                      <Icons.streak className="size-3.5" />
+                      <Icons.streak className="flame size-3.5" />
                       {t.streakDays.replace('{n}', String(member.current))}
                     </>
                   ) : (

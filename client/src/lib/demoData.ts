@@ -124,6 +124,6 @@ export function buildDemoNotifications(): AppNotification[] {
     make('demo-n1', 'task_ready_for_review', 1, false, 'Dara', { title: 'Create the tasks API' }),
     make('demo-n2', 'task_overdue', 3, false, undefined, { title: 'Fix the mobile menu', dueDate: dateOffset(-1) }),
     make('demo-n3', 'daily_reaction', 6, false, 'Sokha', { title: 'Dashboard', emoji: '\u{1F44F}' }),
-    make('demo-n4', 'task_due_soon', 20, true, undefined, { title: 'Build the dashboard page', dueDate: dateOffset(1) }),
+    make('demo-n4', 'task_due_soon', 20, false, undefined, { title: 'Build the dashboard page', dueDate: dateOffset(1) }),
   ];
 }

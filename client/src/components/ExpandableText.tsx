@@ -22,6 +22,8 @@ export const ExpandableText: React.FC<ExpandableTextProps> = ({ text, className 
     if (el && !open) setOverflows(el.scrollHeight > el.clientHeight + 1);
   }, [text, open]);
 
+  if (!text.trim()) return null;
+
   return (
     <div>
       <p ref={ref} className={`whitespace-pre-line break-words ${open ? '' : CLAMP[lines]} ${className}`}>

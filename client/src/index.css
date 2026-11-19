@@ -128,7 +128,7 @@ html[lang='km'] :is(.tracking-wide, .tracking-wider) {
   background-color: var(--color-brand);
   mask: url('/khmer/angkor-wat-outline.svg') center / contain no-repeat;
   mask-mode: luminance;
-  opacity: 0.07;
+  opacity: 0.045;
   pointer-events: none;
 }
 @media (min-width: 1024px) {
@@ -194,6 +194,9 @@ html {
 @keyframes float {
   50% { transform: translateY(-4px); }
 }
+@keyframes notif-leave {
+  to { opacity: 0; transform: translateX(24px); }
+}
 @keyframes breathe {
   50% { transform: scale(1.08); opacity: 0.8; }
 }
@@ -209,6 +212,7 @@ html {
 .tip-in { animation: tip-in 0.16s var(--ease-out) both; }
 .logo-float:hover { animation: float 1.2s ease-in-out infinite; }
 .logo-breathe { animation: breathe 1.6s ease-in-out infinite; }
+.notif-leave { animation: notif-leave 0.26s var(--ease-out) forwards; pointer-events: none; }
 
 /* Children fade up one after another */
 .stagger > * {
@@ -247,6 +251,79 @@ button:not(:disabled):active {
 * {
   scrollbar-width: thin;
   scrollbar-color: var(--color-neutral-300) transparent;
+}
+
+/* ---- Magic ---- */
+@keyframes spring-in {
+  from { opacity: 0; transform: translateY(10px) scale(0.94); }
+  to { opacity: 1; transform: none; }
+}
+@keyframes emoji-burst {
+  from { opacity: 1; transform: translate(0, 0) scale(0.5) rotate(0deg); }
+  70% { opacity: 1; }
+  to { opacity: 0; transform: translate(var(--dx), var(--dy)) scale(1.35) rotate(var(--rot)); }
+}
+@keyframes emoji-in {
+  from { opacity: 0; transform: translateY(8px) scale(0.3); }
+  to { opacity: 1; transform: none; }
+}
+@keyframes flicker {
+  0%, 100% { transform: scale(1) rotate(-3deg); }
+  25% { transform: scale(1.08, 1.16) rotate(2deg); }
+  50% { transform: scale(0.96, 1.1) rotate(-1deg); }
+  75% { transform: scale(1.1, 1.2) rotate(3deg); }
+}
+@keyframes bell-ring {
+  0%, 100% { transform: rotate(0); }
+  15% { transform: rotate(16deg); }
+  30% { transform: rotate(-14deg); }
+  45% { transform: rotate(10deg); }
+  60% { transform: rotate(-8deg); }
+  75% { transform: rotate(4deg); }
+}
+@keyframes confetti-fall {
+  from { transform: translate3d(0, -8vh, 0) rotate(0deg); opacity: 1; }
+  to { transform: translate3d(var(--drift), 108vh, 0) rotate(900deg); opacity: 0.9; }
+}
+@keyframes shine {
+  from { background-position: -120% 0; }
+  to { background-position: 220% 0; }
+}
+@keyframes ping-soft {
+  0% { box-shadow: 0 0 0 0 rgb(132 0 21 / 0.35); }
+  100% { box-shadow: 0 0 0 10px rgb(132 0 21 / 0); }
+}
+
+.spring-in { animation: spring-in 0.42s cubic-bezier(0.34, 1.56, 0.64, 1) both; }
+.emoji-burst {
+  position: absolute;
+  pointer-events: none;
+  font-size: 18px;
+  animation: emoji-burst 0.9s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+.emoji-in { animation: emoji-in 0.3s cubic-bezier(0.34, 1.56, 0.64, 1) both; animation-delay: calc(var(--i, 0) * 35ms); }
+.flame { animation: flicker 1.3s ease-in-out infinite; transform-origin: 50% 90%; filter: drop-shadow(0 0 3px rgb(255 140 0 / 0.55)); }
+.bell-ring { animation: bell-ring 0.9s ease-in-out both; transform-origin: 50% 10%; }
+.confetti {
+  position: absolute;
+  top: 0;
+  animation: confetti-fall 2.2s cubic-bezier(0.3, 0.1, 0.5, 1) forwards;
+}
+.pulse-ring { animation: ping-soft 1.6s ease-out infinite; }
+.gold-shine {
+  background-image: linear-gradient(110deg, transparent 30%, rgb(255 255 255 / 0.55) 50%, transparent 70%);
+  background-size: 200% 100%;
+  animation: shine 2.6s ease-in-out infinite;
+}
+
+/* Main buttons glow when you point at them */
+button.bg-brand:not(:disabled):hover,
+a.bg-brand:hover {
+  box-shadow: 0 8px 22px rgb(132 0 21 / 0.3);
+}
+html.dark button.bg-brand:not(:disabled):hover,
+html.dark a.bg-brand:hover {
+  box-shadow: 0 8px 22px rgb(255 90 110 / 0.28);
 }
 
 @media (prefers-reduced-motion: reduce) {

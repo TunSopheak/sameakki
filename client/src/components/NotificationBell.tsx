@@ -11,6 +11,7 @@ import type { Tab } from './sidebar/SidebarNav';
 import { Icons } from './icons';
 
 const POLL_MS = 30_000;
+const LEAVE_MS = 260;
 
 const ICONS: Record<NotificationType, React.ComponentType<{ className?: string }>> = {
   task_assigned: Icons.tasks,
@@ -38,7 +39,11 @@ export const NotificationBell: React.FC<NotificationBellProps> = ({ onNavigate }
   const [open, setOpen] = useState(false);
   const [items, setItems] = useState<AppNotification[]>([]);
   const [unread, setUnread] = useState(0);
+  // Read ones slide away first, then they are removed
+  const [leaving, setLeaving] = useState<Set<string>>(new Set());
   const ref = useRef<HTMLDivElement>(null);
+  const [ringing, setRinging] = useState(false);
+  const lastCount = useRef(0);
   useDismiss(ref, open, () => setOpen(false));
 
   const load = useCallback(async () => {
@@ -68,11 +73,31 @@ export const NotificationBell: React.FC<NotificationBellProps> = ({ onNavigate }
   }, [load]);
 
   // The demo has no server, so count here
-  const unreadCount = isDemo ? items.filter(i => !i.read).length : unread;
+  const unreadCount = isDemo ? items.filter(i => !i.read && !leaving.has(i.id)).length : unread;
+
+  const dismiss = (ids: string[]) => {
+    setLeaving(set => new Set([...set, ...ids]));
+    window.setTimeout(() => {
+      setItems(list => list.filter(i => !ids.includes(i.id)));
+      setLeaving(set => new Set([...set].filter(id => !ids.includes(id))));
+    }, LEAVE_MS);
+  };
+
+  // Ring when there is more to read than before
+  useEffect(() => {
+    const now = isDemo ? items.filter(i => !i.read && !leaving.has(i.id)).length : unread;
+    if (now > lastCount.current && lastCount.current >= 0 && !window.matchMedia?.('(prefers-reduced-motion: reduce)').matches) {
+      setRinging(true);
+      const id = window.setTimeout(() => setRinging(false), 1000);
+      lastCount.current = now;
+      return () => window.clearTimeout(id);
+    }
+    lastCount.current = now;
+  }, [unread, items, leaving, isDemo]);
 
   const markRead = async (n: AppNotification) => {
-    if (n.read) return;
-    setItems(list => list.map(i => (i.id === n.id ? { ...i, read: true } : i)));
+    if (n.read || leaving.has(n.id)) return;
+    dismiss([n.id]);
     setUnread(c => Math.max(0, c - 1));
     if (isDemo) return;
     try {
@@ -84,7 +109,7 @@ export const NotificationBell: React.FC<NotificationBellProps> = ({ onNavigate }
   };
 
   const markAll = async () => {
-    setItems(list => list.map(i => ({ ...i, read: true })));
+    dismiss(items.map(i => i.id));
     setUnread(0);
     if (isDemo) return;
     try {
@@ -111,9 +136,9 @@ export const NotificationBell: React.FC<NotificationBellProps> = ({ onNavigate }
         title={t.notifTitle}
         className="relative flex size-10 shrink-0 items-center justify-center rounded-xl border border-neutral-200 bg-white text-neutral-600 transition-colors hover:bg-neutral-100"
       >
-        <Icons.notifications className="size-4" />
+        <Icons.notifications className={`size-4 ${ringing ? 'bell-ring' : ''}`} />
         {unreadCount > 0 && (
-          <span className="absolute -right-1 -top-1 flex h-4 min-w-4 items-center justify-center rounded-full bg-brand px-1 text-[11px] font-bold leading-none text-white">
+          <span className="pulse-ring absolute -right-1 -top-1 flex h-4 min-w-4 items-center justify-center rounded-full bg-brand px-1 text-[11px] font-bold leading-none text-white">
             {unreadCount > 9 ? '9+' : unreadCount}
           </span>
         )}
@@ -133,7 +158,9 @@ export const NotificationBell: React.FC<NotificationBellProps> = ({ onNavigate }
 
           {items.length === 0 ? (
             <div className="px-4 py-10 text-center text-xs text-neutral-500">
-              <Icons.notifications className="mx-auto mb-2 size-6 text-neutral-300" />
+              <span className="mx-auto mb-2 grid size-10 place-items-center rounded-full bg-brand-soft text-brand-ink">
+                <Icons.confirm className="size-5" />
+              </span>
               {t.notifEmpty}
             </div>
           ) : (
@@ -145,8 +172,8 @@ export const NotificationBell: React.FC<NotificationBellProps> = ({ onNavigate }
                   <li key={n.id}>
                     <button
                       onClick={() => openItem(n, view.tab)}
-                      className={`flex w-full cursor-pointer items-start gap-3 px-4 py-3 text-left transition-colors hover:bg-neutral-100 ${
-                        n.read ? '' : 'bg-brand-soft/60'
+                      className={`flex w-full cursor-pointer items-start gap-3 bg-brand-soft/60 px-4 py-3 text-left transition-colors hover:bg-brand-soft ${
+                        leaving.has(n.id) ? 'notif-leave' : ''
                       }`}
                     >
                       <span
@@ -157,7 +184,7 @@ export const NotificationBell: React.FC<NotificationBellProps> = ({ onNavigate }
                         <Icon className="size-4" />
                       </span>
                       <span className="min-w-0 flex-1">
-                        <span className={`block text-xs leading-relaxed text-black ${n.read ? '' : 'font-semibold'}`}>{view.text}</span>
+                        <span className="block text-xs font-semibold leading-relaxed text-black">{view.text}</span>
                         {view.note && (
                           <span className="mt-1 block rounded-md bg-neutral-100 px-2 py-1 text-[11px] italic text-neutral-600">“{view.note}”</span>
                         )}
@@ -175,7 +202,7 @@ export const NotificationBell: React.FC<NotificationBellProps> = ({ onNavigate }
                         )}
                         <span className="mt-1 block text-[11px] text-neutral-400">{timeAgo(n.createdAt, language)}</span>
                       </span>
-                      {!n.read && <span className="mt-2 size-2 shrink-0 rounded-full bg-brand" aria-label="unread" />}
+                      <span className="mt-2 size-2 shrink-0 rounded-full bg-brand" aria-hidden="true" />
                     </button>
                   </li>
                 );

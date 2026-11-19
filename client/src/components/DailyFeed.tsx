@@ -154,7 +154,7 @@ export const DailyFeed: React.FC = () => {
           {view.pageRows.map(log => {
             const author = users.find(u => u.id === log.userId) || {
               id: log.userId,
-              name: 'Member',
+              name: t.memberBadge,
               email: '',
               role: 'member',
             };

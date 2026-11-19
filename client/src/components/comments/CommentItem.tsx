@@ -23,13 +23,12 @@ export const CommentItem: React.FC<CommentItemProps> = ({ comment, onEdit, onDel
   const roleBadge = comment.userRole === 'team_lead' ? t.teamLeadBadge : comment.userRole === 'super_admin' ? t.superAdminBadge : null;
 
   return (
-    <li className="flex items-start gap-2.5">
-      <Avatar name={comment.userName} avatar={comment.avatar} className="mt-0.5 size-7 shrink-0" />
-      <div className="min-w-0 flex-1">
-        <div className="flex flex-wrap items-center gap-x-2 gap-y-0.5">
+    <li className={`spring-in group flex items-start gap-2.5 ${mine ? 'flex-row-reverse' : ''}`}>
+      <Avatar name={comment.userName} avatar={comment.avatar} className="mt-0.5 size-8 shrink-0 ring-2 ring-white" />
+      <div className={`flex min-w-0 max-w-[85%] flex-col ${mine ? 'items-end' : 'items-start'}`}>
+        <div className={`flex flex-wrap items-center gap-x-2 gap-y-0.5 px-1 ${mine ? 'justify-end' : ''}`}>
           <span className="truncate text-xs font-semibold text-black">{name}</span>
           {roleBadge && <span className="rounded-md bg-brand-soft px-1.5 py-px text-[11px] font-semibold text-brand-ink">{roleBadge}</span>}
-          {mine && <span className="text-[11px] text-neutral-500">({t.youLabel})</span>}
           <span title={formatDateTime(comment.createdAt)} className="text-[11px] text-neutral-500">
             {timeAgo(comment.createdAt, language)}
           </span>
@@ -37,7 +36,7 @@ export const CommentItem: React.FC<CommentItemProps> = ({ comment, onEdit, onDel
         </div>
 
         {editing ? (
-          <div className="mt-1.5">
+          <div className="mt-1.5 w-full min-w-64">
             <CommentForm
               initial={comment.body}
               placeholder={t.commentPlaceholder}
@@ -53,9 +52,15 @@ export const CommentItem: React.FC<CommentItemProps> = ({ comment, onEdit, onDel
           </div>
         ) : (
           <>
-            <p className="mt-0.5 whitespace-pre-wrap break-words text-sm leading-relaxed text-neutral-800">{comment.body}</p>
+            <p
+              className={`mt-0.5 whitespace-pre-wrap break-words rounded-2xl px-3.5 py-2 text-sm leading-relaxed shadow-xs ${
+                mine ? 'rounded-tr-md bg-brand text-white' : 'rounded-tl-md border border-neutral-200 bg-white text-neutral-800'
+              }`}
+            >
+              {comment.body}
+            </p>
             {!isDemo && (
-              <div className="mt-1 flex items-center gap-3">
+              <div className="mt-1 flex items-center gap-3 px-1 opacity-100 transition-opacity sm:opacity-0 sm:group-focus-within:opacity-100 sm:group-hover:opacity-100">
                 {mine && canContribute && (
                   <button type="button" onClick={() => setEditing(true)} className={action}>
                     {t.commentEdit}

@@ -6,6 +6,7 @@ import { syncReminders } from '../services/notifications';
 
 export const notificationsRouter = Router();
 
+// A notification is only a nudge: once it is read it is gone from the list (the row stays, so reminders are not made twice).
 const LIMIT = 40;
 
 notificationsRouter.get('/notifications', async (req, res) => {
@@ -16,7 +17,7 @@ notificationsRouter.get('/notifications', async (req, res) => {
   const [list, count] = await Promise.all([
     db.query(
       `SELECT id, type, group_id, target_id, actor_name, params, created_at, read_at
-         FROM notifications WHERE user_id = $1 ORDER BY created_at DESC LIMIT ${LIMIT}`,
+         FROM notifications WHERE user_id = $1 AND read_at IS NULL ORDER BY created_at DESC LIMIT ${LIMIT}`,
       [userId]
     ),
     db.query('SELECT count(*)::int AS n FROM notifications WHERE user_id = $1 AND read_at IS NULL', [userId]),

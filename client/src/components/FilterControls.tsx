@@ -2,9 +2,9 @@ import React from 'react';
 
 /** The same look for the filters on the Tasks and the Daily ToDo pages. */
 
-/** The frame of a filter bar. It stays at the top while the page scrolls. */
+/** The frame of a filter bar. */
 export const FilterPanel: React.FC<{ children: React.ReactNode }> = ({ children }) => (
-  <div className="sticky top-0 z-20 space-y-3 rounded-xl border border-neutral-200 bg-white p-4 shadow-xs">{children}</div>
+  <div className="space-y-3 rounded-xl border border-neutral-200 bg-white p-4 shadow-xs">{children}</div>
 );
 
 interface Option<T extends string> {

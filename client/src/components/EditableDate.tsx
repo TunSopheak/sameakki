@@ -19,7 +19,7 @@ export const EditableDate: React.FC<EditableDateProps> = ({ value, canEdit, onSa
   const [open, setOpen] = useState(false);
   const anchorRef = useRef<HTMLButtonElement>(null);
 
-  if (!canEdit) return <div className={className}>{children}</div>;
+  if (!canEdit) return <div className={`inline-flex items-center text-left ${className}`}>{children}</div>;
 
   return (
     <>
@@ -30,10 +30,10 @@ export const EditableDate: React.FC<EditableDateProps> = ({ value, canEdit, onSa
         aria-haspopup="dialog"
         aria-expanded={open}
         title={t.editDate}
-        className={`group/edit inline-flex cursor-pointer items-center gap-1 text-left ${className}`}
+        className={`group/edit inline-flex cursor-pointer items-center text-left ${className}`}
       >
         {children}
-        <Icons.edit className="size-3 shrink-0 text-neutral-400 transition-colors group-hover/edit:text-brand-ink" />
+        <Icons.edit className="ml-1.5 size-3.5 shrink-0 text-neutral-400 transition-colors group-hover/edit:text-brand-ink" />
       </button>
       <FloatingPanel open={open} onClose={() => setOpen(false)} anchorRef={anchorRef} label={t.editDate}>
         <Calendar

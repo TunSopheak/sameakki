@@ -1,3 +1,4 @@
+import { APP_VERSION } from './services/version';
 import { GUIDE_PATHS, renderGuidePage, renderSitemap } from './seo/guidePage';
 import fs from 'node:fs';
 import path from 'node:path';
@@ -53,7 +54,7 @@ export function createApp() {
 
   // No database call here, so health checks do not wake Neon
   app.get('/api/health', (_req, res) => {
-    res.json({ ok: true });
+    res.json({ ok: true, version: APP_VERSION });
   });
 
   app.get('/api/health/db', async (_req, res) => {

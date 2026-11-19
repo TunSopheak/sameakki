@@ -1,1 +1,1 @@
-export const REACTION_EMOJIS = ['👏', '🔥', '👍', '🚀', '💡'];
+export const REACTION_EMOJIS = ['👏', '🔥', '👍', '❤️', '🎉', '🚀', '💡'];

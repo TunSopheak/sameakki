@@ -449,7 +449,7 @@ export const TaskBoard: React.FC<TaskBoardProps> = ({
             }
             const assignee = users.find(u => u.id === task.assignedTo) || {
               id: task.assignedTo,
-              name: 'Unassigned',
+              name: t.ganttNobody,
               email: '',
               role: 'member',
             };
@@ -517,7 +517,7 @@ export const TaskBoard: React.FC<TaskBoardProps> = ({
                     >
                       {task.title}
                     </h3>
-                    <ExpandableText text={taskDescription(task.description, t)} lines={2} className="mt-1 text-xs leading-relaxed text-neutral-600" />
+                    <ExpandableText text={taskDescription(task.description)} lines={2} className="mt-1 text-xs leading-relaxed text-neutral-600" />
                   </div>
                 </div>
 
@@ -580,20 +580,28 @@ export const TaskBoard: React.FC<TaskBoardProps> = ({
                       />
                     )}
 
-                    <div className="ml-auto text-right">
-                      <EditableDate value={task.dueDate} canEdit={isTeamLead && task.status !== 'approved'} onSave={date => updateTaskDeadline(task.id, date)} size="sm" className="justify-end">
-                        <Icons.date className="size-3.5 text-neutral-500" />
-                        <span>
-                          <span className="block whitespace-nowrap font-mono-numbers font-medium text-black">
-                            {task.dueDate} {task.dueTime}
-                          </span>
-                          {/* Submitted or approved work is not counted down or called late */}
-                          {task.status !== 'approved' && task.status !== 'ready_for_review' && (
-                            <span className={`text-[11px] font-semibold ${deadlineInfo.isOverdue ? 'text-brand-ink' : 'text-neutral-700'}`}>{deadlineInfo.text}</span>
-                          )}
+                    {/* Submitted or approved work is not counted down or called late */}
+                    <EditableDate
+                      value={task.dueDate}
+                      canEdit={isTeamLead && task.status !== 'approved'}
+                      onSave={date => updateTaskDeadline(task.id, date)}
+                      className={`ml-auto gap-2.5 rounded-lg border px-2.5 py-1.5 transition-colors ${
+                        deadlineInfo.isOverdue && task.status !== 'approved' && task.status !== 'ready_for_review'
+                          ? 'border-brand/30 bg-brand-soft'
+                          : 'border-neutral-200 bg-neutral-50'
+                      } ${isTeamLead && task.status !== 'approved' ? 'hover:border-brand/40 hover:bg-white' : ''}`}
+                    >
+                      <Icons.date className="size-4 shrink-0 text-neutral-500" />
+                      <span className="flex flex-col leading-tight">
+                        <span className="whitespace-nowrap font-mono-numbers text-xs font-semibold text-black">
+                          {task.dueDate}
+                          {task.dueTime ? ` · ${task.dueTime}` : ''}
                         </span>
-                      </EditableDate>
-                    </div>
+                        {task.status !== 'approved' && task.status !== 'ready_for_review' && (
+                          <span className={`text-[11px] font-semibold ${deadlineInfo.isOverdue ? 'text-brand-ink' : 'text-neutral-600'}`}>{deadlineInfo.text}</span>
+                        )}
+                      </span>
+                    </EditableDate>
                   </div>
 
                   <div className="flex items-center justify-between gap-2 pt-1">
