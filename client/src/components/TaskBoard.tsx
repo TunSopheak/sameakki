@@ -2,7 +2,7 @@ import { ExpandableText } from './ExpandableText';
 import { moduleName, taskDescription } from '../lib/defaults';
 import React, { useState } from 'react';
 import { useApp } from '../context/AppContext';
-import { daysUntil, todayLocal } from '../lib/dates';
+import { daysUntil, formatDateShort, todayLocal } from '../lib/dates';
 import type { Task, TaskPriority, TaskStatus } from '../types';
 import { User as UserIcon } from 'lucide-react';
 import { Avatar } from './Avatar';
@@ -50,6 +50,7 @@ export const TaskBoard: React.FC<TaskBoardProps> = ({
     reassignTask,
     deleteTask,
     t,
+    language,
   } = useApp();
 
   const [searchQuery, setSearchQuery] = useState('');
@@ -595,7 +596,7 @@ export const TaskBoard: React.FC<TaskBoardProps> = ({
                       <Icons.date className="size-4 shrink-0 text-neutral-500" />
                       <span className="flex flex-col leading-tight">
                         <span className="whitespace-nowrap font-mono-numbers text-xs font-semibold text-black">
-                          {task.dueDate}
+                          {formatDateShort(task.dueDate, language)}
                           {task.dueTime ? ` · ${task.dueTime}` : ''}
                         </span>
                         {task.status !== 'approved' && task.status !== 'ready_for_review' && (

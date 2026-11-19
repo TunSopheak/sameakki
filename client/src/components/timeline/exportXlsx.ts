@@ -12,6 +12,7 @@ export interface XlsxLabels {
 }
 
 const BRAND = 'FF840015';
+const KHMER_FONT = 'Khmer OS Siemreap';
 const HEADER_FONT = { bold: true, color: { argb: 'FFFFFFFF' } } as const;
 const fill = (argb: string) => ({ type: 'pattern', pattern: 'solid', fgColor: { argb }, bgColor: { argb } }) as const;
 const dateOf = (iso: string) => new Date(toDay(iso) * 86_400_000);
@@ -107,6 +108,15 @@ export async function buildXlsx(rows: ExportRow[], labels: ExportLabels, words: 
       ],
     });
   }
+
+  // Khmer font on every cell (keeps bold/colour/size set above)
+  book.eachSheet(sheet =>
+    sheet.eachRow({ includeEmpty: false }, row =>
+      row.eachCell({ includeEmpty: false }, cell => {
+        cell.font = { ...cell.font, name: KHMER_FONT };
+      }),
+    ),
+  );
 
   return (await book.xlsx.writeBuffer()) as ArrayBuffer;
 }

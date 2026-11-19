@@ -1,6 +1,7 @@
 import { ExpandableText } from './ExpandableText';
 import React, { useState } from 'react';
 import { useApp } from '../context/AppContext';
+import { formatDateShort } from '../lib/dates';
 import { moduleName, taskDescription } from '../lib/defaults';
 import { averageProgress } from '../lib/stats';
 import { STATUS_ORDER } from '../lib/taskStatus';
@@ -25,7 +26,7 @@ interface TeamTaskCardProps {
 
 /** One card for a task given to several people. */
 export const TeamTaskCard: React.FC<TeamTaskCardProps> = ({ tasks, users, priority, deadline, onProgress, onOpenIndividual, onDelete, onEdit, onDeadline }) => {
-  const { t, currentUser, isTeamLead, canContribute } = useApp();
+  const { t, language, currentUser, isTeamLead, canContribute } = useApp();
   const [editing, setEditing] = useState<string | null>(null);
 
   const first = tasks[0];
@@ -130,7 +131,7 @@ export const TeamTaskCard: React.FC<TeamTaskCardProps> = ({ tasks, users, priori
           <Icons.date className="size-4 shrink-0 text-neutral-500" />
           <span className="flex flex-col leading-tight">
             <span className="whitespace-nowrap font-mono-numbers text-xs font-semibold text-black">
-              {first.dueDate}
+              {formatDateShort(first.dueDate, language)}
               {first.dueTime ? ` · ${first.dueTime}` : ''}
             </span>
             {deadline && <span className={`text-[11px] font-semibold ${deadline.overdue ? 'text-brand-ink' : 'text-neutral-600'}`}>{deadline.text}</span>}

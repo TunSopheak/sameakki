@@ -65,7 +65,14 @@ export const formatDateLong = (value: string, language: string) => {
   return new Intl.DateTimeFormat(locale(language), { weekday: 'short', day: 'numeric', month: 'short', year: 'numeric' }).format(d);
 };
 
-export const formatMonthYear = (year: number, month: number, language: string) =>
+/** "22 Nov 2026" / "22 វិច្ឆិកា 2026" */
+export const formatDateShort = (value: string, language: string) => {
+  if (!value) return '';
+  const d = parseLocalDate(value);
+  return `${d.getDate()} ${monthShortNames(language)[d.getMonth()]} ${d.getFullYear()}`;
+};
+
+export const formatMonthYear =(year: number, month: number, language: string) =>
   language === 'km' ? `${KM_MONTHS[month]} ${year}` : new Intl.DateTimeFormat(locale(language), { month: 'long', year: 'numeric' }).format(new Date(year, month, 1));
 
 export const formatYear = (year: number, language: string) =>
