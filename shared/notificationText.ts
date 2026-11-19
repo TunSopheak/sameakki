@@ -1,0 +1,106 @@
+import type { AppNotification } from './types';
+
+/** The page a notification opens */
+export type NotificationTab = 'tasks' | 'daily';
+
+// Used by the app (the bell) and by the server (Telegram), so both always say the same thing.
+export interface NotificationView {
+  text: string;
+  note?: string;
+  tab?: NotificationTab;
+}
+
+/** Notification text in the reader's language. */
+export function describeNotification(n: Pick<AppNotification, 'type' | 'actorName' | 'params'>, language: 'km' | 'en'): NotificationView {
+  const km = language === 'km';
+  const who = n.actorName || (km ? 'មានម្នាក់' : 'Someone');
+  const p = n.params;
+  const title = p.title ?? '';
+  const note = p.feedback;
+
+  switch (n.type) {
+    case 'task_assigned':
+      return {
+        tab: 'tasks',
+        text: km
+          ? `${who} បានចាត់កិច្ចការ «${title}» ជូនអ្នក (ផុតកំណត់ ${p.dueDate})`
+          : `${who} assigned you "${title}" (due ${p.dueDate})`,
+      };
+    case 'task_ready_for_review':
+      return {
+        tab: 'tasks',
+        text: km
+          ? `${who} បានបញ្ចប់កិច្ចការ «${title}» ហើយរង់ចាំអ្នកពិនិត្យ`
+          : `${who} finished "${title}" and is waiting for your review`,
+      };
+    case 'task_approved':
+      return {
+        tab: 'tasks',
+        note,
+        text: km ? `${who} បានអនុម័តកិច្ចការ «${title}»` : `${who} approved your task "${title}"`,
+      };
+    case 'task_changes_requested':
+      return {
+        tab: 'tasks',
+        note,
+        text: km ? `${who} បានស្នើសុំកែកិច្ចការ «${title}»` : `${who} asked for changes on "${title}"`,
+      };
+    case 'poke': {
+      const days = Number(p.streak) || 0;
+      return {
+        tab: 'daily',
+        text: km
+          ? `${who} បាន Poke អ្នក 👋 ${days > 0 ? `បង្ហោះ ToDo ថ្ងៃនេះ ដើម្បីរក្សា 🔥 ${days} ថ្ងៃ` : 'បង្ហោះ ToDo ថ្ងៃនេះ ដើម្បីចាប់ផ្តើម 🔥 ថ្មី'}`
+          : `${who} poked you 👋 ${days > 0 ? `Post your ToDo today to keep your 🔥 ${days}-day streak` : 'Post your ToDo today to start a new 🔥 streak'}`,
+      };
+    }
+    case 'task_rescheduled':
+      return {
+        tab: 'tasks',
+        text: km
+          ? `${who} បានកែកាលវិភាគកិច្ចការ «${title}» ទៅ ${p.startDate} → ${p.dueDate}`
+          : `${who} rescheduled "${title}" to ${p.startDate} → ${p.dueDate}`,
+      };
+    case 'task_due_soon':
+      return {
+        tab: 'tasks',
+        text: km ? `កិច្ចការ «${title}» ជិតដល់ថ្ងៃកំណត់ (${p.dueDate})` : `"${title}" is due soon (${p.dueDate})`,
+      };
+    case 'task_overdue':
+      return {
+        tab: 'tasks',
+        text: km ? `កិច្ចការ «${title}» ហួសថ្ងៃកំណត់ហើយ (${p.dueDate})` : `"${title}" is overdue (was due ${p.dueDate})`,
+      };
+    case 'daily_approved':
+      return {
+        tab: 'daily',
+        note,
+        text: km ? `${who} បានអនុម័តរបាយការណ៍ប្រចាំថ្ងៃ «${title}»` : `${who} approved your daily update "${title}"`,
+      };
+    case 'daily_reaction':
+      return {
+        tab: 'daily',
+        text: km
+          ? `${who} បានបញ្ចេញប្រតិកម្ម ${p.emoji ?? ''} លើរបាយការណ៍របស់អ្នក «${title}»`
+          : `${who} reacted ${p.emoji ?? ''} to your update "${title}"`,
+      };
+    case 'comment_added':
+      return {
+        tab: p.kind === 'task' ? 'tasks' : 'daily',
+        note: p.snippet,
+        text: km ? `${who} បានបញ្ចេញមតិលើ «${title}»` : `${who} commented on "${title}"`,
+      };
+    case 'password_reset':
+      return {
+        text: km
+          ? `${who} បានកំណត់ពាក្យសម្ងាត់គណនីរបស់អ្នកឡើងវិញ។ បើអ្នកមិនបានស្នើសុំ សូមទាក់ទងប្រធានក្រុមរបស់អ្នក។`
+          : `${who} reset your account password. If you did not ask for this, contact your team leader.`,
+      };
+    case 'plan_expiring':
+      return {
+        text: km
+          ? `កញ្ចប់របស់អ្នកនឹងផុតកំណត់នៅថ្ងៃ ${p.expiresAt}។ សូមទាក់ទង Admin ដើម្បីបន្ត។`
+          : `Your plan ends on ${p.expiresAt}. Contact the Admin to renew.`,
+      };
+  }
+}

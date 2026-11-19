@@ -1,4 +1,5 @@
 import type { StreaksData } from './useStreaks';
+import type { TelegramStatus } from './useTelegram';
 import type { LandingSettings } from '@shared/landing';
 import { localizeError } from '../locales/serverErrors';
 import type { AdminOverview, BootstrapData, Comment, CommentKind, NotificationsResponse, Role, TaskPriority, TaskStatus, User, GroupCategory, GroupStatus } from '@shared/types';
@@ -110,8 +111,9 @@ export const api = {
   ) => post<{ id: string; ids: string[] }>(`/groups/${groupId}/tasks`, data),
   streaks: (groupId: string) => get<StreaksData>(`/groups/${groupId}/streaks`),
   poke: (groupId: string, userId: string) => post<{ ok: boolean; telegram: 'sent' | 'failed' | 'none' }>(`/groups/${groupId}/pokes`, { userId }),
-  telegramStatus: () => get<{ available: boolean; linked: boolean }>('/telegram'),
-  telegramLink: () => post<{ url: string; minutes: number }>('/telegram/link'),
+  telegramStatus: () => get<TelegramStatus>('/telegram'),
+  telegramLink: (language: string) => post<{ url: string; minutes: number }>('/telegram/link', { language }),
+  telegramPrefs: (data: { language?: string; all?: boolean }) => patch('/telegram', data),
   telegramUnlink: () => del('/telegram/link'),
   requestTaskChanges: (taskId: string, feedback: string) => post(`/tasks/${taskId}/request-changes`, { feedback }),
   editTask: (taskId: string, data: { title?: string; module?: string; description?: string; priority?: TaskPriority }) => patch(`/tasks/${taskId}`, data),

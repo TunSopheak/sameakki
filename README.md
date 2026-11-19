@@ -46,7 +46,7 @@ The app is a single-page app, so search engines get plain HTML from the server:
 
 - **Streak:** days in a row with at least one daily ToDo (Cambodia time). It stays alive today until the day ends, and breaks after a whole missed day. Rules: `shared/streak.ts`. The ranking is on the Overview, and your own streak is on the post box.
 - **Poke:** a member who has not posted today can be poked by other members, once per person per day. The poked person gets a bell notification, and a Telegram message if they connected it (`server/routes/streaks.ts`).
-- **Telegram (optional):** without these settings everything works and pokes show only in the app.
+- **Telegram (optional):** without these settings everything works and notifications show only in the bell. When a person connects Telegram, the same notifications (new task, ready for review, approved, changes requested, comments, plan ending) are also sent there, in the language they use in the app. A checkbox in **My settings** limits it to pokes only. Reactions, date reminders and password resets stay in the app (`server/services/notifications.ts`, `shared/notificationText.ts`). A person can only get messages after pressing Start in the bot once. This is a Telegram rule, so the app shows a one-tap Connect card on the streak ranking.
   1. In Telegram, talk to `@BotFather`, send `/newbot`, and keep the token and the bot's username.
   2. Set `TELEGRAM_BOT_TOKEN`, `TELEGRAM_BOT_USERNAME` and `TELEGRAM_WEBHOOK_SECRET` (a long random string). `APP_URL` is optional and is added to the message.
   3. Tell Telegram where to send updates (once, after every deploy to a new address):

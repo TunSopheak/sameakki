@@ -1,5 +1,8 @@
 import type { Queryable } from '../db';
 import type { NotificationType } from '../../shared/types';
+import { describeNotification } from '../../shared/notificationText';
+import { getDb } from '../db';
+import { NOT_FOR_TELEGRAM, notificationMessage, sendTelegram, telegramConfigured, type TelegramLanguage } from './telegram';
 import { TIME_ZONE } from './time';
 
 const KEEP_DAYS = 60;
@@ -22,6 +25,18 @@ export async function notify(db: Queryable, n: NewNotification) {
      ON CONFLICT DO NOTHING`,
     [n.userId, n.type, n.groupId ?? null, n.targetId ?? null, n.actorName ?? null, JSON.stringify(params), n.dedupeKey ?? null]
   );
+  // The same notification also goes to the person's Telegram, if they connected it. Never waits, never fails the work.
+  void toTelegram(n.userId, n.type, n.actorName, params as Record<string, string>).catch(() => undefined);
+}
+
+async function toTelegram(userId: string, type: NotificationType, actorName: string | undefined, params: Record<string, string>) {
+  if (!telegramConfigured() || NOT_FOR_TELEGRAM.includes(type)) return;
+  const db = await getDb();
+  const { rows } = await db.query('SELECT telegram_chat_id, telegram_language, telegram_all FROM users WHERE id = $1 AND is_active = 1', [userId]);
+  const row = rows[0];
+  if (!row?.telegram_chat_id || !row.telegram_all) return;
+  const view = describeNotification({ type, actorName: actorName ?? '', params }, row.telegram_language as TelegramLanguage);
+  await sendTelegram(row.telegram_chat_id, notificationMessage(view, process.env.APP_URL));
 }
 
 export async function notifyComment(db: Queryable, n: Omit<NewNotification, 'type'> & { targetId: string }) {

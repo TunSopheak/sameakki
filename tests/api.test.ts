@@ -895,7 +895,8 @@ test('streaks and pokes: ranked, one poke per person per day, and an optional Te
   const streaks = async (who = lead) => (await who.get(`/api/groups/${ids.g1}/streaks`)).body;
 
   // Telegram is off until the server is given a bot
-  assert.deepEqual((await m1.get('/api/telegram')).body, { available: false, linked: false });
+  assert.equal((await m1.get('/api/telegram')).body.available, false);
+  assert.equal((await m1.get('/api/telegram')).body.linked, false);
   assert.equal((await m1.post('/api/telegram/link')).status, 400);
   assert.equal((await newClient().post('/api/telegram/webhook', { message: {} })).status, 404, 'no webhook without a bot');
 
@@ -920,8 +921,9 @@ test('streaks and pokes: ranked, one poke per person per day, and an optional Te
   }) as typeof fetch;
   Object.assign(process.env, { TELEGRAM_BOT_TOKEN: 'test-token', TELEGRAM_BOT_USERNAME: '@SameakkiBot', TELEGRAM_WEBHOOK_SECRET: 's3cret' });
   try {
-    assert.deepEqual((await targetSession.get('/api/telegram')).body, { available: true, linked: false });
-    const link = (await targetSession.post('/api/telegram/link')).body;
+    const status = (await targetSession.get('/api/telegram')).body;
+    assert.deepEqual([status.available, status.linked, status.all], [true, false, true], 'everything is sent unless they turn it off');
+    const link = (await targetSession.post('/api/telegram/link', { language: 'en' })).body;
     assert.match(link.url, /^https:\/\/t\.me\/SameakkiBot\?start=[A-Za-z0-9_-]{16,}$/);
     const token = link.url.split('start=')[1];
     const hookWith = async (secret: string | undefined, text: string, type = 'private') => {
@@ -971,6 +973,31 @@ test('streaks and pokes: ranked, one poke per person per day, and an optional Te
     assert.ok(note, 'the bell shows the poke');
     assert.equal(note.params.streak, String(target.current));
     assert.equal(sent.filter(m => m.chat === '4242' && m.text.includes('poked you')).length, 2, 'Telegram got both pokes');
+
+    // Other notifications go to Telegram too, in the chosen language, until the person turns that off
+    const until = async (check: () => boolean) => {
+      for (let i = 0; i < 40 && !check(); i++) await new Promise(r => setTimeout(r, 50));
+      return check();
+    };
+    const assign = (title: string) => lead.post(`/api/groups/${ids.g1}/tasks`, { title, assignedTo: targetId, dueDate: day(9) });
+    sent.length = 0;
+    await assign('Telegram task one');
+    assert.ok(await until(() => sent.some(m => m.text.includes('Telegram task one'))), 'a new task reaches Telegram');
+    assert.match(sent.find(m => m.text.includes('Telegram task one'))!.text, /assigned you/, 'in English, as chosen');
+
+    assert.equal((await targetSession.patch('/api/telegram', { language: 'km' })).status, 204);
+    await assign('Telegram task two');
+    assert.ok(await until(() => sent.some(m => m.text.includes('Telegram task two'))));
+    assert.match(sent.find(m => m.text.includes('Telegram task two'))!.text, /បានចាត់កិច្ចការ/, 'now in Khmer');
+
+    assert.equal((await targetSession.patch('/api/telegram', { all: false })).status, 204);
+    assert.equal((await targetSession.patch('/api/telegram', {})).status, 400, 'nothing to change');
+    await assign('Telegram task three');
+    await new Promise(r => setTimeout(r, 300));
+    assert.ok(!sent.some(m => m.text.includes('Telegram task three')), 'turned off: only pokes are sent');
+    assert.ok((await targetSession.get('/api/notifications')).body.items.some((i: Json) => i.params.title === 'Telegram task three'), 'the bell still has it');
+    assert.deepEqual([(await targetSession.get('/api/telegram')).body.language, (await targetSession.get('/api/telegram')).body.all], ['km', false]);
+    assert.equal((await targetSession.patch('/api/telegram', { all: true })).status, 204);
 
     // After posting, the streak starts and nobody can poke them any more
     assert.equal((await targetSession.post(`/api/groups/${ids.g1}/daily-logs`, { rawContent: 'Streak day\n- one' })).status, 201);

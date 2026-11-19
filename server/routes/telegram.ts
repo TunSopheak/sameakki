@@ -1,5 +1,6 @@
 import { randomBytes } from 'node:crypto';
 import { Router } from 'express';
+import { z } from 'zod';
 import { getDb } from '../db';
 import { badRequest, notFound } from '../middleware/errors';
 import { isStop, sendTelegram, startToken, telegramBotUsername, telegramConfigured, webhookSecretValid } from '../services/telegram';
@@ -11,18 +12,40 @@ export const telegramRouter = Router();
 
 telegramRouter.get('/telegram', async (req, res) => {
   const db = await getDb();
-  const { rows } = await db.query('SELECT telegram_chat_id FROM users WHERE id = $1', [req.user!.id]);
-  res.json({ available: telegramConfigured() && !!telegramBotUsername(), linked: !!rows[0]?.telegram_chat_id });
+  const { rows } = await db.query('SELECT telegram_chat_id, telegram_language, telegram_all FROM users WHERE id = $1', [req.user!.id]);
+  res.json({
+    available: telegramConfigured() && !!telegramBotUsername(),
+    linked: !!rows[0]?.telegram_chat_id,
+    language: rows[0]?.telegram_language ?? 'km',
+    all: rows[0]?.telegram_all ?? true,
+  });
+});
+
+// Which language Telegram uses, and whether everything is sent or only pokes
+const prefsSchema = z.object({ language: z.enum(['km', 'en']).optional(), all: z.boolean().optional() }).refine(v => Object.keys(v).length > 0, { message: 'Nothing to change.' });
+
+telegramRouter.patch('/telegram', async (req, res) => {
+  const input = prefsSchema.parse(req.body);
+  const db = await getDb();
+  await db.query('UPDATE users SET telegram_language = COALESCE($2, telegram_language), telegram_all = COALESCE($3, telegram_all) WHERE id = $1', [
+    req.user!.id,
+    input.language ?? null,
+    input.all ?? null,
+  ]);
+  res.status(204).end();
 });
 
 // A one-time link that opens the bot. Pressing Start there connects this account.
 telegramRouter.post('/telegram/link', async (req, res) => {
   if (!telegramConfigured() || !telegramBotUsername()) throw badRequest('Telegram is not set up on this server.');
   const token = randomBytes(18).toString('base64url');
+  const language = z.object({ language: z.enum(['km', 'en']).optional() }).parse(req.body ?? {}).language ?? null;
   const db = await getDb();
   await db.query(
-    `UPDATE users SET telegram_link_token = $2, telegram_link_expires = now() + ($3::text || ' minutes')::interval WHERE id = $1`,
-    [req.user!.id, token, LINK_MINUTES]
+    `UPDATE users SET telegram_link_token = $2, telegram_link_expires = now() + ($3::text || ' minutes')::interval,
+            telegram_language = COALESCE($4, telegram_language)
+      WHERE id = $1`,
+    [req.user!.id, token, LINK_MINUTES, language]
   );
   res.json({ url: `https://t.me/${telegramBotUsername()}?start=${token}`, minutes: LINK_MINUTES });
 });

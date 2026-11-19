@@ -164,7 +164,7 @@ A streak is the number of days in a row you posted your daily ToDo. It helps you
 3. Miss one whole day and the streak goes back to 0. But while today is still open, you can post to keep it.
 4. See someone who has not posted today? Tap "Poke" next to their name. They get a notification (and a Telegram message if they connected it).
 5. You can poke the same person once a day. When they post, the Poke button goes away.
-6. Want pokes in Telegram? Open "My settings", tap "Connect Telegram", then press Start in Telegram (if your server has this turned on).
+6. Want notifications in Telegram? Tap "Connect Telegram" on the ranking card (or in "My settings"), then press Start in Telegram once (if your server has this turned on). You get pokes and the same notifications as the bell (new tasks, approvals, comments), in the language you use in the app. Want pokes only? Untick "Send my other notifications here too".
 
 > **Note:** A streak counts the days you really posted. Viewers have no streak.
 

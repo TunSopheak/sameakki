@@ -280,4 +280,12 @@ export const migrations: { id: string; sql: string }[] = [
       CREATE UNIQUE INDEX users_telegram_token_unique ON users (telegram_link_token) WHERE telegram_link_token IS NOT NULL;
     `,
   },
+  {
+    // Which language Telegram messages use, and whether every notification goes there or only pokes
+    id: '022_telegram_prefs',
+    sql: `
+      ALTER TABLE users ADD COLUMN telegram_language TEXT NOT NULL DEFAULT 'km' CHECK (telegram_language IN ('km', 'en'));
+      ALTER TABLE users ADD COLUMN telegram_all BOOLEAN NOT NULL DEFAULT true;
+    `,
+  },
 ];

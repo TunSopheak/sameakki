@@ -5,7 +5,7 @@ import { useTelegram } from '../lib/useTelegram';
 /** Lets a person get pokes as a Telegram message too. Shown only when the server has a bot. */
 export const TelegramConnect: React.FC = () => {
   const { t } = useApp();
-  const { status, waiting, error, connect, disconnect } = useTelegram();
+  const { status, waiting, error, connect, disconnect, setAll } = useTelegram();
 
   if (!status?.available) return null;
 
@@ -29,6 +29,15 @@ export const TelegramConnect: React.FC = () => {
           </button>
         )}
       </div>
+      {status.linked && (
+        <label className="mt-3 flex cursor-pointer items-start gap-2.5 border-t border-neutral-100 pt-3">
+          <input type="checkbox" checked={status.all} onChange={e => setAll(e.target.checked)} className="mt-0.5 size-4 accent-[var(--color-brand)]" />
+          <span>
+            <span className="block text-xs font-semibold text-black">{t.telegramAllLabel}</span>
+            <span className="block text-[11px] text-neutral-500">{t.telegramAllHint}</span>
+          </span>
+        </label>
+      )}
       {error && <p className="mt-2 text-xs text-brand-ink">{error}</p>}
     </div>
   );

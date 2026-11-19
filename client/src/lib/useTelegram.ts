@@ -9,11 +9,15 @@ export interface TelegramStatus {
   /** The server has a bot */
   available: boolean;
   linked: boolean;
+  /** The language of the messages */
+  language: 'km' | 'en';
+  /** Every notification goes to Telegram, not only pokes */
+  all: boolean;
 }
 
 /** Connect or disconnect my Telegram. The same logic is used in My settings and on the streak card. */
 export function useTelegram() {
-  const { isDemo } = useApp();
+  const { isDemo, language } = useApp();
   const [status, setStatus] = useState<TelegramStatus | null>(null);
   const [waiting, setWaiting] = useState(false);
   const [error, setError] = useState('');
@@ -34,7 +38,7 @@ export function useTelegram() {
   const connect = async () => {
     setError('');
     try {
-      const { url } = await api.telegramLink();
+      const { url } = await api.telegramLink(language);
       window.open(url, '_blank', 'noopener');
       setWaiting(true);
       let tries = 0;
@@ -56,11 +60,27 @@ export function useTelegram() {
     setError('');
     try {
       await api.telegramUnlink();
-      setStatus({ available: true, linked: false });
+      setStatus(s => (s ? { ...s, linked: false } : s));
     } catch (err) {
       setError(err instanceof Error ? err.message : String(err));
     }
   };
 
-  return { status: isDemo ? null : status, waiting, error, connect, disconnect };
+  // Messages follow the language the person uses in the app
+  useEffect(() => {
+    if (!status?.linked || status.language === language) return;
+    api.telegramPrefs({ language }).then(() => setStatus(s => (s ? { ...s, language } : s)), () => undefined);
+  }, [status?.linked, status?.language, language]);
+
+  const setAll = async (all: boolean) => {
+    setError('');
+    try {
+      await api.telegramPrefs({ all });
+      setStatus(s => (s ? { ...s, all } : s));
+    } catch (err) {
+      setError(err instanceof Error ? err.message : String(err));
+    }
+  };
+
+  return { status: isDemo ? null : status, waiting, error, connect, disconnect, setAll };
 }

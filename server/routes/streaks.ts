@@ -84,10 +84,10 @@ streaksRouter.post('/groups/:groupId/pokes', async (req, res) => {
   // 'sent' (it is in their Telegram), 'failed' (Telegram refused it), 'none' (they have not connected Telegram).
   let telegram: 'sent' | 'failed' | 'none' = 'none';
   if (telegramConfigured()) {
-    const { rows } = await db.query('SELECT telegram_chat_id FROM users WHERE id = $1', [userId]);
+    const { rows } = await db.query('SELECT telegram_chat_id, telegram_language FROM users WHERE id = $1', [userId]);
     const chatId: string | null = rows[0]?.telegram_chat_id ?? null;
     if (chatId) {
-      const ok = await sendTelegram(chatId, pokeMessage({ from: user.name, group: groupName, streak: target.current, appUrl: process.env.APP_URL }));
+      const ok = await sendTelegram(chatId, pokeMessage({ from: user.name, group: groupName, streak: target.current, language: rows[0].telegram_language, appUrl: process.env.APP_URL }));
       telegram = ok ? 'sent' : 'failed';
     }
   }
