@@ -950,11 +950,21 @@ test('streaks and pokes: ranked, one poke per person per day, and an optional Te
     assert.ok([403, 404].includes((await viewer.post(`/api/groups/${ids.g1}/pokes`, { userId: targetId })).status), 'viewers cannot poke');
     assert.equal((await lead.post(`/api/groups/${ids.g1}/pokes`, { userId: ids.viewer })).status, 404, 'viewers are not in the ranking');
 
+    // A poke to someone who has not connected Telegram is only in the app, and the answer says so
+    const stranger = before.members.find((m: Json) => (m.userId === ids.m1 || m.userId === ids.m2) && m.userId !== targetId && !m.postedToday);
+    if (stranger) {
+      const reply = await lead.post(`/api/groups/${ids.g1}/pokes`, { userId: stranger.userId });
+      assert.equal(reply.status, 201);
+      assert.equal(reply.body.telegram, 'none');
+    }
+
     sent.length = 0;
-    assert.equal((await lead.post(`/api/groups/${ids.g1}/pokes`, { userId: targetId })).status, 201);
+    const first = await lead.post(`/api/groups/${ids.g1}/pokes`, { userId: targetId });
+    assert.equal(first.status, 201);
+    assert.equal(first.body.telegram, 'sent', 'it reached their Telegram');
     assert.equal((await lead.post(`/api/groups/${ids.g1}/pokes`, { userId: targetId })).status, 409, 'one poke to the same person per day');
     assert.equal((await otherSession.post(`/api/groups/${ids.g1}/pokes`, { userId: targetId })).status, 201, 'someone else can still poke them');
-    assert.deepEqual((await streaks()).pokedToday, [targetId], 'my own pokes today');
+    assert.ok((await streaks()).pokedToday.includes(targetId), 'my own pokes today');
     assert.deepEqual((await streaks(otherSession)).pokedToday, [targetId]);
 
     const note = (await targetSession.get('/api/notifications')).body.items.find((i: Json) => i.type === 'poke');

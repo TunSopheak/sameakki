@@ -109,7 +109,7 @@ export const api = {
     data: { title: string; module: string; description: string; assignedTo?: string; assigneeIds?: string[]; assignToAll?: boolean; priority: TaskPriority; startDate?: string; dueDate: string; dueTime?: string }
   ) => post<{ id: string; ids: string[] }>(`/groups/${groupId}/tasks`, data),
   streaks: (groupId: string) => get<StreaksData>(`/groups/${groupId}/streaks`),
-  poke: (groupId: string, userId: string) => post(`/groups/${groupId}/pokes`, { userId }),
+  poke: (groupId: string, userId: string) => post<{ ok: boolean; telegram: 'sent' | 'failed' | 'none' }>(`/groups/${groupId}/pokes`, { userId }),
   telegramStatus: () => get<{ available: boolean; linked: boolean }>('/telegram'),
   telegramLink: () => post<{ url: string; minutes: number }>('/telegram/link'),
   telegramUnlink: () => del('/telegram/link'),

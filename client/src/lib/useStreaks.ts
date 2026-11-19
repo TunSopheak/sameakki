@@ -61,9 +61,11 @@ export function useStreaks() {
       return;
     }
     try {
-      await api.poke(groupId, userId);
+      const { telegram } = await api.poke(groupId, userId);
       setData(d => (d ? { ...d, pokedToday: [...d.pokedToday, userId] } : d));
-      showSuccess(t.pokeSent.replace('{name}', name));
+      // Say where it arrived, so nobody thinks a poke reached Telegram when it did not
+      const message = telegram === 'sent' ? t.pokeSentTelegram : telegram === 'failed' ? t.pokeSentFailed : t.pokeSent;
+      showSuccess(message.replace('{name}', name));
     } catch (err) {
       showError(err instanceof Error ? err.message : String(err));
       void reload();

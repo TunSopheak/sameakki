@@ -80,12 +80,17 @@ streaksRouter.post('/groups/:groupId/pokes', async (req, res) => {
   });
   if (!inserted) throw conflict('You already poked this member today.');
 
-  // Also to Telegram, if they connected it. A failure here never fails the poke.
+  // Also to Telegram, if they connected it. A failure here never fails the poke, but the answer says what happened:
+  // 'sent' (it is in their Telegram), 'failed' (Telegram refused it), 'none' (they have not connected Telegram).
+  let telegram: 'sent' | 'failed' | 'none' = 'none';
   if (telegramConfigured()) {
     const { rows } = await db.query('SELECT telegram_chat_id FROM users WHERE id = $1', [userId]);
     const chatId: string | null = rows[0]?.telegram_chat_id ?? null;
-    if (chatId) await sendTelegram(chatId, pokeMessage({ from: user.name, group: groupName, streak: target.current, appUrl: process.env.APP_URL }));
+    if (chatId) {
+      const ok = await sendTelegram(chatId, pokeMessage({ from: user.name, group: groupName, streak: target.current, appUrl: process.env.APP_URL }));
+      telegram = ok ? 'sent' : 'failed';
+    }
   }
 
-  res.status(201).json({ ok: true });
+  res.status(201).json({ ok: true, telegram });
 });
