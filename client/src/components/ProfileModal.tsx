@@ -6,6 +6,7 @@ import { useApp } from '../context/AppContext';
 import { Avatar } from './Avatar';
 import { Icons } from './icons';
 import { PasswordInput } from './PasswordInput';
+import { TelegramConnect } from './TelegramConnect';
 
 interface ProfileModalProps {
   isOpen: boolean;
@@ -22,6 +23,7 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({ isOpen, onClose }) =
   const membership = activeGroupMembers.find(m => m.id === currentUser.id);
   const [name, setName] = useState('');
   const [nameKm, setNameKm] = useState('');
+  const [username, setUsername] = useState('');
   const [specialty, setSpecialty] = useState('');
   const [currentPassword, setCurrentPassword] = useState('');
   const [newPassword, setNewPassword] = useState('');
@@ -33,6 +35,7 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({ isOpen, onClose }) =
     if (!isOpen) return;
     setName(currentUser.name);
     setNameKm(currentUser.nameKm || '');
+    setUsername(currentUser.username || '');
     setSpecialty((membership ? membership.specialty : currentUser.specialty) || '');
     setCurrentPassword('');
     setNewPassword('');
@@ -54,7 +57,8 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({ isOpen, onClose }) =
     setError('');
     try {
       if (wantsPassword) await api.changePassword(currentPassword, newPassword);
-      await updateProfile(membership ? { name, nameKm } : { name, nameKm, specialty });
+      const login = username.trim().toLowerCase();
+      await updateProfile(membership ? { name, nameKm, username: login } : { name, nameKm, specialty, username: login });
       if (membership && specialty.trim() !== (membership.specialty ?? '')) await updateMemberSpecialty(currentUser.id, specialty.trim());
       onClose();
     } catch (err) {
@@ -96,6 +100,19 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({ isOpen, onClose }) =
               {field(t.khmerName, <input value={nameKm} onChange={e => setNameKm(e.target.value)} className={input} />)}
             </div>
             {field(
+              t.usernameLabel,
+              <input
+                value={username}
+                onChange={e => setUsername(e.target.value.toLowerCase().replace(/[^a-z0-9._-]/g, ''))}
+                maxLength={40}
+                autoComplete="username"
+                spellCheck={false}
+                placeholder={t.usernamePlaceholder}
+                className={input}
+              />,
+              t.usernameHint
+            )}
+            {field(
               membership && activeGroup
                 ? t.specialtyInGroup.replace('{group}', language === 'km' && activeGroup.nameKm ? activeGroup.nameKm : activeGroup.name)
                 : t.memberSpecialty,
@@ -109,6 +126,7 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({ isOpen, onClose }) =
               membership ? t.specialtyGroupHint : undefined
             )}
 
+            <TelegramConnect />
 
             <div className="rounded-xl border border-neutral-200">
               <button

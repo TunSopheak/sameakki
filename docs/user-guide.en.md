@@ -10,8 +10,9 @@ Step by step, for new people. Read only the parts you need.
 4. [Tasks you were given](#tasks)
 5. [Team tasks (for everyone)](#team)
 6. [Comments and reactions](#talk)
-7. [For team leaders](#leader)
-8. [Common questions](#help)
+7. [Streaks and pokes](#streak)
+8. [For team leaders](#leader)
+9. [Common questions](#help)
 
 <a id="start"></a>
 ## 1. Getting started
@@ -21,7 +22,8 @@ You can start in 4 easy steps.
 1. Log in with your email or username and the password your leader gave you.
 2. The first time, you must change the password. Choose a new one you can remember.
 3. To change language, tap the flag at the top right and pick "ខ្មែរ" or "English". Next to it is the light or dark mode button.
-4. Have a group code? Tap "Join a Group" and enter it. If not, wait for your leader to add you.
+4. Tired of typing your long email? Tap your picture at the bottom left, open "My settings" and set a short "Username" (for example sopheak). Next time you can sign in with it instead of your email. It cannot be the same as anyone else's.
+5. Have a group code? Tap "Join a Group" and enter it. If not, wait for your leader to add you.
 
 > **Note:** Tap the eye in a password box to see what you typed.
 
@@ -126,9 +128,11 @@ Your leader gives you tasks, and you tell the team how far you are.
 2. Tap "Start" when you begin.
 3. Drag the "Progress" bar or tap 25% 50% 75%. It saves by itself, no save button needed.
 4. Finished? Tap "Done" (100%) or "Done, send for review". It goes to your leader.
-5. Wait for approval. Once approved, the task is locked and its progress cannot change unless your leader reopens it.
+5. Wait for your leader to review. If it is right, they approve it and it is locked. If not, they tap "Request changes" with a reason, the task goes back to "In progress", and you are told. Fix it and send it again.
 
 > **Note:** Red means overdue. Ask a question by leaving a comment on the task.
+
+> **Note:** Want to know what to do today? The Overview page has a "Today" row with your "Just me", "With my team" and "Overdue" counts. Tap one (or a card below it) to open the page already filtered. The Tasks and Daily ToDo pages have the same filters: All / Just me, Any time / Today / Dates, and status.
 
 > **Note:** Long description? Tap "Show more" under the task to read all of it (for example, a list of things to install).
 
@@ -150,18 +154,33 @@ One task that every member must do, for example "Install the software".
 3. Tap the smiley next to a ToDo to react. Tap again to remove it.
 4. The bell at the top tells you about new work and comments.
 
+<a id="streak"></a>
+## 7. Streaks and pokes
+
+A streak is the number of days in a row you posted your daily ToDo. It helps you build a habit, and your team can see who is on a roll.
+
+1. Post a ToDo at least once a day (Cambodia time). That day counts and your streak grows by one.
+2. Your streak shows on the post box (🔥 5-day streak). The team ranking is on the "Overview" page.
+3. Miss one whole day and the streak goes back to 0. But while today is still open, you can post to keep it.
+4. See someone who has not posted today? Tap "Poke" next to their name. They get a notification (and a Telegram message if they connected it).
+5. You can poke the same person once a day. When they post, the Poke button goes away.
+6. Want pokes in Telegram? Open "My settings", tap "Connect Telegram", then press Start in Telegram (if your server has this turned on).
+
+> **Note:** A streak counts the days you really posted. Viewers have no streak.
+
 <a id="leader"></a>
-## 7. For team leaders
+## 8. For team leaders
 
 1. Create a group, then add members ("Add member"). The temporary password is shown only once, so copy it now.
 2. Assign work with the "New task" button. Pick "One person", "Choose" or "Everyone".
 3. Many tasks? Tap "Import tasks" on the "Tasks" page, then paste a table from Google Sheets or Excel (or choose a CSV file). One row is one task. You need the columns Task title and Due date. Other columns (Module, Assign to, Members, Priority, Start date, Due time, Details) are optional. The app shows a preview first and skips rows with problems. Tap "Download template" to get the right layout.
 4. Change a deadline by tapping the date. Change the person with "Reassign".
-5. Review and approve ToDos and tasks marked "Waiting for review". Approved work is locked. To change it, tap "Reopen to edit".
-6. Open "Report" and tap "Print / PDF" to get a summary for your lecturer.
+5. Review tasks marked "Waiting for review": "Approve" or "Request changes" (a reason is required). Many at once? Tap "Approve all". Approved work is locked. To change it, tap "Reopen to edit".
+6. Need to change a title, description, category or priority? Tap the pencil on the task card. A team task changes for everyone. Tap "How tasks work" on the Tasks page to see all the rules.
+7. Open "Report" and tap "Print / PDF" to get a summary for your lecturer.
 
 <a id="help"></a>
-## 8. Common questions
+## 9. Common questions
 
 **Forgot your password?**
 

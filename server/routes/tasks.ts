@@ -369,6 +369,35 @@ tasksRouter.patch('/tasks/:taskId/schedule', async (req, res) => {
 
 const approveSchema = z.object({ feedback: z.string().trim().max(2000).optional() });
 
+/** Signs off one task that is waiting for review. */
+async function approveOne(tx: Queryable, user: User, task: any, feedback?: string) {
+  await tx.query(
+    `UPDATE tasks SET status = 'approved', approved_at = now(), approved_by = $2,
+            completed_at = COALESCE(completed_at, now()), leader_feedback = $3
+      WHERE id = $1`,
+    [task.id, user.id, feedback || 'Approved by Leader.']
+  );
+  await logActivity(tx, user, {
+    groupId: task.group_id,
+    type: 'task_approved',
+    targetId: task.id,
+    targetTitle: task.title,
+    description: `approved and signed off on task "${task.title}"`,
+    descriptionKm: `បានអនុម័ត និងចុះហត្ថលេខាទទួលស្គាល់កិច្ចការ "${task.title}"`,
+    metadata: feedback ? { feedback } : undefined,
+  });
+  if (task.assigned_to && task.assigned_to !== user.id) {
+    await notify(tx, {
+      userId: task.assigned_to,
+      type: 'task_approved',
+      groupId: task.group_id,
+      targetId: task.id,
+      actorName: user.name,
+      params: { title: task.title, feedback },
+    });
+  }
+}
+
 tasksRouter.post('/tasks/:taskId/approve', async (req, res) => {
   const user = req.user!;
   const db = await getDb();
@@ -379,32 +408,118 @@ tasksRouter.post('/tasks/:taskId/approve', async (req, res) => {
   if (task.status === 'approved') throw conflict('This task is already approved.');
   if (task.status !== 'ready_for_review') throw badRequest('Only a task that is ready for review can be approved.');
 
+  await db.transaction(tx => approveOne(tx, user, task, input.feedback));
+  res.status(204).end();
+});
+
+// Approve everything that is waiting for review in one go. Tasks in another state are skipped.
+const bulkApproveSchema = z.object({
+  taskIds: z.array(z.string().uuid()).min(1).max(200),
+  feedback: z.string().trim().max(2000).optional(),
+});
+
+tasksRouter.post('/groups/:groupId/tasks/approve', async (req, res) => {
+  const user = req.user!;
+  const db = await getDb();
+  const access = await getGroupAccess(db, user, req.params.groupId);
+  assertWritable(access);
+  assert(access.canLead, 'Only team leads can approve tasks.');
+  const input = bulkApproveSchema.parse(req.body);
+
+  const count = await db.transaction(async tx => {
+    let done = 0;
+    for (const id of new Set(input.taskIds)) {
+      const { rows } = await tx.query(
+        `SELECT * FROM tasks WHERE id = $1 AND group_id = $2 AND is_active = 1 AND status = 'ready_for_review'`,
+        [id, access.groupId]
+      );
+      if (!rows[0]) continue;
+      await approveOne(tx, user, rows[0], input.feedback);
+      done++;
+    }
+    return done;
+  });
+
+  res.json({ count });
+});
+
+// The leader sends work back with a reason. The person keeps working, and is told why.
+const changesSchema = z.object({ feedback: z.string().trim().min(1).max(2000) });
+
+tasksRouter.post('/tasks/:taskId/request-changes', async (req, res) => {
+  const user = req.user!;
+  const db = await getDb();
+  const { task, access } = await loadTask(db, user, req.params.taskId);
+  assertWritable(access);
+  assert(access.canLead, 'Only team leads can ask for changes.');
+  const input = changesSchema.parse(req.body);
+  if (task.status !== 'ready_for_review') throw badRequest('Only a task that is waiting for review can be sent back.');
+
   await db.transaction(async tx => {
     await tx.query(
-      `UPDATE tasks SET status = 'approved', approved_at = now(), approved_by = $2,
-              completed_at = COALESCE(completed_at, now()), leader_feedback = $3
+      `UPDATE tasks SET status = 'in_progress', progress = LEAST(progress, 99), completed_at = NULL,
+              approved_at = NULL, approved_by = NULL, leader_feedback = $2
         WHERE id = $1`,
-      [task.id, user.id, input.feedback || 'Approved by Leader.']
+      [task.id, input.feedback]
     );
     await logActivity(tx, user, {
       groupId: task.group_id,
-      type: 'task_approved',
+      type: 'task_changes_requested',
       targetId: task.id,
       targetTitle: task.title,
-      description: `approved and signed off on task "${task.title}"`,
-      descriptionKm: `បានអនុម័ត និងចុះហត្ថលេខាទទួលស្គាល់កិច្ចការ "${task.title}"`,
-      metadata: input.feedback ? { feedback: input.feedback } : undefined,
+      description: `asked for changes on task "${task.title}"`,
+      descriptionKm: `បានស្នើសុំកែកិច្ចការ "${task.title}"`,
+      metadata: { feedback: input.feedback },
     });
     if (task.assigned_to && task.assigned_to !== user.id) {
       await notify(tx, {
         userId: task.assigned_to,
-        type: 'task_approved',
+        type: 'task_changes_requested',
         groupId: task.group_id,
         targetId: task.id,
         actorName: user.name,
         params: { title: task.title, feedback: input.feedback },
       });
     }
+  });
+
+  res.status(204).end();
+});
+
+// Change what the task says. A team task changes for everyone who has it.
+const detailsSchema = z
+  .object({
+    title: z.string().trim().min(1).max(200).optional(),
+    module: z.string().trim().min(1).max(120).optional(),
+    description: z.string().trim().max(5000).optional(),
+    priority: z.enum(TASK_PRIORITIES).optional(),
+  })
+  .refine(v => Object.keys(v).length > 0, { message: 'Nothing to change.' });
+
+tasksRouter.patch('/tasks/:taskId', async (req, res) => {
+  const user = req.user!;
+  const db = await getDb();
+  const { task, access } = await loadTask(db, user, req.params.taskId);
+  assertWritable(access);
+  assert(access.canLead, 'Only team leads can edit tasks.');
+  if (task.status === 'approved') throw badRequest('This task is approved and locked. A leader can reopen it to make changes.');
+  const input = detailsSchema.parse(req.body);
+
+  await db.transaction(async tx => {
+    await tx.query(
+      `UPDATE tasks SET title = COALESCE($3, title), module = COALESCE($4, module),
+              description = COALESCE($5, description), priority = COALESCE($6, priority)
+        WHERE is_active = 1 AND status <> 'approved' AND (id = $1 OR ($2::uuid IS NOT NULL AND batch_id = $2::uuid))`,
+      [task.id, task.batch_id ?? null, input.title ?? null, input.module ?? null, input.description ?? null, input.priority ?? null]
+    );
+    await logActivity(tx, user, {
+      groupId: task.group_id,
+      type: 'task_edited',
+      targetId: task.id,
+      targetTitle: input.title ?? task.title,
+      description: `edited task "${task.title}"`,
+      descriptionKm: `បានកែកិច្ចការ "${task.title}"`,
+    });
   });
 
   res.status(204).end();

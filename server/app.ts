@@ -20,6 +20,8 @@ import { adminRouter } from './routes/admin';
 import { notificationsRouter } from './routes/notifications';
 import { commentsRouter } from './routes/comments';
 import { publicRouter } from './routes/public';
+import { streaksRouter } from './routes/streaks';
+import { telegramRouter, telegramWebhookRouter } from './routes/telegram';
 
 // Addresses the app answers itself (older links to the login and about pages still work)
 const APP_PATHS = new Set(['/', '/login', '/about']);
@@ -66,9 +68,10 @@ export function createApp() {
 
   app.use('/api/auth', authRouter);
   app.use('/api/public', publicRouter);
+  app.use('/api', telegramWebhookRouter);
   const api = express.Router();
   api.use(requireAuth);
-  api.use(bootstrapRouter, groupsRouter, usersRouter, tasksRouter, dailyLogsRouter, adminRouter, notificationsRouter, commentsRouter);
+  api.use(bootstrapRouter, groupsRouter, usersRouter, tasksRouter, dailyLogsRouter, adminRouter, notificationsRouter, commentsRouter, streaksRouter, telegramRouter);
   app.use('/api', api);
   app.use('/api', notFoundApi);
 

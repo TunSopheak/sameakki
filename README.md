@@ -23,7 +23,13 @@ Mobile app
 
 **Tasks.** A leader assigns a task to one person, some people or everyone. The assignee moves the progress bar (0% to do, 100% sends it for review). Descriptions keep their line breaks, and long ones have a "Show more" button.
 
+**Overview, Daily ToDo and Tasks work the same way.** The three pages share the filter look (`FilterControls.tsx`) and the same words for the same states (In progress / Waiting for review / Approved). The Overview has a **Today** row (just me / with my team / overdue) and clickable cards. Tapping one opens Tasks or Daily ToDo already filtered (`lib/pagePreset.ts`). Daily ToDo has the same *Whose* and *When* filters as Tasks.
+
+**Finding tasks.** The Tasks page has filters that combine: **whose** (All / Just me = my own tasks / With my team = the team tasks that include me), **when** (Any time / Today = running today and not approved / Overdue / a From-To range of dates), a status, and search. **More filters** holds member, category and sort order. The numbers on the buttons are card counts (a team task is one card). The rules are in `client/src/lib/taskFilters.ts`.
+
 **Import tasks.** On the Tasks page a leader taps **Import tasks** and pastes a table from Google Sheets or Excel (or picks a CSV file). Needed columns: `Task title`, `Due date`. Optional: `Module`, `Assign to` (`Everyone` / `Choose`), `Members` (names or emails, comma separated), `Priority`, `Start date`, `Due time`, `Details`. A preview shows each row's problems, and rows with problems are skipped. Up to 200 rows are created in one go. The rules are in `shared/taskImport.ts`, and the API is `POST /api/groups/:id/tasks/import`.
+
+**Task flow.** To do (0%) → In progress (above 0%) → Waiting for review (100% or "Done, send for review") → Approved. A leader reviews each task: **Approve** (locks it), or **Request changes** with a required reason (back to In progress, and the person is notified). **Approve all** approves everything waiting for review in the current view. A leader can edit a task's title, description, category and priority with the pencil (a team task changes for everyone), but not once it is approved. The Tasks page has a "How tasks work" panel with these rules.
 
 **Approval.** A leader approves a ToDo or task that is waiting for review. Approved work is locked for everyone, the leader too. A leader taps **Reopen to edit** to change it, and it goes back to review.
 
@@ -35,6 +41,17 @@ The app is a single-page app, so search engines get plain HTML from the server:
 - `/sitemap.xml` lists the home page and both guides, and `/robots.txt` points to it.
 - The home page has its meta tags and JSON-LD in `client/index.html`; the landing page switches them to the visitor's language.
 - After a deploy, add the site to Google Search Console and request indexing for `/`, `/guide` and `/en/guide`.
+
+## Streaks, pokes and Telegram
+
+- **Streak:** days in a row with at least one daily ToDo (Cambodia time). It stays alive today until the day ends, and breaks after a whole missed day. Rules: `shared/streak.ts`. The ranking is on the Overview, and your own streak is on the post box.
+- **Poke:** a member who has not posted today can be poked by other members, once per person per day. The poked person gets a bell notification, and a Telegram message if they connected it (`server/routes/streaks.ts`).
+- **Telegram (optional):** without these settings everything works and pokes show only in the app.
+  1. In Telegram, talk to `@BotFather`, send `/newbot`, and keep the token and the bot's username.
+  2. Set `TELEGRAM_BOT_TOKEN`, `TELEGRAM_BOT_USERNAME` and `TELEGRAM_WEBHOOK_SECRET` (a long random string). `APP_URL` is optional and is added to the message.
+  3. Tell Telegram where to send updates (once, after every deploy to a new address):
+     `curl "https://api.telegram.org/bot<TOKEN>/setWebhook" -d url=https://<your-domain>/api/telegram/webhook -d secret_token=<TELEGRAM_WEBHOOK_SECRET>`
+  4. Each person opens **My settings → Connect Telegram** and presses Start. The chat id is stored privately, and they can disconnect at any time (or send `/stop` to the bot).
 
 ## Run locally
 
@@ -58,6 +75,10 @@ Tables are created automatically when the server starts. Without `DATABASE_URL`,
 | `DATABASE_SSL` | `false` for a local PostgreSQL. On by default in production. |
 | `JWT_SECRET` | Required in production, 32+ random characters. |
 | `NODE_ENV` | `production` when deployed. |
+| `TELEGRAM_BOT_TOKEN` | Optional. Bot token from BotFather; turns on Telegram messages. |
+| `TELEGRAM_BOT_USERNAME` | Optional. The bot's username, used for the connect link. |
+| `TELEGRAM_WEBHOOK_SECRET` | Optional. Must match the `secret_token` given to `setWebhook`. |
+| `APP_URL` | Optional. The site address added to Telegram messages. |
 
 Never commit `.env`.
 
@@ -68,6 +89,7 @@ There is no public sign-up. Every account is created by someone who already has 
 - **Super Admin:** create it once with `npm run admin:reset -- <username> <password>` (on a deployed server: `npm run admin:reset:prod -- <username> <password>`).
 - **Team Leaders:** the Super Admin creates them in the Admin tab, with an optional expiry date and member limit. Leave the password empty to have one generated and shown once.
 - **Members:** a Team Leader adds them to a group (a new account, or one the leader already created). They must change a generated or reset password the first time they sign in.
+- **Username:** anyone can choose a short username in **My settings** (3-40 lowercase letters, numbers, `.` `_` `-`, unique, case does not matter) and sign in with it instead of the email. Only the owner sees their own username.
 - **Group code:** anyone who already has an account can use **Join a Group** with the code shown on the group page.
 - **Privacy:** the Super Admin cannot open a group's tasks, updates or comments unless that group's leader allows it for a limited time.
 

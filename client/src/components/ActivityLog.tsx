@@ -42,6 +42,16 @@ export const ActivityLog: React.FC<ActivityLogProps> = ({
           label: t.logTaskApproved,
           isBlack: true,
         };
+      case 'task_changes_requested':
+        return {
+          icon: <Icons.edit className="size-3.5 text-black" />,
+          label: t.logTaskChangesRequested,
+        };
+      case 'task_edited':
+        return {
+          icon: <Icons.edit className="size-3.5 text-black" />,
+          label: t.logTaskEdited,
+        };
       case 'task_assigned':
         return {
           icon: <Icons.tasks className="size-3.5 text-black" />,
@@ -105,7 +115,7 @@ export const ActivityLog: React.FC<ActivityLogProps> = ({
 
   const filteredEvents = activeGroupActivityEvents.filter(ev => {
     if (filterType === 'tasks') {
-      if (!['task_completed', 'task_approved', 'task_assigned'].includes(ev.type)) return false;
+      if (!['task_completed', 'task_approved', 'task_assigned', 'task_changes_requested', 'task_edited'].includes(ev.type)) return false;
     } else if (filterType === 'members') {
       if (!['member_added', 'member_removed', 'member_role_changed'].includes(ev.type)) return false;
     } else if (filterType === 'deadlines') {

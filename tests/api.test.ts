@@ -834,3 +834,179 @@ test('importing tasks: leads only, and all rows are created or none', async () =
   const told = (await m2.get('/api/notifications')).body.items.filter((i: Json) => i.type === 'task_assigned' && String(i.params.title).startsWith('Import '));
   assert.ok(told.length >= 2, 'the people who got tasks are told');
 });
+
+test('the task flow: send back with a reason, edit details, approve many at once', async () => {
+  const { lead, m1, m2 } = sessions;
+  const read = async (id: string) => (await lead.get('/api/bootstrap')).body.tasks.find((x: Json) => x.id === id);
+  const make = async (title: string, assignee = ids.m1) => (await lead.post(`/api/groups/${ids.g1}/tasks`, { title, assignedTo: assignee, dueDate: day(10) })).body.id as string;
+  const submit = (id: string, who = m1) => who.patch(`/api/tasks/${id}/status`, { status: 'ready_for_review' });
+
+  // Sending back needs a reason, a lead, and work that is waiting for review
+  const a = await make('Flow back');
+  assert.equal((await lead.post(`/api/tasks/${a}/request-changes`, { feedback: 'Fix it' })).status, 400, 'not submitted yet');
+  await submit(a);
+  assert.equal((await m1.post(`/api/tasks/${a}/request-changes`, { feedback: 'Fix it' })).status, 403, 'members cannot');
+  assert.equal((await lead.post(`/api/tasks/${a}/request-changes`, { feedback: '  ' })).status, 400, 'a reason is required');
+  assert.equal((await lead.post(`/api/tasks/${a}/request-changes`, { feedback: 'Add the footer' })).status, 204);
+  const back = await read(a);
+  assert.equal(back.status, 'in_progress');
+  assert.ok(back.progress < 100, 'it is no longer 100%');
+  assert.equal(back.leaderFeedback, 'Add the footer');
+  const told = (await m1.get('/api/notifications')).body.items.find((i: Json) => i.type === 'task_changes_requested');
+  assert.equal(told.params.feedback, 'Add the footer', 'the person is told why');
+  assert.equal((await lead.post(`/api/tasks/${a}/request-changes`, { feedback: 'again' })).status, 400, 'only while waiting for review');
+
+  // After fixing, it can be sent again and approved
+  await submit(a);
+  assert.equal((await lead.post(`/api/tasks/${a}/approve`, {})).status, 204);
+
+  // Editing: leads only, never when approved, and a team task changes for everyone
+  const b = await make('Flow edit');
+  assert.equal((await m1.patch(`/api/tasks/${b}`, { title: 'Hacked' })).status, 403);
+  assert.equal((await lead.patch(`/api/tasks/${b}`, {})).status, 400, 'nothing to change');
+  assert.equal((await lead.patch(`/api/tasks/${b}`, { title: '  ' })).status, 400, 'a title cannot be empty');
+  assert.equal((await lead.patch(`/api/tasks/${b}`, { title: 'Flow edited', description: 'Line 1\nLine 2', priority: 'urgent', module: 'Docs' })).status, 204);
+  const edited = await read(b);
+  assert.deepEqual([edited.title, edited.description, edited.priority, edited.module, edited.assignedTo], ['Flow edited', 'Line 1\nLine 2', 'urgent', 'Docs', ids.m1]);
+  assert.equal((await lead.patch(`/api/tasks/${a}`, { title: 'Late change' })).status, 400, 'approved tasks are locked');
+
+  const team = (await lead.post(`/api/groups/${ids.g1}/tasks`, { title: 'Flow team', assigneeIds: [ids.m1, ids.m2], dueDate: day(10) })).body.ids as string[];
+  assert.equal((await lead.patch(`/api/tasks/${team[0]}`, { title: 'Flow team renamed' })).status, 204);
+  assert.deepEqual([(await read(team[0])).title, (await read(team[1])).title], ['Flow team renamed', 'Flow team renamed']);
+
+  // Approve many: only the ones waiting for review, only in this group, leads only
+  const c = await make('Flow bulk 1');
+  const d = await make('Flow bulk 2', ids.m2);
+  const e = await make('Flow bulk 3 (not submitted)');
+  await submit(c);
+  await submit(d, m2);
+  const bulk = `/api/groups/${ids.g1}/tasks/approve`;
+  assert.equal((await m1.post(bulk, { taskIds: [c, d] })).status, 403);
+  assert.equal((await lead.post(bulk, { taskIds: [] })).status, 400);
+  const done = await lead.post(bulk, { taskIds: [c, d, e] });
+  assert.equal(done.status, 200);
+  assert.equal(done.body.count, 2, 'the task that was not submitted is skipped');
+  assert.deepEqual([(await read(c)).status, (await read(d)).status, (await read(e)).status], ['approved', 'approved', 'todo']);
+  assert.equal((await lead.post(bulk, { taskIds: [c, d] })).body.count, 0, 'nothing is approved twice');
+});
+
+test('streaks and pokes: ranked, one poke per person per day, and an optional Telegram message', async () => {
+  const { lead, m1, m2, viewer } = sessions;
+  const streaks = async (who = lead) => (await who.get(`/api/groups/${ids.g1}/streaks`)).body;
+
+  // Telegram is off until the server is given a bot
+  assert.deepEqual((await m1.get('/api/telegram')).body, { available: false, linked: false });
+  assert.equal((await m1.post('/api/telegram/link')).status, 400);
+  assert.equal((await newClient().post('/api/telegram/webhook', { message: {} })).status, 404, 'no webhook without a bot');
+
+  // The ranking has people who can post, never viewers
+  const before = await streaks();
+  assert.ok(!before.members.some((m: Json) => m.userId === ids.viewer), 'viewers are not ranked');
+  assert.deepEqual(before.members.map((m: Json) => m.current), [...before.members.map((m: Json) => m.current)].sort((a: number, b: number) => b - a), 'longest streak first');
+  const target = before.members.find((m: Json) => (m.userId === ids.m1 || m.userId === ids.m2) && !m.postedToday);
+  assert.ok(target, 'someone has not posted today');
+  const [targetSession, otherSession, targetId] = target.userId === ids.m1 ? [m1, m2, ids.m1] : [m2, m1, ids.m2];
+
+  // Connect the target's Telegram, with a fake Telegram so no network is used
+  const sent: { chat: string; text: string }[] = [];
+  const realFetch = globalThis.fetch;
+  globalThis.fetch = (async (input: any, init?: any) => {
+    if (String(input).startsWith('https://api.telegram.org/')) {
+      const body = JSON.parse(init.body);
+      sent.push({ chat: String(body.chat_id), text: body.text });
+      return new Response('{"ok":true}', { status: 200 });
+    }
+    return realFetch(input, init);
+  }) as typeof fetch;
+  Object.assign(process.env, { TELEGRAM_BOT_TOKEN: 'test-token', TELEGRAM_BOT_USERNAME: '@SameakkiBot', TELEGRAM_WEBHOOK_SECRET: 's3cret' });
+  try {
+    assert.deepEqual((await targetSession.get('/api/telegram')).body, { available: true, linked: false });
+    const link = (await targetSession.post('/api/telegram/link')).body;
+    assert.match(link.url, /^https:\/\/t\.me\/SameakkiBot\?start=[A-Za-z0-9_-]{16,}$/);
+    const token = link.url.split('start=')[1];
+    const hookWith = async (secret: string | undefined, text: string, type = 'private') => {
+      const res = await fetch(`${base}/api/telegram/webhook`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', ...(secret ? { 'x-telegram-bot-api-secret-token': secret } : {}) },
+        body: JSON.stringify({ message: { text, chat: { id: 4242, type } } }),
+      });
+      return res.status;
+    };
+    assert.equal(await hookWith(undefined, `/start ${token}`), 401, 'Telegram must send our secret');
+    assert.equal(await hookWith('wrong', `/start ${token}`), 401);
+    assert.equal(await hookWith('s3cret', `/start ${token}`, 'group'), 200);
+    assert.equal((await targetSession.get('/api/telegram')).body.linked, false, 'a group chat never connects');
+    assert.equal(await hookWith('s3cret', '/start not-a-real-token-123456'), 200);
+    assert.equal((await targetSession.get('/api/telegram')).body.linked, false, 'a wrong link does nothing');
+    assert.equal(await hookWith('s3cret', `/start ${token}`), 200);
+    assert.equal((await targetSession.get('/api/telegram')).body.linked, true);
+    assert.ok(sent.some(m => m.chat === '4242' && m.text.includes('Connected')), 'Telegram confirms');
+    assert.equal(await hookWith('s3cret', `/start ${token}`), 200, 'the link works once');
+
+    // Poking: not yourself, not a viewer, not someone who already posted
+    assert.equal((await targetSession.post(`/api/groups/${ids.g1}/pokes`, { userId: targetId })).status, 400, 'not yourself');
+    assert.ok([403, 404].includes((await viewer.post(`/api/groups/${ids.g1}/pokes`, { userId: targetId })).status), 'viewers cannot poke');
+    assert.equal((await lead.post(`/api/groups/${ids.g1}/pokes`, { userId: ids.viewer })).status, 404, 'viewers are not in the ranking');
+
+    sent.length = 0;
+    assert.equal((await lead.post(`/api/groups/${ids.g1}/pokes`, { userId: targetId })).status, 201);
+    assert.equal((await lead.post(`/api/groups/${ids.g1}/pokes`, { userId: targetId })).status, 409, 'one poke to the same person per day');
+    assert.equal((await otherSession.post(`/api/groups/${ids.g1}/pokes`, { userId: targetId })).status, 201, 'someone else can still poke them');
+    assert.deepEqual((await streaks()).pokedToday, [targetId], 'my own pokes today');
+    assert.deepEqual((await streaks(otherSession)).pokedToday, [targetId]);
+
+    const note = (await targetSession.get('/api/notifications')).body.items.find((i: Json) => i.type === 'poke');
+    assert.ok(note, 'the bell shows the poke');
+    assert.equal(note.params.streak, String(target.current));
+    assert.equal(sent.filter(m => m.chat === '4242' && m.text.includes('poked you')).length, 2, 'Telegram got both pokes');
+
+    // After posting, the streak starts and nobody can poke them any more
+    assert.equal((await targetSession.post(`/api/groups/${ids.g1}/daily-logs`, { rawContent: 'Streak day\n- one' })).status, 201);
+    const after = (await streaks()).members.find((m: Json) => m.userId === targetId);
+    assert.equal(after.postedToday, true);
+    assert.ok(after.current >= 1 && after.best >= after.current && after.total >= 1);
+    assert.equal((await otherSession.post(`/api/groups/${ids.g1}/pokes`, { userId: targetId })).status, 400, 'already posted today');
+
+    // Disconnect
+    assert.equal((await targetSession.del('/api/telegram/link')).status, 204);
+    assert.equal((await targetSession.get('/api/telegram')).body.linked, false);
+  } finally {
+    globalThis.fetch = realFetch;
+    for (const key of ['TELEGRAM_BOT_TOKEN', 'TELEGRAM_BOT_USERNAME', 'TELEGRAM_WEBHOOK_SECRET']) delete process.env[key];
+  }
+});
+
+test('a person can choose their own username to sign in with', async () => {
+  const { m1, m2 } = sessions;
+  const profile = (who: Client, name: string, username?: string) => who.patch('/api/users/me', { name, ...(username !== undefined ? { username } : {}) });
+  const me = async (who: Client) => (await who.get('/api/bootstrap')).body;
+
+  assert.equal((await profile(m1, 'Mem One', 'Bad Name!')).status, 400, 'letters, numbers, . _ - only');
+  assert.equal((await profile(m1, 'Mem One', 'ab')).status, 400, 'at least 3 characters');
+  assert.equal((await profile(m1, 'Mem One', 'lead')).status, 409, 'taken by someone else');
+  assert.equal((await profile(m1, 'Mem One', 'LEAD')).status, 409, 'upper and lower case are the same name');
+  assert.equal((await profile(m1, 'Mem One', 'mem.one')).status, 204);
+  assert.equal((await profile(m1, 'Mem One', 'MEM.ONE')).status, 204, 'keeping your own name is fine');
+  assert.equal((await profile(m2, 'Mem Two', 'mem.one')).status, 409, 'now it is taken');
+
+  // It is shown to its owner only
+  const own = await me(m1);
+  assert.equal(own.currentUser.username, 'mem.one');
+  assert.ok(own.users.every((u: Json) => u.id === own.currentUser.id || u.username === undefined), 'nobody else sees login names');
+  const other = await me(m2);
+  assert.ok(other.users.every((u: Json) => u.username === undefined || u.id === other.currentUser.id));
+
+  // It works for signing in, in any letter case, and the email still works
+  assert.equal((await newClient().post('/api/auth/login', { email: 'mem.one', password: temp.m1 })).status, 200);
+  assert.equal((await newClient().post('/api/auth/login', { email: 'Mem.One', password: temp.m1 })).status, 200);
+  assert.equal((await newClient().post('/api/auth/login', { email: 'm1@test.local', password: temp.m1 })).status, 200);
+
+  // Saving without a username leaves it alone; an empty one removes it
+  assert.equal((await profile(m1, 'Mem One')).status, 204);
+  assert.equal((await me(m1)).currentUser.username, 'mem.one');
+  assert.equal((await profile(m1, 'Mem One', '')).status, 204);
+  assert.equal((await me(m1)).currentUser.username, undefined);
+  assert.equal((await newClient().post('/api/auth/login', { email: 'mem.one', password: temp.m1 })).status, 401);
+  assert.equal((await profile(m2, 'Mem Two', 'mem.one')).status, 204, 'a removed name can be used again');
+  assert.equal((await profile(m2, 'Mem Two', '')).status, 204);
+});

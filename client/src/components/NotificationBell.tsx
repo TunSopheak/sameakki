@@ -16,6 +16,8 @@ const ICONS: Record<NotificationType, React.ComponentType<{ className?: string }
   task_assigned: Icons.tasks,
   task_ready_for_review: Icons.review,
   task_approved: Icons.approved,
+  poke: Icons.poke,
+  task_changes_requested: Icons.edit,
   task_due_soon: Icons.time,
   task_rescheduled: Icons.deadline,
   task_overdue: Icons.warning,

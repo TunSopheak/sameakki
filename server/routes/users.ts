@@ -6,7 +6,7 @@ import { ROLES } from '../../shared/types';
 import { AVATAR_KEYS } from '../../shared/avatars';
 import { requireSuperAdmin } from '../services/access';
 import { logActivity } from '../services/activity';
-import { badRequest, notFound } from '../middleware/errors';
+import { badRequest, conflict, notFound } from '../middleware/errors';
 
 export const usersRouter = Router();
 
@@ -14,12 +14,26 @@ const profileSchema = z.object({
   name: z.string().trim().min(1).max(120),
   nameKm: z.string().trim().max(120).optional(),
   specialty: z.string().trim().max(200).optional(),
+  // A short name to sign in with, instead of the email. Empty removes it.
+  username: z
+    .union([
+      z.literal(''),
+      z.string().trim().toLowerCase().regex(/^[a-z0-9._-]{3,40}$/, 'Username: 3-40 letters, numbers, dot, dash or underscore.'),
+    ])
+    .optional(),
 });
 
 usersRouter.patch('/users/me', async (req, res) => {
   const input = profileSchema.parse(req.body);
   const db = await getDb();
+  if (input.username) {
+    const { rows } = await db.query('SELECT 1 FROM users WHERE lower(username) = $1 AND is_active = 1 AND id <> $2', [input.username, req.user!.id]);
+    if (rows[0]) throw conflict('That username is already taken.');
+  }
   await db.query('UPDATE users SET name = $2, name_km = $3 WHERE id = $1', [req.user!.id, input.name, input.nameKm || null]);
+  if (input.username !== undefined) {
+    await db.query('UPDATE users SET username = $2 WHERE id = $1', [req.user!.id, input.username || null]);
+  }
   // Account specialty, only when sent
   if (input.specialty !== undefined) {
     await db.query('UPDATE users SET specialty = $2 WHERE id = $1', [req.user!.id, input.specialty || null]);

@@ -27,6 +27,7 @@ import { SpecialtySuggestions } from './components/SpecialtyCell';
 import { DemoBanner } from './components/DemoBanner';
 import { PlanBanner } from './components/PlanBanner';
 import { ForcePasswordChange } from './components/ForcePasswordChange';
+import { setPagePreset, type PagePreset } from './lib/pagePreset';
 import { hasLoggedInBefore, navigate, rememberLogin, useRoute } from './lib/route';
 import { LandingPage } from './components/landing/LandingPage';
 import { APP_NAME } from './lib/brand';
@@ -46,7 +47,9 @@ const MainApp: React.FC = () => {
   const [leaveGroupId, setLeaveGroupId] = useState<string | null>(null);
   const [isReportModalOpen, setIsReportModalOpen] = useState(false);
 
-  const handleTabChange = (tab: Tab) => {
+  const handleTabChange = (tab: Tab, preset?: Omit<PagePreset, 'page'>) => {
+    // A page opened from a card starts filtered. Any other way of opening it starts clean.
+    setPagePreset(preset && (tab === 'tasks' || tab === 'daily') ? { ...preset, page: tab } : null);
     if (tab === 'report') {
       setIsReportModalOpen(true);
     } else {
@@ -94,7 +97,7 @@ const MainApp: React.FC = () => {
                 <DailyStandupBox onOpenGuide={() => handleTabChange('guide')} />
 
                 <OverviewDashboard
-                  onGoToTab={tab => handleTabChange(tab)}
+                  onGoToTab={(tab, preset) => handleTabChange(tab, preset)}
                   onOpenAssignTask={() => setIsAssignTaskOpen(true)}
                   onOpenAddMember={() => setIsAddMemberOpen(true)}
                 />

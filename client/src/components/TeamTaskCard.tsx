@@ -17,10 +17,11 @@ interface TeamTaskCardProps {
   onProgress: (taskId: string, value: number) => Promise<void> | void;
   onOpenIndividual: () => void;
   onDelete: () => void;
+  onEdit: () => void;
 }
 
 /** One card for a task given to several people. */
-export const TeamTaskCard: React.FC<TeamTaskCardProps> = ({ tasks, users, priority, deadline, onProgress, onOpenIndividual, onDelete }) => {
+export const TeamTaskCard: React.FC<TeamTaskCardProps> = ({ tasks, users, priority, deadline, onProgress, onOpenIndividual, onDelete, onEdit }) => {
   const { t, currentUser, isTeamLead, canContribute } = useApp();
   const [editing, setEditing] = useState<string | null>(null);
 
@@ -51,6 +52,11 @@ export const TeamTaskCard: React.FC<TeamTaskCardProps> = ({ tasks, users, priori
           </div>
           <div className="flex items-center gap-2">
             <span className={`rounded-lg px-2 py-0.5 text-[11px] uppercase ${priority.className}`}>{priority.label}</span>
+            {isTeamLead && tasks.some(task => task.status !== 'approved') && (
+              <button type="button" onClick={onEdit} title={t.editTask} aria-label={t.editTask} className="cursor-pointer p-0.5 text-neutral-400 transition-colors hover:text-black">
+                <Icons.edit className="size-3.5" />
+              </button>
+            )}
             {isTeamLead && (
               <button
                 type="button"

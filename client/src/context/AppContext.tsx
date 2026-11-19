@@ -27,6 +27,7 @@ interface AppContextType {
   notice: { type: 'error' | 'success'; message: string } | null;
   dismissNotice: () => void;
   showError: (message: string) => void;
+  showSuccess: (message: string) => void;
 
   isSuperAdmin: boolean;
   canCreateGroup: boolean;
@@ -63,7 +64,7 @@ interface AppContextType {
   removeMemberFromGroup: (userId: string, groupId?: string) => Promise<void>;
   updateAvatar: (avatar: string) => Promise<void>;
   updateMemberSpecialty: (userId: string, specialty: string) => Promise<void>;
-  updateProfile: (data: { name: string; nameKm?: string; specialty?: string }) => Promise<void>;
+  updateProfile: (data: { name: string; nameKm?: string; specialty?: string; username?: string }) => Promise<void>;
   updateUserRole: (userId: string, newRole: Role) => Promise<void>;
   createGroup: (data: {
     name: string;
@@ -106,6 +107,9 @@ interface AppContextType {
   updateTaskDeadline: (taskId: string, newDueDate: string, newDueTime?: string) => Promise<void>;
   rescheduleTask: (taskId: string, startDate: string, dueDate: string) => Promise<void>;
   importTasks: (tasks: ImportedTask[]) => Promise<void>;
+  requestTaskChanges: (taskId: string, feedback: string) => Promise<void>;
+  editTask: (taskId: string, data: { title?: string; module?: string; description?: string; priority?: Task['priority'] }) => Promise<void>;
+  approveTasks: (taskIds: string[]) => Promise<void>;
   reassignTask: (taskId: string, assignedTo: string) => Promise<void>;
   approveTask: (taskId: string, leaderFeedback?: string) => Promise<void>;
   reopenTask: (taskId: string) => Promise<void>;
@@ -305,6 +309,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     notice,
     dismissNotice: () => setNotice(null),
     showError: message => showNotice('error', message),
+    showSuccess: message => showNotice('success', message),
 
     isSuperAdmin,
     canCreateGroup,
@@ -362,6 +367,14 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     assignTask: input => run(() => api.createTask(resolvedGroupId, input)),
     updateTaskProgress: (taskId, progress) => quiet(run(() => api.updateTaskProgress(taskId, progress))),
     updateTaskStatus: (taskId, status, notes) => quiet(run(() => api.updateTaskStatus(taskId, status, notes))),
+    requestTaskChanges: (taskId, feedback) => quiet(run(() => api.requestTaskChanges(taskId, feedback))),
+    editTask: (taskId, data) => run(() => api.editTask(taskId, data)),
+    approveTasks: async taskIds => {
+      await run(async () => {
+        const { count } = await api.approveTasks(resolvedGroupId, taskIds);
+        showNotice('success', t.approveAllDone.replace('{n}', String(count)));
+      });
+    },
     importTasks: async tasks => {
       await run(() => api.importTasks(resolvedGroupId, tasks), t.importDone.replace('{n}', String(tasks.length)));
     },

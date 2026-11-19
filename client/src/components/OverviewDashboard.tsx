@@ -6,10 +6,13 @@ import { statusLabels } from '../lib/taskStatus';
 import { AnimatedNumber } from './AnimatedNumber';
 import { Avatar } from './Avatar';
 import { ActivityLog } from './ActivityLog';
+import { cardCount, isOverdue, matchesScope, matchesWhen, myBatches } from '../lib/taskFilters';
+import type { PagePreset } from '../lib/pagePreset';
 import { Icons } from './icons';
+import { StreakBoard } from './StreakBoard';
 
 interface OverviewDashboardProps {
-  onGoToTab: (tab: 'dashboard' | 'tasks' | 'daily' | 'members' | 'report') => void;
+  onGoToTab: (tab: 'dashboard' | 'tasks' | 'daily' | 'members' | 'report', preset?: Omit<PagePreset, 'page'>) => void;
   onOpenAssignTask: () => void;
   onOpenAddMember: () => void;
 }
@@ -45,10 +48,52 @@ export const OverviewDashboard: React.FC<OverviewDashboardProps> = ({
     .slice(0, 3);
   const statusLabel = statusLabels(t);
 
+  // What there is to do today. Just me = my own tasks, with my team = team tasks that include me.
+  const mine = myBatches(activeGroupTasks, currentUser.id);
+  const none = { from: '', to: '' };
+  const runningToday = activeGroupTasks.filter(task => matchesWhen(task, 'today', todayStr, none));
+  const todayAlone = cardCount(runningToday.filter(task => matchesScope(task, 'mine', currentUser.id, mine)));
+  const todayTeam = cardCount(runningToday.filter(task => matchesScope(task, 'team', currentUser.id, mine)));
+  const lateCount = cardCount(activeGroupTasks.filter(task => isOverdue(task, todayStr)));
+
+  // A card that opens a page, optionally already filtered
+  const link = (tab: 'tasks' | 'daily' | 'members', preset?: Omit<PagePreset, 'page'>) => ({
+    role: 'link' as const,
+    tabIndex: 0,
+    onClick: () => onGoToTab(tab, preset),
+    onKeyDown: (e: React.KeyboardEvent) => {
+      if (e.key === 'Enter' || e.key === ' ') {
+        e.preventDefault();
+        onGoToTab(tab, preset);
+      }
+    },
+  });
+  const cardClass = 'lift bg-white p-3.5 sm:p-5 rounded-xl border border-neutral-200 shadow-xs flex flex-col justify-between cursor-pointer focus-visible:outline-2 focus-visible:outline-brand';
+  const todayButton = 'flex min-w-28 flex-1 cursor-pointer items-baseline gap-2 rounded-lg border border-neutral-200 bg-white px-3 py-2 text-left transition-colors hover:bg-neutral-50 sm:flex-none';
+
   return (
     <div className="space-y-6">
+      <div className="flex flex-wrap items-center gap-2 rounded-xl border border-neutral-200 bg-white p-3 shadow-xs sm:p-4">
+        <span className="mr-1 inline-flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider text-neutral-600">
+          <Icons.date className="size-4 text-black" />
+          {t.filterToday}
+        </span>
+        <button type="button" onClick={() => onGoToTab('tasks', { scope: 'mine', when: 'today' })} className={todayButton}>
+          <span className="text-xl font-bold text-black font-mono-numbers">{todayAlone}</span>
+          <span className="text-xs font-semibold text-neutral-700">{t.filterScopeMine}</span>
+        </button>
+        <button type="button" onClick={() => onGoToTab('tasks', { scope: 'team', when: 'today' })} className={todayButton}>
+          <span className="text-xl font-bold text-black font-mono-numbers">{todayTeam}</span>
+          <span className="text-xs font-semibold text-neutral-700">{t.filterScopeTeam}</span>
+        </button>
+        <button type="button" onClick={() => onGoToTab('tasks', { when: 'overdue' })} className={todayButton}>
+          <span className={`text-xl font-bold font-mono-numbers ${lateCount > 0 ? 'text-brand-ink' : 'text-black'}`}>{lateCount}</span>
+          <span className="text-xs font-semibold text-neutral-700">{t.filterOverdue}</span>
+        </button>
+      </div>
+
       <div className="stagger grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
-        <div className="lift bg-white p-3.5 sm:p-5 rounded-xl border border-neutral-200 shadow-xs flex flex-col justify-between">
+        <div className={cardClass} {...link('tasks')}>
           <div className="flex items-center justify-between">
             <span className="text-[11px] sm:text-xs font-semibold text-neutral-500 uppercase tracking-wider">
               {t.completion}
@@ -73,7 +118,7 @@ export const OverviewDashboard: React.FC<OverviewDashboardProps> = ({
           </div>
         </div>
 
-        <div className="lift bg-white p-3.5 sm:p-5 rounded-xl border border-neutral-200 shadow-xs flex flex-col justify-between">
+        <div className={cardClass} {...link('daily', { when: 'today' })}>
           <div className="flex items-center justify-between">
             <span className="text-[11px] sm:text-xs font-semibold text-neutral-500 uppercase tracking-wider">
               {t.todayStandupReport}
@@ -98,7 +143,7 @@ export const OverviewDashboard: React.FC<OverviewDashboardProps> = ({
           </div>
         </div>
 
-        <div className="lift bg-white p-3.5 sm:p-5 rounded-xl border border-neutral-200 shadow-xs flex flex-col justify-between">
+        <div className={cardClass} {...link('tasks', { status: 'ready_for_review' })}>
           <div className="flex items-center justify-between">
             <span className="text-[11px] sm:text-xs font-semibold text-neutral-500 uppercase tracking-wider">
               {t.pendingVerification}
@@ -122,7 +167,7 @@ export const OverviewDashboard: React.FC<OverviewDashboardProps> = ({
           </div>
         </div>
 
-        <div className="lift bg-white p-3.5 sm:p-5 rounded-xl border border-neutral-200 shadow-xs flex flex-col justify-between">
+        <div className={cardClass} {...link('members')}>
           <div className="flex items-center justify-between">
             <span className="text-[11px] sm:text-xs font-semibold text-neutral-500 uppercase tracking-wider">
               {t.tabMembers}
@@ -208,7 +253,7 @@ export const OverviewDashboard: React.FC<OverviewDashboardProps> = ({
                           </span>
                         </div>
                         <span className="text-[11px] font-bold text-black bg-white px-2 py-0.5 rounded-lg">
-                          {log.status === 'approved' ? t.taskStatusApproved : log.status === 'completed' ? t.reportLogDone : t.taskStatusInProgress}
+                          {log.status === 'approved' ? t.taskStatusApproved : log.status === 'completed' ? t.taskStatusReview : t.taskStatusInProgress}
                         </span>
                       </div>
                       <p className="text-xs text-neutral-800 line-clamp-2 leading-relaxed">
@@ -221,9 +266,6 @@ export const OverviewDashboard: React.FC<OverviewDashboardProps> = ({
               </div>
             )}
           </div>
-        </div>
-
-        <div className="space-y-4">
           <div className="bg-white rounded-xl border border-neutral-200 p-5 shadow-xs">
             <div className="flex items-center justify-between mb-4">
               <h3 className="text-base font-bold text-black tracking-tight flex items-center gap-1.5">
@@ -245,7 +287,7 @@ export const OverviewDashboard: React.FC<OverviewDashboardProps> = ({
                 {t.allTasksDone}
               </div>
             ) : (
-              <div className="space-y-3">
+              <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
                 {urgentTasks.map(({ task, team }) => {
                   const assignee = activeGroupMembers.find(m => m.id === task.assignedTo);
                   return (
@@ -284,6 +326,10 @@ export const OverviewDashboard: React.FC<OverviewDashboardProps> = ({
               </button>
             )}
           </div>
+        </div>
+
+        <div className="space-y-4">
+          <StreakBoard />
         </div>
       </div>
 

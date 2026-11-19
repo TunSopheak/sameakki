@@ -2,8 +2,8 @@ import { ExpandableText } from './ExpandableText';
 import { moduleName, taskDescription } from '../lib/defaults';
 import React, { useState } from 'react';
 import { useApp } from '../context/AppContext';
-import { daysUntil } from '../lib/dates';
-import type { TaskPriority, TaskStatus } from '../types';
+import { daysUntil, todayLocal } from '../lib/dates';
+import type { Task, TaskPriority, TaskStatus } from '../types';
 import { User as UserIcon } from 'lucide-react';
 import { Avatar } from './Avatar';
 import { FilterSelect, Pager, SearchBox } from './TableParts';
@@ -15,7 +15,12 @@ import { TaskProgress } from './TaskProgress';
 import { TeamTaskBanner } from './TeamTaskBanner';
 import { TeamTaskCard } from './TeamTaskCard';
 import { groupTeamTasks, type TaskLine } from '../lib/stats';
+import { cardCount, matchesScope, matchesWhen, myBatches, type Scope, type When } from '../lib/taskFilters';
+import { DatePicker } from './pickers/DatePicker';
+import { FilterPanel, SegmentGroup, StatusChips } from './FilterControls';
+import { peekPagePreset } from '../lib/pagePreset';
 import { Icons } from './icons';
+import { EditTaskModal } from './EditTaskModal';
 import { ImportTasksModal } from './ImportTasksModal';
 
 interface TaskBoardProps {
@@ -26,6 +31,7 @@ export const TaskBoard: React.FC<TaskBoardProps> = ({
   onOpenAssignTask,
 }) => {
   const [importOpen, setImportOpen] = useState(false);
+  const [editing, setEditing] = useState<{ task: Task; size: number } | null>(null);
   const {
     activeGroupTasks,
     activeGroupMembers,
@@ -39,6 +45,8 @@ export const TaskBoard: React.FC<TaskBoardProps> = ({
     updateTaskDeadline,
     approveTask,
     reopenTask,
+    requestTaskChanges,
+    approveTasks,
     reassignTask,
     deleteTask,
     t,
@@ -46,7 +54,14 @@ export const TaskBoard: React.FC<TaskBoardProps> = ({
 
   const [searchQuery, setSearchQuery] = useState('');
 
-  const [statusFilter, setStatusFilter] = useState<'all' | TaskStatus>('all');
+  // A card on the Overview can open this page already filtered
+  const [preset] = useState(() => peekPagePreset('tasks'));
+  const [statusFilter, setStatusFilter] = useState<'all' | TaskStatus>((preset?.status as TaskStatus | undefined) ?? 'all');
+  const [moreOpen, setMoreOpen] = useState(false);
+  const [rulesOpen, setRulesOpen] = useState(false);
+  const [scope, setScope] = useState<Scope>(preset?.scope ?? 'all');
+  const [when, setWhen] = useState<When>(preset?.when ?? 'any');
+  const [range, setRange] = useState({ from: '', to: '' });
   const [assigneeFilter, setAssigneeFilter] = useState<string>('all');
   const [categoryFilter, setCategoryFilter] = useState<string>('all');
   const [batchFilter, setBatchFilter] = useState<string | null>(null);
@@ -59,9 +74,14 @@ export const TaskBoard: React.FC<TaskBoardProps> = ({
 
   const categories = Array.from(new Set(activeGroupTasks.map(t => t.module))).filter(Boolean);
 
-  const filteredTasks = activeGroupTasks.filter(task => {
-    if (statusFilter !== 'all' && task.status !== statusFilter) return false;
+  const today = todayLocal();
+  const mine = myBatches(activeGroupTasks, currentUser.id);
+
+  // Every filter except the one named, so each button can show how many cards it would give
+  const matchesOthers = (task: Task, skip?: 'scope' | 'when') => {
     if (assigneeFilter !== 'all' && task.assignedTo !== assigneeFilter) return false;
+    if (skip !== 'scope' && !matchesScope(task, scope, currentUser.id, mine)) return false;
+    if (skip !== 'when' && !matchesWhen(task, when, today, range)) return false;
     if (batchFilter && task.batchId !== batchFilter) return false;
     if (categoryFilter !== 'all' && task.module.toLowerCase() !== categoryFilter.toLowerCase()) return false;
 
@@ -76,7 +96,13 @@ export const TaskBoard: React.FC<TaskBoardProps> = ({
       if (!match) return false;
     }
     return true;
-  });
+  };
+
+  const otherMatches = activeGroupTasks.filter(task => matchesOthers(task));
+  const filteredTasks = statusFilter === 'all' ? otherMatches : otherMatches.filter(task => task.status === statusFilter);
+  const statusCount = (status: 'all' | TaskStatus) => cardCount(status === 'all' ? otherMatches : otherMatches.filter(task => task.status === status));
+  const extraCount = Number(assigneeFilter !== 'all') + Number(categoryFilter !== 'all');
+  const whenCount = (value: When) => cardCount(activeGroupTasks.filter(task => matchesOthers(task, 'when') && matchesWhen(task, value, today, range)));
 
   // A team task is one card, unless the list is narrowed to a person or one team task
   const groupTeams = batchFilter === null && assigneeFilter === 'all';
@@ -99,6 +125,8 @@ export const TaskBoard: React.FC<TaskBoardProps> = ({
 
   const isAnyFilterActive =
     statusFilter !== 'all' ||
+    scope !== 'all' ||
+    when !== 'any' ||
     assigneeFilter !== 'all' ||
     categoryFilter !== 'all' ||
     batchFilter !== null ||
@@ -106,6 +134,9 @@ export const TaskBoard: React.FC<TaskBoardProps> = ({
 
   const handleResetFilters = () => {
     setStatusFilter('all');
+    setScope('all');
+    setWhen('any');
+    setRange({ from: '', to: '' });
     setAssigneeFilter('all');
     setCategoryFilter('all');
     setBatchFilter(null);
@@ -156,6 +187,19 @@ export const TaskBoard: React.FC<TaskBoardProps> = ({
     setCompletionNote('');
   };
 
+  const handleRequestChanges = (taskId: string) => {
+    if (!leaderFeedback.trim()) return;
+    requestTaskChanges(taskId, leaderFeedback.trim());
+    setApprovingTaskId(null);
+    setLeaderFeedback('');
+  };
+
+  // Everything in view that is waiting for the leader
+  const waitingIds = otherMatches.filter(task => task.status === 'ready_for_review').map(task => task.id);
+  const handleApproveAll = () => {
+    if (waitingIds.length > 0 && confirm(t.approveAllConfirm.replace('{n}', String(waitingIds.length)))) approveTasks(waitingIds);
+  };
+
   const handleApproveSubmit = (taskId: string) => {
     approveTask(taskId, leaderFeedback.trim() || undefined);
     setApprovingTaskId(null);
@@ -164,19 +208,111 @@ export const TaskBoard: React.FC<TaskBoardProps> = ({
 
   return (
     <div className="space-y-4">
-      <div className="bg-white p-4 rounded-xl border border-neutral-200 space-y-3">
-        <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
+      <FilterPanel>
+        <div className="flex flex-col items-stretch justify-between gap-3 sm:flex-row sm:items-center">
           <SearchBox value={searchQuery} onChange={setSearchQuery} placeholder={t.searchTasks} />
-          <div className="flex flex-wrap items-center gap-2">
-            <SelectMenu
-              value={categoryFilter}
-              label={t.categoryLabel}
-              className={SELECT_FILTER}
-              icon={<Icons.group className="size-3.5 text-neutral-500" />}
-              onChange={setCategoryFilter}
-              options={[{ value: 'all', label: t.filterAllCategories }, ...categories.map(cat => ({ value: cat, label: moduleName(cat, t) }))]}
-            />
+          {isTeamLead && (
+            <div className="flex flex-wrap items-center gap-2">
+              <button
+                onClick={() => setImportOpen(true)}
+                className="inline-flex cursor-pointer items-center gap-1.5 whitespace-nowrap rounded-lg border border-neutral-200 bg-white px-3 py-1.5 text-xs font-semibold text-black transition-colors hover:bg-neutral-100"
+              >
+                <Icons.excel className="size-3.5" />
+                <span>{t.importTasks}</span>
+              </button>
+              <button
+                onClick={onOpenAssignTask}
+                className="inline-flex cursor-pointer items-center gap-1.5 whitespace-nowrap rounded-lg bg-brand px-3 py-1.5 text-xs font-semibold text-white shadow-xs transition-colors hover:bg-brand-dark"
+              >
+                <Icons.add className="size-3.5" />
+                <span>{t.assignNewTask}</span>
+              </button>
+              <ImportTasksModal isOpen={importOpen} onClose={() => setImportOpen(false)} />
+              <EditTaskModal task={editing?.task ?? null} teamSize={editing?.size} onClose={() => setEditing(null)} />
+            </div>
+          )}
+        </div>
 
+        <div className="flex flex-wrap items-center gap-x-3 gap-y-2 text-xs">
+          <SegmentGroup
+            label={t.filterScopeLabel}
+            value={scope}
+            onChange={setScope}
+            options={[
+              { value: 'all', label: t.all },
+              { value: 'mine', label: t.filterScopeMine },
+              { value: 'team', label: t.filterScopeTeam },
+            ]}
+          />
+
+          <SegmentGroup
+            label={t.filterWhenLabel}
+            value={when}
+            onChange={setWhen}
+            options={[
+              { value: 'any', label: t.filterAnyTime },
+              { value: 'today', label: t.filterToday, count: whenCount('today') },
+              { value: 'overdue', label: t.filterOverdue, count: whenCount('overdue'), warn: true },
+              { value: 'range', label: t.filterRange, icon: <Icons.date className="size-3.5" /> },
+            ]}
+          />
+
+          {when === 'range' && (
+            <div className="flex flex-wrap items-center gap-2">
+              <span className="font-semibold text-neutral-600">{t.filterFrom}</span>
+              <DatePicker value={range.from} onChange={from => setRange(r => ({ ...r, from, to: r.to && from && r.to < from ? from : r.to }))} max={range.to || undefined} clearable placeholder={t.filterAnyDate} className="w-40" />
+              <span className="font-semibold text-neutral-600">{t.filterTo}</span>
+              <DatePicker value={range.to} onChange={to => setRange(r => ({ ...r, to }))} min={range.from || undefined} clearable placeholder={t.filterAnyDate} className="w-40" />
+            </div>
+          )}
+        </div>
+
+        <div className="flex flex-wrap items-center justify-between gap-2 border-t border-neutral-100 pt-3 text-xs">
+          <StatusChips
+            value={statusFilter}
+            onChange={setStatusFilter}
+            options={[
+              { value: 'all', label: t.all, count: statusCount('all') },
+              { value: 'todo', label: t.taskStatusTodo, count: statusCount('todo') },
+              { value: 'in_progress', label: t.taskStatusInProgress, count: statusCount('in_progress') },
+              { value: 'ready_for_review', label: t.taskStatusReview, count: statusCount('ready_for_review') },
+              { value: 'approved', label: t.taskStatusApproved, count: statusCount('approved') },
+            ]}
+          />
+
+          <div className="flex flex-wrap items-center gap-2">
+            {isTeamLead && waitingIds.length > 0 && (
+              <button
+                onClick={handleApproveAll}
+                className="inline-flex cursor-pointer items-center gap-1.5 rounded-lg border border-brand px-2.5 py-1 text-xs font-semibold text-brand-ink transition-colors hover:bg-brand-soft"
+              >
+                <Icons.approved className="size-3.5" />
+                {t.btnApproveAll.replace('{n}', String(waitingIds.length))}
+              </button>
+            )}
+            <button
+              onClick={() => setMoreOpen(o => !o)}
+              aria-expanded={moreOpen}
+              className="inline-flex cursor-pointer items-center gap-1.5 rounded-lg px-2.5 py-1 text-xs font-semibold text-neutral-700 transition-colors hover:bg-neutral-100"
+            >
+              {t.filterMore}
+              {extraCount > 0 && <span className="rounded-full bg-brand px-1.5 text-[11px] text-white">{extraCount}</span>}
+              <Icons.expand className={`size-3.5 transition-transform ${moreOpen ? 'rotate-180' : ''}`} />
+            </button>
+            <button
+              onClick={() => setRulesOpen(o => !o)}
+              aria-expanded={rulesOpen}
+              title={t.taskRulesTitle}
+              aria-label={t.taskRulesTitle}
+              className={`cursor-pointer rounded-lg p-1.5 transition-colors ${rulesOpen ? 'bg-neutral-100 text-brand-ink' : 'text-neutral-500 hover:bg-neutral-100 hover:text-black'}`}
+            >
+              <Icons.tip className="size-4" />
+            </button>
+          </div>
+        </div>
+
+        {moreOpen && (
+          <div className="flex flex-wrap items-center gap-2 border-t border-neutral-100 pt-3 text-xs">
             <SelectMenu
               value={assigneeFilter}
               label={t.colAssignee}
@@ -188,84 +324,16 @@ export const TaskBoard: React.FC<TaskBoardProps> = ({
                 ...activeGroupMembers.map(u => ({ value: u.id, label: u.name, avatar: <Avatar name={u.name} avatar={u.avatar} className="size-6" /> })),
               ]}
             />
-
-            {isTeamLead && (
-              <>
-                <button
-                  onClick={() => setImportOpen(true)}
-                  className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-black bg-white hover:bg-neutral-100 border border-neutral-200 rounded-lg transition-colors cursor-pointer whitespace-nowrap"
-                >
-                  <Icons.excel className="size-3.5" />
-                  <span>{t.importTasks}</span>
-                </button>
-                <button
-                  onClick={onOpenAssignTask}
-                  className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-white bg-brand hover:bg-brand-dark rounded-lg shadow-xs transition-colors cursor-pointer whitespace-nowrap"
-                >
-                  <Icons.add className="size-3.5" />
-                  <span>{t.assignNewTask}</span>
-                </button>
-                <ImportTasksModal isOpen={importOpen} onClose={() => setImportOpen(false)} />
-              </>
+            {categories.length > 1 && (
+              <SelectMenu
+                value={categoryFilter}
+                label={t.categoryLabel}
+                className={SELECT_FILTER}
+                icon={<Icons.group className="size-3.5 text-neutral-500" />}
+                onChange={setCategoryFilter}
+                options={[{ value: 'all', label: t.filterAllCategories }, ...categories.map(cat => ({ value: cat, label: moduleName(cat, t) }))]}
+              />
             )}
-          </div>
-        </div>
-
-        <div className="flex flex-wrap items-center justify-between gap-2 pt-2 text-xs">
-          <div className="flex flex-wrap items-center gap-1">
-            <button
-              onClick={() => setStatusFilter('all')}
-              className={`px-2.5 py-1 text-xs font-semibold rounded-lg transition-colors cursor-pointer ${
-                statusFilter === 'all'
-                  ? 'bg-brand text-white shadow-xs'
-                  : 'bg-neutral-100 text-neutral-800 hover:bg-neutral-200'
-              }`}
-            >
-              {t.all} ({activeGroupTasks.length})
-            </button>
-            <button
-              onClick={() => setStatusFilter('todo')}
-              className={`px-2.5 py-1 text-xs font-semibold rounded-lg transition-colors cursor-pointer ${
-                statusFilter === 'todo'
-                  ? 'bg-brand text-white shadow-xs'
-                  : 'bg-neutral-100 text-neutral-800 hover:bg-neutral-200'
-              }`}
-            >
-              {t.taskStatusTodo}
-            </button>
-            <button
-              onClick={() => setStatusFilter('in_progress')}
-              className={`px-2.5 py-1 text-xs font-semibold rounded-lg transition-colors cursor-pointer ${
-                statusFilter === 'in_progress'
-                  ? 'bg-brand text-white shadow-xs'
-                  : 'bg-neutral-100 text-neutral-800 hover:bg-neutral-200'
-              }`}
-            >
-              {t.taskStatusInProgress}
-            </button>
-            <button
-              onClick={() => setStatusFilter('ready_for_review')}
-              className={`px-2.5 py-1 text-xs font-semibold rounded-lg transition-colors cursor-pointer ${
-                statusFilter === 'ready_for_review'
-                  ? 'bg-brand text-white shadow-xs'
-                  : 'bg-neutral-100 text-neutral-800 hover:bg-neutral-200'
-              }`}
-            >
-              {t.taskStatusReview}
-            </button>
-            <button
-              onClick={() => setStatusFilter('approved')}
-              className={`px-2.5 py-1 text-xs font-semibold rounded-lg transition-colors cursor-pointer ${
-                statusFilter === 'approved'
-                  ? 'bg-brand text-white shadow-xs'
-                  : 'bg-neutral-100 text-neutral-800 hover:bg-neutral-200'
-              }`}
-            >
-              {t.taskStatusApproved}
-            </button>
-          </div>
-
-          <div className="flex items-center gap-2">
             <FilterSelect
               value={sortValue}
               onChange={v => {
@@ -280,54 +348,40 @@ export const TaskBoard: React.FC<TaskBoardProps> = ({
                 { value: 'created:desc', label: t.sortNewest },
               ]}
             />
-            <span className="text-[11px] text-neutral-500">
-              {rows.length} {t.tasksShown}
-            </span>
-
-            {isAnyFilterActive && (
-              <button
-                onClick={handleResetFilters}
-                className="text-[11px] text-neutral-600 hover:text-black hover:underline flex items-center gap-1 font-semibold cursor-pointer"
-              >
-                <Icons.close className="size-3" />
-                <span>{t.filterClear}</span>
-              </button>
-            )}
-          </div>
-        </div>
-
-        {categories.length > 1 && (
-          <div className="flex flex-wrap items-center gap-1 pt-1">
-            <span className="text-[11px] text-neutral-400 mr-1 flex items-center gap-1 font-medium">
-              <Icons.group className="size-3" />
-              <span>{t.categoryLabel}</span>
-            </span>
-            <button
-              onClick={() => setCategoryFilter('all')}
-              className={`px-2 py-0.5 rounded-lg text-[11px] font-medium cursor-pointer ${
-                categoryFilter === 'all'
-                  ? 'bg-brand text-white'
-                  : 'bg-neutral-100 text-neutral-700 hover:bg-neutral-200'
-              }`}
-            >
-              {t.adminAllStatus}
-            </button>
-            {categories.map(cat => (
-              <button
-                key={cat}
-                onClick={() => setCategoryFilter(categoryFilter === cat ? 'all' : cat)}
-                className={`px-2 py-0.5 rounded-lg text-[11px] font-medium cursor-pointer ${
-                  categoryFilter.toLowerCase() === cat.toLowerCase()
-                    ? 'bg-brand text-white font-semibold'
-                    : 'bg-neutral-100 text-neutral-700 hover:bg-neutral-200'
-                }`}
-              >
-                {cat}
-              </button>
-            ))}
           </div>
         )}
-      </div>
+
+        {isAnyFilterActive && (
+          <div className="flex items-center justify-between gap-2 text-[11px] text-neutral-500">
+            <span>
+              {rows.length} {t.tasksShown}
+            </span>
+            <button onClick={handleResetFilters} className="flex cursor-pointer items-center gap-1 font-semibold text-neutral-600 hover:text-black hover:underline">
+              <Icons.close className="size-3" />
+              <span>{t.filterClear}</span>
+            </button>
+          </div>
+        )}
+      </FilterPanel>
+
+      {rulesOpen && (
+        <div className="rounded-xl border border-neutral-200 bg-white px-4 py-3 text-xs">
+          <p className="mb-2 font-bold text-black">{t.taskRulesTitle}</p>
+          <div className="mb-3 flex flex-wrap items-center gap-1.5 font-semibold">
+            {[t.taskStatusTodo, t.taskStatusInProgress, t.taskStatusReview, t.taskStatusApproved].map((label, i) => (
+              <React.Fragment key={label}>
+                {i > 0 && <Icons.forward className="size-3.5 text-neutral-400" />}
+                <span className="rounded-full bg-neutral-100 px-2.5 py-0.5 text-black">{label}</span>
+              </React.Fragment>
+            ))}
+          </div>
+          <ol className="list-decimal space-y-1 pl-5 leading-relaxed text-neutral-700">
+            {[t.taskRuleCreate, t.taskRuleProgress, t.taskRuleReview, t.taskRuleLocked, t.taskRuleLate, t.taskRuleTeam].map(rule => (
+              <li key={rule}>{rule}</li>
+            ))}
+          </ol>
+        </div>
+      )}
 
       {batchFilter && (
         <TeamTaskBanner tasks={activeGroupTasks.filter(task => task.batchId === batchFilter)} onBack={() => setBatchFilter(null)} />
@@ -361,8 +415,21 @@ export const TaskBoard: React.FC<TaskBoardProps> = ({
         </div>
       ) : (
         <>
+        {[
+          { key: 'team', title: t.sectionTeamTasks, rows: view.pageRows.filter(row => row.team) },
+          { key: 'single', title: t.sectionIndividualTasks, rows: view.pageRows.filter(row => !row.team) },
+        ]
+          .filter(group => group.rows.length > 0)
+          .map((group, _index, groups) => (
+          <section key={group.key} className="space-y-3">
+            {groups.length > 1 && (
+              <h2 className="flex items-center gap-2 text-xs font-bold uppercase tracking-wide text-neutral-600">
+                {group.title}
+                <span className="rounded-full bg-neutral-100 px-2 py-0.5 text-[11px] font-semibold text-black font-mono-numbers">{group.rows.length}</span>
+              </h2>
+            )}
         <div className="stagger grid grid-cols-1 gap-4 md:grid-cols-2">
-          {view.pageRows.map(row => {
+          {group.rows.map(row => {
             const task = row.task;
             if (row.team) {
               const deadlineInfo = getDeadlineStatus(task.dueDate);
@@ -376,6 +443,7 @@ export const TaskBoard: React.FC<TaskBoardProps> = ({
                   onProgress={(id, value) => updateTaskProgress(id, value)}
                   onOpenIndividual={() => setBatchFilter(task.batchId!)}
                   onDelete={() => deleteTeamTask(task.batchId!)}
+                  onEdit={() => setEditing({ task: row.team!.find(item => item.status !== 'approved') ?? task, size: row.team!.length })}
                 />
               );
             }
@@ -411,6 +479,17 @@ export const TaskBoard: React.FC<TaskBoardProps> = ({
                       >
                         {priorityBadge.label}
                       </span>
+
+                      {isTeamLead && task.status !== 'approved' && (
+                        <button
+                          onClick={() => setEditing({ task, size: 1 })}
+                          className="text-neutral-400 hover:text-black p-0.5 transition-colors cursor-pointer"
+                          title={t.editTask}
+                          aria-label={t.editTask}
+                        >
+                          <Icons.edit className="size-3.5" />
+                        </button>
+                      )}
 
                       {isTeamLead && (
                         <button
@@ -630,12 +709,22 @@ export const TaskBoard: React.FC<TaskBoardProps> = ({
                         placeholder={t.placeholderFeedback}
                         className="w-full p-2 text-xs bg-white border border-neutral-200 rounded-lg focus:outline-none focus:ring-1 focus:ring-brand/40"
                       />
-                      <button
-                        onClick={() => handleApproveSubmit(task.id)}
-                        className="w-full py-1.5 bg-brand hover:bg-brand-dark text-white font-semibold text-xs rounded-lg transition-colors cursor-pointer"
-                      >
-                        {t.btnApproveTask}
-                      </button>
+                      <div className="grid grid-cols-2 gap-2">
+                        <button
+                          onClick={() => handleRequestChanges(task.id)}
+                          disabled={!leaderFeedback.trim()}
+                          title={t.changesPlaceholder}
+                          className="py-1.5 bg-white hover:bg-neutral-100 border border-neutral-200 text-black font-semibold text-xs rounded-lg transition-colors cursor-pointer disabled:cursor-default disabled:opacity-50"
+                        >
+                          {t.btnRequestChanges}
+                        </button>
+                        <button
+                          onClick={() => handleApproveSubmit(task.id)}
+                          className="py-1.5 bg-brand hover:bg-brand-dark text-white font-semibold text-xs rounded-lg transition-colors cursor-pointer"
+                        >
+                          {t.btnApproveTask}
+                        </button>
+                      </div>
                     </div>
                   )}
                 </div>
@@ -645,6 +734,8 @@ export const TaskBoard: React.FC<TaskBoardProps> = ({
             );
           })}
         </div>
+          </section>
+          ))}
         <Pager page={view.page} pageCount={view.pageCount} total={view.total} onPage={view.setPage} />
         </>
       )}

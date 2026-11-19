@@ -9,6 +9,11 @@ import { Pager, SearchBox } from './TableParts';
 import { useTableView } from '../lib/useTableView';
 import { CommentThread } from './CommentThread';
 import { Icons } from './icons';
+import { DatePicker } from './pickers/DatePicker';
+import { FilterPanel, SegmentGroup, StatusChips } from './FilterControls';
+import { todayLocal } from '../lib/dates';
+import { peekPagePreset } from '../lib/pagePreset';
+import { matchesDay, type When } from '../lib/taskFilters';
 
 export const DailyFeed: React.FC = () => {
   const {
@@ -28,24 +33,44 @@ export const DailyFeed: React.FC = () => {
 
   const [searchQuery, setSearchQuery] = useState('');
 
-  const [filterMode, setFilterMode] = useState<'all' | 'in_progress' | 'completed' | 'approved'>('all');
+  type Mode = 'all' | 'in_progress' | 'completed' | 'approved';
+  // A card on the Overview can open this page already filtered
+  const [preset] = useState(() => peekPagePreset('daily'));
+  const [filterMode, setFilterMode] = useState<Mode>((preset?.status as Mode | undefined) ?? 'all');
+  const [scope, setScope] = useState<'all' | 'mine'>(preset?.scope === 'mine' ? 'mine' : 'all');
+  const [when, setWhen] = useState<When>(preset?.when === 'today' || preset?.when === 'range' ? preset.when : 'any');
+  const [range, setRange] = useState({ from: '', to: '' });
   const [activeLeaderNoteId, setActiveLeaderNoteId] = useState<string | null>(null);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [leaderFeedbackText, setLeaderFeedbackText] = useState<{ [id: string]: string }>({});
 
-  const filteredLogs = activeGroupDailyLogs.filter(log => {
-    if (filterMode !== 'all' && log.status !== filterMode) return false;
+  const today = todayLocal();
+
+  // Every filter except the status, so each status button can show how many it would give
+  const matchesOthers = (log: (typeof activeGroupDailyLogs)[number], skip?: 'when') => {
+    if (scope === 'mine' && log.userId !== currentUser.id) return false;
+    if (skip !== 'when' && !matchesDay(log.date, when, today, range)) return false;
     if (searchQuery.trim()) {
       const q = searchQuery.toLowerCase();
       const author = users.find(u => u.id === log.userId);
-      const fullText =
-        (author?.name.toLowerCase() || '') +
-        log.title.toLowerCase() +
-        log.rawContent.toLowerCase();
+      const fullText = (author?.name.toLowerCase() || '') + log.title.toLowerCase() + log.rawContent.toLowerCase();
       if (!fullText.includes(q)) return false;
     }
     return true;
-  });
+  };
+
+  const otherMatches = activeGroupDailyLogs.filter(log => matchesOthers(log));
+  const filteredLogs = filterMode === 'all' ? otherMatches : otherMatches.filter(log => log.status === filterMode);
+  const statusCount = (mode: Mode) => (mode === 'all' ? otherMatches : otherMatches.filter(log => log.status === mode)).length;
+  const todayCount = activeGroupDailyLogs.filter(log => matchesOthers(log, 'when') && log.date === today).length;
+  const isAnyFilterActive = filterMode !== 'all' || scope !== 'all' || when !== 'any' || searchQuery.trim().length > 0;
+  const resetFilters = () => {
+    setFilterMode('all');
+    setScope('all');
+    setWhen('any');
+    setRange({ from: '', to: '' });
+    setSearchQuery('');
+  };
 
   const view = useTableView(filteredLogs, {
     searchText: () => '',
@@ -62,52 +87,58 @@ export const DailyFeed: React.FC = () => {
 
   return (
     <div className="space-y-4">
-      <div className="bg-white p-4 rounded-xl border border-neutral-200 flex flex-col sm:flex-row items-center justify-between gap-3">
-        <div className="flex flex-wrap items-center gap-1.5 w-full sm:w-auto">
-          <button
-            onClick={() => setFilterMode('all')}
-            className={`px-3 py-1.5 text-xs font-semibold rounded-lg transition-colors cursor-pointer ${
-              filterMode === 'all'
-                ? 'bg-brand text-white shadow-xs'
-                : 'bg-neutral-100 text-neutral-800 hover:bg-neutral-200'
-            }`}
-          >
-            {t.all} ({activeGroupDailyLogs.length})
-          </button>
-          <button
-            onClick={() => setFilterMode('in_progress')}
-            className={`px-3 py-1.5 text-xs font-semibold rounded-lg transition-colors cursor-pointer ${
-              filterMode === 'in_progress'
-                ? 'bg-brand text-white shadow-xs'
-                : 'bg-neutral-100 text-neutral-800 hover:bg-neutral-200'
-            }`}
-          >
-            {t.taskStatusInProgress}
-          </button>
-          <button
-            onClick={() => setFilterMode('completed')}
-            className={`px-3 py-1.5 text-xs font-semibold rounded-lg transition-colors cursor-pointer ${
-              filterMode === 'completed'
-                ? 'bg-brand text-white shadow-xs'
-                : 'bg-neutral-100 text-neutral-800 hover:bg-neutral-200'
-            }`}
-          >
-            {t.logDonePending}
-          </button>
-          <button
-            onClick={() => setFilterMode('approved')}
-            className={`px-3 py-1.5 text-xs font-semibold rounded-lg transition-colors cursor-pointer ${
-              filterMode === 'approved'
-                ? 'bg-brand text-white shadow-xs'
-                : 'bg-neutral-100 text-neutral-800 hover:bg-neutral-200'
-            }`}
-          >
-            {t.reportColApproved}
-          </button>
+      <FilterPanel>
+        <SearchBox value={searchQuery} onChange={setSearchQuery} placeholder={t.searchDaily} />
+
+        <div className="flex flex-wrap items-center gap-x-3 gap-y-2 text-xs">
+          <SegmentGroup
+            label={t.filterScopeLabel}
+            value={scope}
+            onChange={setScope}
+            options={[
+              { value: 'all', label: t.all },
+              { value: 'mine', label: t.filterScopeMine },
+            ]}
+          />
+          <SegmentGroup
+            label={t.filterWhenLabel}
+            value={when === 'overdue' || when === 'week' ? 'any' : when}
+            onChange={setWhen}
+            options={[
+              { value: 'any', label: t.filterAnyTime },
+              { value: 'today', label: t.filterToday, count: todayCount },
+              { value: 'range', label: t.filterRange, icon: <Icons.date className="size-3.5" /> },
+            ]}
+          />
+          {when === 'range' && (
+            <div className="flex flex-wrap items-center gap-2">
+              <span className="font-semibold text-neutral-600">{t.filterFrom}</span>
+              <DatePicker value={range.from} onChange={from => setRange(r => ({ ...r, from, to: r.to && from && r.to < from ? from : r.to }))} max={range.to || undefined} clearable placeholder={t.filterAnyDate} className="w-40" />
+              <span className="font-semibold text-neutral-600">{t.filterTo}</span>
+              <DatePicker value={range.to} onChange={to => setRange(r => ({ ...r, to }))} min={range.from || undefined} clearable placeholder={t.filterAnyDate} className="w-40" />
+            </div>
+          )}
         </div>
 
-        <SearchBox value={searchQuery} onChange={setSearchQuery} placeholder={t.searchDaily} />
-      </div>
+        <div className="flex flex-wrap items-center justify-between gap-2 border-t border-neutral-100 pt-3">
+          <StatusChips
+            value={filterMode}
+            onChange={setFilterMode}
+            options={[
+              { value: 'all', label: t.all, count: statusCount('all') },
+              { value: 'in_progress', label: t.taskStatusInProgress, count: statusCount('in_progress') },
+              { value: 'completed', label: t.taskStatusReview, count: statusCount('completed') },
+              { value: 'approved', label: t.taskStatusApproved, count: statusCount('approved') },
+            ]}
+          />
+          {isAnyFilterActive && (
+            <button onClick={resetFilters} className="flex cursor-pointer items-center gap-1 text-[11px] font-semibold text-neutral-600 hover:text-black hover:underline">
+              <Icons.close className="size-3" />
+              <span>{t.filterClear}</span>
+            </button>
+          )}
+        </div>
+      </FilterPanel>
 
       {filteredLogs.length === 0 ? (
         <div className="bg-white rounded-xl border border-neutral-200 p-12 text-center">
@@ -172,18 +203,18 @@ export const DailyFeed: React.FC = () => {
                     {log.status === 'approved' && (
                       <span className="inline-flex items-center gap-1 text-xs font-semibold text-white bg-brand px-2.5 py-0.5 rounded-lg">
                         <Icons.done className="size-3.5 text-white" />
-                        <span>{t.logApprovedVerified}</span>
+                        <span>{t.taskStatusApproved}</span>
                       </span>
                     )}
                     {log.status === 'completed' && (
                       <span className="inline-flex items-center gap-1 text-xs font-semibold text-black bg-neutral-200 px-2.5 py-0.5 rounded-lg">
                         <Icons.time className="size-3.5 text-black" />
-                        <span>{t.logDonePendingLong}</span>
+                        <span>{t.taskStatusReview}</span>
                       </span>
                     )}
                     {log.status === 'in_progress' && (
                       <span className="inline-flex items-center gap-1 text-xs font-medium text-neutral-800 bg-neutral-100 px-2.5 py-0.5 rounded-lg">
-                        <span>{t.logInProgress}</span>
+                        <span>{t.taskStatusInProgress}</span>
                         {calcPercent !== null && <span className="font-mono-numbers font-bold">({calcPercent}%)</span>}
                       </span>
                     )}

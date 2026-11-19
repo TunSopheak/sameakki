@@ -29,6 +29,8 @@ export interface User {
   name: string;
   nameKm?: string;
   email: string;
+  /** Sign-in name. Only sent to the person themselves. */
+  username?: string;
   avatar?: string;
   role: Role;
   specialty?: string;
@@ -134,6 +136,8 @@ export interface Group {
 export type ActivityEventType =
   | 'task_completed'
   | 'task_approved'
+  | 'task_changes_requested'
+  | 'task_edited'
   | 'task_assigned'
   | 'task_deadline_changed'
   | 'member_added'
@@ -171,6 +175,7 @@ export const NOTIFICATION_TYPES = [
   'task_assigned',
   'task_ready_for_review',
   'task_approved',
+  'task_changes_requested',
   'task_due_soon',
   'task_overdue',
   'daily_approved',
@@ -179,6 +184,7 @@ export const NOTIFICATION_TYPES = [
   'comment_added',
   'password_reset',
   'task_rescheduled',
+  'poke',
 ] as const;
 export type NotificationType = (typeof NOTIFICATION_TYPES)[number];
 

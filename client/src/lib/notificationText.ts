@@ -37,6 +37,21 @@ export function describeNotification(n: AppNotification, language: Language): No
         note,
         text: km ? `${who} បានអនុម័តកិច្ចការ «${title}»` : `${who} approved your task "${title}"`,
       };
+    case 'task_changes_requested':
+      return {
+        tab: 'tasks',
+        note,
+        text: km ? `${who} បានស្នើសុំកែកិច្ចការ «${title}»` : `${who} asked for changes on "${title}"`,
+      };
+    case 'poke': {
+      const days = Number(p.streak) || 0;
+      return {
+        tab: 'daily',
+        text: km
+          ? `${who} បាន Poke អ្នក 👋 ${days > 0 ? `បង្ហោះ ToDo ថ្ងៃនេះ ដើម្បីរក្សា 🔥 ${days} ថ្ងៃ` : 'បង្ហោះ ToDo ថ្ងៃនេះ ដើម្បីចាប់ផ្តើម 🔥 ថ្មី'}`
+          : `${who} poked you 👋 ${days > 0 ? `Post your ToDo today to keep your 🔥 ${days}-day streak` : 'Post your ToDo today to start a new 🔥 streak'}`,
+      };
+    }
     case 'task_rescheduled':
       return {
         tab: 'tasks',

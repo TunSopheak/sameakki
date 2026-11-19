@@ -64,7 +64,7 @@ export const requireAuth: RequestHandler = async (req, _res, next) => {
   }
 
   const db = await getDb();
-  const { rows } = await db.query(`SELECT ${USER_COLUMNS}, expires_at, must_change_password, token_version FROM users WHERE id = $1 AND is_active = 1`, [userId]);
+  const { rows } = await db.query(`SELECT ${USER_COLUMNS}, username, expires_at, must_change_password, token_version FROM users WHERE id = $1 AND is_active = 1`, [userId]);
   if (!rows[0]) return next(unauthorized());
   if (rows[0].token_version !== version) return next(unauthorized('Your session has expired. Please sign in again.'));
   const plan = planState(rows[0]);

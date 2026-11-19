@@ -254,4 +254,30 @@ export const migrations: { id: string; sql: string }[] = [
     id: '019_daily_log_edited',
     sql: `ALTER TABLE daily_logs ADD COLUMN edited_at TIMESTAMPTZ`,
   },
+  {
+    // A poke nudges a member who has not posted today. One per person pair per day.
+    id: '020_pokes',
+    sql: `
+      CREATE TABLE pokes (
+        id           UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+        group_id     UUID NOT NULL REFERENCES groups(id) ON DELETE CASCADE,
+        from_user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+        to_user_id   UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+        poke_date    DATE NOT NULL,
+        created_at   TIMESTAMPTZ NOT NULL DEFAULT now()
+      );
+      CREATE UNIQUE INDEX pokes_once_a_day ON pokes (group_id, from_user_id, to_user_id, poke_date);
+    `,
+  },
+  {
+    // Optional Telegram messages. The chat id is private and never sent to the browser.
+    id: '021_telegram',
+    sql: `
+      ALTER TABLE users ADD COLUMN telegram_chat_id TEXT;
+      ALTER TABLE users ADD COLUMN telegram_link_token TEXT;
+      ALTER TABLE users ADD COLUMN telegram_link_expires TIMESTAMPTZ;
+      CREATE UNIQUE INDEX users_telegram_chat_unique ON users (telegram_chat_id) WHERE telegram_chat_id IS NOT NULL;
+      CREATE UNIQUE INDEX users_telegram_token_unique ON users (telegram_link_token) WHERE telegram_link_token IS NOT NULL;
+    `,
+  },
 ];

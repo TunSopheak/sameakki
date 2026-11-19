@@ -18,6 +18,8 @@ export const toUser = (r: any): User => ({
   specialty: opt(r.specialty),
   department: opt(r.department),
   avatar: opt(r.avatar),
+  // Only present when the query asked for it (the person's own row), so nobody sees another person's login name
+  username: opt(r.username),
 });
 
 export const toGroup = (r: any, memberIds: string[], memberSpecialties?: Record<string, string>): Group => ({

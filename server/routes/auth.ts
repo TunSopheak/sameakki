@@ -30,7 +30,7 @@ authRouter.post('/login', authLimiter, async (req, res) => {
   const input = loginSchema.parse(req.body);
   const db = await getDb();
   const { rows } = await db.query(
-    `SELECT ${USER_COLUMNS}, password_hash, expires_at, token_version FROM users WHERE (lower(email) = $1 OR lower(username) = $1) AND is_active = 1`,
+    `SELECT ${USER_COLUMNS}, username, password_hash, expires_at, token_version FROM users WHERE (lower(email) = $1 OR lower(username) = $1) AND is_active = 1`,
     [input.email]
   );
   const row = rows[0];

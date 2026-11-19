@@ -1,3 +1,4 @@
+import type { StreaksData } from './useStreaks';
 import type { LandingSettings } from '@shared/landing';
 import { localizeError } from '../locales/serverErrors';
 import type { AdminOverview, BootstrapData, Comment, CommentKind, NotificationsResponse, Role, TaskPriority, TaskStatus, User, GroupCategory, GroupStatus } from '@shared/types';
@@ -99,7 +100,7 @@ export const api = {
   setGroupActive: (groupId: string, active: boolean) => post(`/admin/groups/${groupId}/active`, { active }),
   updateMemberSpecialty: (groupId: string, userId: string, specialty: string) =>
     patch(`/groups/${groupId}/members/${userId}/specialty`, { specialty }),
-  updateProfile: (data: { name: string; nameKm?: string; specialty?: string }) => patch('/users/me', data),
+  updateProfile: (data: { name: string; nameKm?: string; specialty?: string; username?: string }) => patch('/users/me', data),
   updateAvatar: (avatar: string) => patch('/users/me/avatar', { avatar }),
   updateUserRole: (userId: string, role: Role, groupId?: string) => patch(`/users/${userId}/role`, { role, groupId }),
 
@@ -107,6 +108,14 @@ export const api = {
     groupId: string,
     data: { title: string; module: string; description: string; assignedTo?: string; assigneeIds?: string[]; assignToAll?: boolean; priority: TaskPriority; startDate?: string; dueDate: string; dueTime?: string }
   ) => post<{ id: string; ids: string[] }>(`/groups/${groupId}/tasks`, data),
+  streaks: (groupId: string) => get<StreaksData>(`/groups/${groupId}/streaks`),
+  poke: (groupId: string, userId: string) => post(`/groups/${groupId}/pokes`, { userId }),
+  telegramStatus: () => get<{ available: boolean; linked: boolean }>('/telegram'),
+  telegramLink: () => post<{ url: string; minutes: number }>('/telegram/link'),
+  telegramUnlink: () => del('/telegram/link'),
+  requestTaskChanges: (taskId: string, feedback: string) => post(`/tasks/${taskId}/request-changes`, { feedback }),
+  editTask: (taskId: string, data: { title?: string; module?: string; description?: string; priority?: TaskPriority }) => patch(`/tasks/${taskId}`, data),
+  approveTasks: (groupId: string, taskIds: string[], feedback?: string) => post<{ count: number }>(`/groups/${groupId}/tasks/approve`, { taskIds, feedback }),
   importTasks: (groupId: string, tasks: unknown[]) => post<{ count: number; ids: string[] }>(`/groups/${groupId}/tasks/import`, { tasks }),
   updateTaskStatus: (taskId: string, status: Exclude<TaskStatus, 'approved'>, memberNotes?: string) =>
     patch(`/tasks/${taskId}/status`, { status, memberNotes }),

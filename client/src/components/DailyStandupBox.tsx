@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
 import { useApp } from '../context/AppContext';
 import { DailyPreview } from './daily/DailyPreview';
+import { milestoneReached } from '@shared/streak';
+import { useStreaks } from '../lib/useStreaks';
 import { Icons } from './icons';
 
 interface DailyStandupBoxProps {
@@ -13,8 +15,11 @@ export const DailyStandupBox: React.FC<DailyStandupBoxProps> = ({ onOpenGuide })
     addSimpleDailyLog,
     canContribute,
     activeGroup,
+    showSuccess,
     t,
   } = useApp();
+  const { data: streaks, reload } = useStreaks();
+  const mine = streaks?.members.find(m => m.userId === currentUser.id);
 
   const [text, setText] = useState('');
   const [justSubmitted, setJustSubmitted] = useState(false);
@@ -28,7 +33,13 @@ export const DailyStandupBox: React.FC<DailyStandupBoxProps> = ({ onOpenGuide })
 
     setSubmitting(true);
     try {
+      const before = mine?.current ?? 0;
       await addSimpleDailyLog(text.trim());
+      // Celebrate a streak that just reached a milestone
+      const fresh = await reload();
+      const after = fresh?.members.find(m => m.userId === currentUser.id)?.current ?? before;
+      const milestone = milestoneReached(before, after);
+      if (milestone) showSuccess(t.streakMilestone.replace('{n}', String(milestone)));
       setText('');
       setJustSubmitted(true);
       setTimeout(() => setJustSubmitted(false), 3000);
@@ -58,7 +69,16 @@ export const DailyStandupBox: React.FC<DailyStandupBoxProps> = ({ onOpenGuide })
           </span>
         </div>
 
-        <div className="flex items-center gap-2 text-xs">
+        <div className="flex items-center gap-3 text-xs">
+          {mine && (
+            <span
+              title={t.streakBest.replace('{n}', String(mine.best))}
+              className="inline-flex items-center gap-1 rounded-full bg-white/15 px-2.5 py-0.5 font-semibold text-white"
+            >
+              <Icons.streak className="size-3.5" />
+              {mine.current > 0 ? t.streakDays.replace('{n}', String(mine.current)) : t.streakStart}
+            </span>
+          )}
           <span className="text-[#ffffffeb] text-xs hidden md:inline">
             {t.postedAs} <strong className="text-white">{currentUser.name}</strong>
           </span>
