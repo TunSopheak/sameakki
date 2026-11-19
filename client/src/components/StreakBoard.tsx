@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useApp } from '../context/AppContext';
 import { useStreaks } from '../lib/useStreaks';
+import { useTelegram } from '../lib/useTelegram';
 import { Avatar } from './Avatar';
 import { Icons } from './icons';
 
@@ -14,12 +15,24 @@ export const StreakFlame: React.FC<{ days: number; className?: string }> = ({ da
 
 const RANK_STYLE = ['bg-brand text-white', 'bg-neutral-300 text-black', 'bg-neutral-200 text-black'];
 const SHOWN = 5;
+const DISMISS_KEY = 'sameakki_telegram_nudge_dismissed';
+
+const nudgeDismissed = () => {
+  try {
+    return localStorage.getItem(DISMISS_KEY) === '1';
+  } catch {
+    return false;
+  }
+};
 
 /** Who keeps posting every day. Someone who missed today can be poked, once a day. */
 export const StreakBoard: React.FC = () => {
   const { t, currentUser, activeGroupMembers } = useApp();
   const { data, poke } = useStreaks();
   const [all, setAll] = useState(false);
+  const telegram = useTelegram();
+  const [dismissed, setDismissed] = useState(nudgeDismissed);
+  const showNudge = telegram.status?.available && !telegram.status.linked && !dismissed;
 
   if (!data || data.members.length === 0) return null;
 
@@ -36,6 +49,36 @@ export const StreakBoard: React.FC = () => {
         <p className="text-xs text-neutral-500">{t.streakHint}</p>
       </div>
 
+      {showNudge && (
+        <div className="mb-3 flex items-center gap-3 rounded-lg border border-brand/30 bg-brand-soft px-3 py-2.5">
+          <Icons.send className="size-4 shrink-0 text-brand-ink" />
+          <div className="min-w-0 flex-1">
+            <p className="text-xs font-bold text-black">{t.telegramNudge}</p>
+            <p className="text-[11px] leading-snug text-neutral-600">{telegram.waiting ? t.telegramWaiting : t.telegramNudgeHint}</p>
+            {telegram.error && <p className="text-[11px] text-brand-ink">{telegram.error}</p>}
+          </div>
+          <div className="flex shrink-0 flex-col items-stretch gap-1">
+            <button type="button" onClick={telegram.connect} className="cursor-pointer rounded-md bg-brand px-2.5 py-1 text-[11px] font-semibold text-white hover:bg-brand-dark">
+              {telegram.waiting ? t.telegramOpenAgain : t.telegramConnect}
+            </button>
+            <button
+              type="button"
+              onClick={() => {
+                setDismissed(true);
+                try {
+                  localStorage.setItem(DISMISS_KEY, '1');
+                } catch {
+                  /* no storage */
+                }
+              }}
+              className="cursor-pointer text-[11px] font-semibold text-neutral-500 hover:text-black"
+            >
+              {t.telegramLater}
+            </button>
+          </div>
+        </div>
+      )}
+
       <ul className="space-y-1">
         {members.map(member => {
           const rank = data.members.indexOf(member);
@@ -51,6 +94,11 @@ export const StreakBoard: React.FC = () => {
                 <p className="truncate text-sm font-semibold leading-tight text-black">
                   {member.name}
                   {isMe && <span className="ml-1 text-xs font-normal text-neutral-500">({t.youLabel})</span>}
+                  {member.telegram && (
+                    <span title={t.telegramOnTitle} className="ml-1.5 inline-block align-middle text-neutral-400">
+                      <Icons.send className="size-3" />
+                    </span>
+                  )}
                 </p>
                 <p className={`flex items-center gap-1 text-xs ${member.current > 0 ? 'font-semibold text-brand-ink' : 'text-neutral-400'}`}>
                   {member.current > 0 ? (

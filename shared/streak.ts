@@ -45,6 +45,8 @@ export function computeStreak(postDays: Iterable<string>, today: string): Streak
 export interface RankedMember extends StreakInfo {
   userId: string;
   name: string;
+  /** Has connected Telegram, so a poke also reaches them there. A yes/no only. */
+  telegram?: boolean;
 }
 
 /** Longest current streak first. Ties go to the longer best run, then to more days, then to the name. */

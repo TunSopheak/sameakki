@@ -54,16 +54,22 @@ telegramWebhookRouter.post('/telegram/webhook', async (req, res) => {
   const db = await getDb();
   const token = startToken(message.text);
   if (token) {
-    const { rows } = await db.query(
-      `UPDATE users SET telegram_chat_id = $2, telegram_link_token = NULL, telegram_link_expires = NULL
-        WHERE telegram_link_token = $1 AND telegram_link_expires > now() AND is_active = 1
-        RETURNING name`,
-      [token, chatId]
-    );
+    const linked = await db.transaction(async tx => {
+      const { rows } = await tx.query(
+        `SELECT id, name FROM users WHERE telegram_link_token = $1 AND telegram_link_expires > now() AND is_active = 1`,
+        [token]
+      );
+      if (!rows[0]) return null;
+      // One Telegram chat belongs to one account at a time. Connecting it here frees it from an older account,
+      // for example when someone has two accounts, or signs in with another one.
+      await tx.query('UPDATE users SET telegram_chat_id = NULL WHERE telegram_chat_id = $1 AND id <> $2', [chatId, rows[0].id]);
+      await tx.query('UPDATE users SET telegram_chat_id = $2, telegram_link_token = NULL, telegram_link_expires = NULL WHERE id = $1', [rows[0].id, chatId]);
+      return rows[0] as { id: string; name: string };
+    });
     await sendTelegram(
       chatId,
-      rows[0]
-        ? `✅ ភ្ជាប់ជាមួយ Sameakki រួចរាល់ជាមួយគណនី ${rows[0].name}។ អ្នកនឹងទទួលការ Poke នៅទីនេះ។ វាយ /stop ដើម្បីផ្តាច់។\n\n✅ Connected to Sameakki as ${rows[0].name}. You will get pokes here. Send /stop to disconnect.`
+      linked
+        ? `✅ ភ្ជាប់ជាមួយ Sameakki រួចរាល់ជាមួយគណនី ${linked.name}។ អ្នកនឹងទទួលការ Poke នៅទីនេះ។ វាយ /stop ដើម្បីផ្តាច់។\n\n✅ Connected to Sameakki as ${linked.name}. You will get pokes here. Send /stop to disconnect.`
         : '⚠️ តំណនេះផុតកំណត់ ឬប្រើរួចហើយ។ សូមបង្កើតតំណថ្មីក្នុង Sameakki។\n\n⚠️ This link expired or was already used. Make a new one in Sameakki.'
     );
   } else if (isStop(message.text)) {

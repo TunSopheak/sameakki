@@ -940,6 +940,8 @@ test('streaks and pokes: ranked, one poke per person per day, and an optional Te
     assert.equal((await targetSession.get('/api/telegram')).body.linked, false, 'a wrong link does nothing');
     assert.equal(await hookWith('s3cret', `/start ${token}`), 200);
     assert.equal((await targetSession.get('/api/telegram')).body.linked, true);
+    assert.equal((await streaks()).members.find((m: Json) => m.userId === targetId).telegram, true, 'others can see who is on Telegram');
+    assert.ok(!JSON.stringify(await streaks()).includes('4242'), 'but never the chat id');
     assert.ok(sent.some(m => m.chat === '4242' && m.text.includes('Connected')), 'Telegram confirms');
     assert.equal(await hookWith('s3cret', `/start ${token}`), 200, 'the link works once');
 
@@ -970,6 +972,18 @@ test('streaks and pokes: ranked, one poke per person per day, and an optional Te
     // Disconnect
     assert.equal((await targetSession.del('/api/telegram/link')).status, 204);
     assert.equal((await targetSession.get('/api/telegram')).body.linked, false);
+
+    // One Telegram chat belongs to one account at a time: connecting it to another account moves it
+    const connect = async (who: Client) => {
+      const url = (await who.post('/api/telegram/link')).body.url as string;
+      return hookWith('s3cret', `/start ${url.split('start=')[1]}`);
+    };
+    assert.equal(await connect(otherSession), 200);
+    assert.equal((await otherSession.get('/api/telegram')).body.linked, true);
+    assert.equal(await connect(targetSession), 200, 'the same chat can be used by another account');
+    assert.equal((await targetSession.get('/api/telegram')).body.linked, true);
+    assert.equal((await otherSession.get('/api/telegram')).body.linked, false, 'the older account lets go of it');
+    assert.equal((await targetSession.del('/api/telegram/link')).status, 204);
   } finally {
     globalThis.fetch = realFetch;
     for (const key of ['TELEGRAM_BOT_TOKEN', 'TELEGRAM_BOT_USERNAME', 'TELEGRAM_WEBHOOK_SECRET']) delete process.env[key];

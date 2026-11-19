@@ -15,7 +15,7 @@ async function loadGroup(db: Awaited<ReturnType<typeof getDb>>, groupId: string)
   const [today, members, logs] = await Promise.all([
     db.query(`SELECT (now() AT TIME ZONE $1)::date::text AS today`, [TIME_ZONE]),
     db.query(
-      `SELECT u.id, u.name FROM group_members m JOIN users u ON u.id = m.user_id
+      `SELECT u.id, u.name, (u.telegram_chat_id IS NOT NULL) AS telegram FROM group_members m JOIN users u ON u.id = m.user_id
         WHERE m.group_id = $1 AND u.is_active = 1 AND u.role <> 'viewer'`,
       [groupId]
     ),
@@ -27,7 +27,7 @@ async function loadGroup(db: Awaited<ReturnType<typeof getDb>>, groupId: string)
 
   const todayText: string = today.rows[0].today;
   const ranked = rankMembers<RankedMember>(
-    members.rows.map(m => ({ userId: m.id as string, name: m.name as string, ...computeStreak(days.get(m.id) ?? [], todayText) }))
+    members.rows.map(m => ({ userId: m.id as string, name: m.name as string, telegram: !!m.telegram, ...computeStreak(days.get(m.id) ?? [], todayText) }))
   );
   return { today: todayText, members: ranked };
 }
