@@ -124,17 +124,15 @@ export const TeamTaskCard: React.FC<TeamTaskCardProps> = ({ tasks, users, priori
           value={first.dueDate}
           canEdit={isTeamLead && tasks.some(task => task.status !== 'approved')}
           onSave={onDeadline}
-          className={`gap-2.5 rounded-lg border px-2.5 py-1.5 transition-colors ${
-            deadline?.overdue ? 'border-brand/30 bg-brand-soft' : 'border-neutral-200 bg-neutral-50'
-          } ${isTeamLead ? 'hover:border-brand/40 hover:bg-white' : ''}`}
+          className={`gap-1.5 rounded-lg px-2 py-0.5 text-xs font-semibold transition-colors ${
+            deadline?.overdue ? 'bg-brand-soft text-brand-ink hover:bg-brand/20' : 'bg-neutral-100 text-black hover:bg-neutral-200'
+          }`}
         >
-          <Icons.date className="size-4 shrink-0 text-neutral-500" />
-          <span className="flex flex-col leading-tight">
-            <span className="whitespace-nowrap font-mono-numbers text-xs font-semibold text-black">
-              {formatDateShort(first.dueDate, language)}
-              {first.dueTime ? ` · ${first.dueTime}` : ''}
-            </span>
-            {deadline && <span className={`text-[11px] font-semibold ${deadline.overdue ? 'text-brand-ink' : 'text-neutral-600'}`}>{deadline.text}</span>}
+          <Icons.date className="size-3.5 shrink-0" />
+          <span className="whitespace-nowrap">
+            {formatDateShort(first.dueDate, language)}
+            {first.dueTime ? ` · ${first.dueTime}` : ''}
+            {deadline && <span className="ml-1 font-medium opacity-70">({deadline.text})</span>}
           </span>
         </EditableDate>
         <button type="button" onClick={onOpenIndividual} className="cursor-pointer font-semibold text-brand-ink hover:underline">

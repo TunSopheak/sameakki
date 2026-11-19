@@ -587,20 +587,18 @@ export const TaskBoard: React.FC<TaskBoardProps> = ({
                       value={task.dueDate}
                       canEdit={isTeamLead && task.status !== 'approved'}
                       onSave={date => updateTaskDeadline(task.id, date)}
-                      className={`ml-auto gap-2.5 rounded-lg border px-2.5 py-1.5 transition-colors ${
+                      className={`ml-auto gap-1.5 rounded-lg px-2 py-0.5 text-xs font-semibold transition-colors ${
                         deadlineInfo.isOverdue && task.status !== 'approved' && task.status !== 'ready_for_review'
-                          ? 'border-brand/30 bg-brand-soft'
-                          : 'border-neutral-200 bg-neutral-50'
-                      } ${isTeamLead && task.status !== 'approved' ? 'hover:border-brand/40 hover:bg-white' : ''}`}
+                          ? 'bg-brand-soft text-brand-ink hover:bg-brand/20'
+                          : 'bg-neutral-100 text-black hover:bg-neutral-200'
+                      }`}
                     >
-                      <Icons.date className="size-4 shrink-0 text-neutral-500" />
-                      <span className="flex flex-col leading-tight">
-                        <span className="whitespace-nowrap font-mono-numbers text-xs font-semibold text-black">
-                          {formatDateShort(task.dueDate, language)}
-                          {task.dueTime ? ` · ${task.dueTime}` : ''}
-                        </span>
+                      <Icons.date className="size-3.5 shrink-0" />
+                      <span className="whitespace-nowrap">
+                        {formatDateShort(task.dueDate, language)}
+                        {task.dueTime ? ` · ${task.dueTime}` : ''}
                         {task.status !== 'approved' && task.status !== 'ready_for_review' && (
-                          <span className={`text-[11px] font-semibold ${deadlineInfo.isOverdue ? 'text-brand-ink' : 'text-neutral-600'}`}>{deadlineInfo.text}</span>
+                          <span className="ml-1 font-medium opacity-70">({deadlineInfo.text})</span>
                         )}
                       </span>
                     </EditableDate>
