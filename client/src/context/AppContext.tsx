@@ -107,7 +107,8 @@ interface AppContextType {
   updateTaskProgress: (taskId: string, progress: number) => Promise<void>;
   updateTaskDeadline: (taskId: string, newDueDate: string, newDueTime?: string) => Promise<void>;
   rescheduleTask: (taskId: string, startDate: string, dueDate: string) => Promise<void>;
-  importTasks: (tasks: ImportedTask[]) => Promise<void>;
+  importTasks: (tasks: ImportedTask[], replace?: boolean) => Promise<void>;
+  addTeamMembers: (taskId: string, userIds: string[]) => Promise<void>;
   requestTaskChanges: (taskId: string, feedback: string) => Promise<void>;
   editTask: (taskId: string, data: { title?: string; module?: string; description?: string; priority?: Task['priority'] }) => Promise<void>;
   approveTasks: (taskIds: string[]) => Promise<void>;
@@ -377,9 +378,10 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         celebrate('approved');
       });
     },
-    importTasks: async tasks => {
-      await run(() => api.importTasks(resolvedGroupId, tasks), t.importDone.replace('{n}', String(tasks.length)));
+    importTasks: async (tasks, replace) => {
+      await run(() => api.importTasks(resolvedGroupId, tasks, replace), t.importDone.replace('{n}', String(tasks.length)));
     },
+    addTeamMembers: (taskId, userIds) => quiet(run(() => api.addTeamMembers(taskId, userIds))),
     reassignTask: (taskId, assignedTo) => quiet(run(() => api.reassignTask(taskId, assignedTo))),
     rescheduleTask: (taskId, startDate, dueDate) => quiet(run(() => api.scheduleTask(taskId, startDate, dueDate))),
     updateTaskDeadline: (taskId, dueDate, dueTime) => quiet(run(() => api.updateTaskDeadline(taskId, dueDate, dueTime))),

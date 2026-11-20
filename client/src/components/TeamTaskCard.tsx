@@ -7,7 +7,9 @@ import { averageProgress } from '../lib/stats';
 import { STATUS_ORDER } from '../lib/taskStatus';
 import type { Task, User } from '../types';
 import { EditableDate } from './EditableDate';
+import { Avatar } from './Avatar';
 import { Icons } from './icons';
+import { SelectMenu } from './pickers/SelectMenu';
 import { TeamMemberRow } from './TeamMemberRow';
 
 interface TeamTaskCardProps {
@@ -19,13 +21,17 @@ interface TeamTaskCardProps {
   onProgress: (taskId: string, value: number) => Promise<void> | void;
   onOpenIndividual: () => void;
   onDelete: () => void;
+  /** Members who do not have this task yet */
+  addable: User[];
+  onAddMember: (userId: string) => void;
+  onRemoveMember: (taskId: string) => void;
   onEdit: () => void;
   /** A leader picks a new due date for everyone */
   onDeadline: (date: string) => void;
 }
 
 /** One card for a task given to several people. */
-export const TeamTaskCard: React.FC<TeamTaskCardProps> = ({ tasks, users, priority, deadline, onProgress, onOpenIndividual, onDelete, onEdit, onDeadline }) => {
+export const TeamTaskCard: React.FC<TeamTaskCardProps> = ({ tasks, users, priority, deadline, onProgress, onOpenIndividual, onDelete, addable, onAddMember, onRemoveMember, onEdit, onDeadline }) => {
   const { t, language, currentUser, isTeamLead, canContribute } = useApp();
   const [editing, setEditing] = useState<string | null>(null);
 
@@ -97,7 +103,17 @@ export const TeamTaskCard: React.FC<TeamTaskCardProps> = ({ tasks, users, priori
       <div className="rounded-lg border border-neutral-200">
         <div className="flex items-center justify-between border-b border-neutral-200 px-3 py-1.5 text-[11px] font-semibold text-neutral-500">
           <span>{t.teamTaskMembers}</span>
-          {isTeamLead && <span className="font-normal">{t.teamTaskEdit}</span>}
+          {isTeamLead && tasks.some(task => task.status !== 'approved') && (
+            <SelectMenu
+              value=""
+              label={t.teamAddMember}
+              display={`+ ${t.teamAddMember}`}
+              disabled={addable.length === 0}
+              className="inline-flex cursor-pointer items-center gap-1 text-[11px] font-semibold text-brand-ink hover:underline disabled:cursor-default disabled:opacity-40 disabled:no-underline"
+              onChange={onAddMember}
+              options={addable.map(m => ({ value: m.id, label: m.name, avatar: <Avatar name={m.name} avatar={m.avatar} className="size-6" /> }))}
+            />
+          )}
         </div>
         <ul className="max-h-72 divide-y divide-neutral-100 overflow-y-auto">
           {members.map(task => {
@@ -113,6 +129,7 @@ export const TeamTaskCard: React.FC<TeamTaskCardProps> = ({ tasks, users, priori
                 open={canEdit && (isMe || editing === task.id)}
                 onToggle={() => setEditing(editing === task.id ? null : task.id)}
                 onProgress={onProgress}
+                onRemove={isTeamLead && task.status !== 'approved' ? () => onRemoveMember(task.id) : undefined}
               />
             );
           })}

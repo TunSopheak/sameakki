@@ -11,6 +11,7 @@ export const SERVER_ERRORS_KM: Record<string, string> = {
   'Only a Super Admin can create a Team Leader.': 'មានតែ Super Admin ប៉ុណ្ណោះដែលអាចបង្កើតប្រធានក្រុមបាន។',
   'Only team leads can assign tasks.': 'មានតែប្រធានក្រុមប៉ុណ្ណោះដែលអាចចាត់តាំងកិច្ចការបាន។',
   'Only team leads can reassign tasks.': 'មានតែប្រធានក្រុមប៉ុណ្ណោះដែលអាចប្តូរអ្នកទទួលកិច្ចការបាន។',
+  'Only team leads can change who has a task.': 'មានតែប្រធានក្រុមប៉ុណ្ណោះដែលអាចបន្ថែម ឬដកអ្នកទទួលកិច្ចការបាន។',
   'An approved task cannot be reassigned.': 'កិច្ចការដែលបានអនុម័តរួចមិនអាចប្តូរអ្នកទទួលបានទេ។',
   'Only team leads can approve tasks.': 'មានតែប្រធានក្រុមប៉ុណ្ណោះដែលអាចអនុម័តកិច្ចការបាន។',
   'Only team leads can delete tasks.': 'មានតែប្រធានក្រុមប៉ុណ្ណោះដែលអាចលុបកិច្ចការបាន។',

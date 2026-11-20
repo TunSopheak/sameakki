@@ -17,6 +17,7 @@ export const ImportTasksModal: React.FC<ImportTasksModalProps> = ({ isOpen, onCl
   const { t, activeGroupMembers, importTasks } = useApp();
   const [text, setText] = useState('');
   const [submitting, setSubmitting] = useState(false);
+  const [replace, setReplace] = useState(false);
   const fileRef = useRef<HTMLInputElement>(null);
 
   useEscape(isOpen, onClose);
@@ -61,14 +62,16 @@ export const ImportTasksModal: React.FC<ImportTasksModalProps> = ({ isOpen, onCl
 
   const close = () => {
     setText('');
+    setReplace(false);
     onClose();
   };
 
   const submit = async () => {
     if (ready.length === 0 || submitting) return;
+    if (replace && !confirm(t.importReplaceConfirm.replace('{n}', String(ready.length)))) return;
     setSubmitting(true);
     try {
-      await importTasks(ready.map(row => row.task!));
+      await importTasks(ready.map(row => row.task!), replace);
       close();
     } catch {
       // The error is shown by the app; the table stays so it can be fixed
@@ -170,6 +173,14 @@ export const ImportTasksModal: React.FC<ImportTasksModalProps> = ({ isOpen, onCl
             </div>
           )}
         </div>
+
+        <label className={`mt-3 flex cursor-pointer items-start gap-2 rounded-lg p-3 text-xs ${replace ? 'bg-brand-soft' : 'bg-neutral-100'}`}>
+          <input type="checkbox" checked={replace} onChange={e => setReplace(e.target.checked)} className="mt-0.5 size-3.5 shrink-0 accent-brand" />
+          <span>
+            <span className={`block font-bold ${replace ? 'text-brand-ink' : 'text-black'}`}>{t.importReplace}</span>
+            <span className="block text-neutral-600">{t.importReplaceHint}</span>
+          </span>
+        </label>
 
         <div className="mt-4 flex items-center justify-end gap-2 border-t border-neutral-200 pt-4">
           <button onClick={close} className="cursor-pointer rounded-lg px-3 py-2 text-xs font-semibold text-neutral-600 hover:bg-neutral-100">

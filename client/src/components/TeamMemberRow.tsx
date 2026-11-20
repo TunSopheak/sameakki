@@ -3,6 +3,7 @@ import { useApp } from '../context/AppContext';
 import { STATUS_STYLE, statusLabels } from '../lib/taskStatus';
 import type { Task, User } from '../types';
 import { Avatar } from './Avatar';
+import { Icons } from './icons';
 import { TaskProgress } from './TaskProgress';
 
 interface TeamMemberRowProps {
@@ -13,13 +14,16 @@ interface TeamMemberRowProps {
   open: boolean;
   onToggle: () => void;
   onProgress: (taskId: string, value: number) => Promise<void> | void;
+  /** A leader can take this person off the task */
+  onRemove?: () => void;
 }
 
-export const TeamMemberRow: React.FC<TeamMemberRowProps> = ({ task, person, isMe, canEdit, open, onToggle, onProgress }) => {
+export const TeamMemberRow: React.FC<TeamMemberRowProps> = ({ task, person, isMe, canEdit, open, onToggle, onProgress, onRemove }) => {
   const { t, isTeamLead } = useApp();
+  const name = person?.name ?? '-';
 
   return (
-    <li className={isMe ? 'bg-neutral-50' : ''}>
+    <li className={`group/member relative ${isMe ? 'bg-neutral-50' : ''}`}>
       <button
         type="button"
         disabled={!isTeamLead || !canEdit || isMe}
@@ -41,6 +45,17 @@ export const TeamMemberRow: React.FC<TeamMemberRowProps> = ({ task, person, isMe
           <span className="text-[11px] font-semibold text-neutral-500 font-mono-numbers">{task.progress}%</span>
         </span>
       </button>
+      {onRemove && (
+        <button
+          type="button"
+          title={t.teamRemoveMember.replace('{name}', name)}
+          aria-label={t.teamRemoveMember.replace('{name}', name)}
+          onClick={() => confirm(t.teamRemoveConfirm.replace('{name}', name)) && onRemove()}
+          className="absolute right-1 top-1 cursor-pointer rounded-md bg-white p-0.5 text-neutral-400 shadow-xs transition-opacity hover:text-black focus-visible:opacity-100 sm:opacity-0 sm:group-hover/member:opacity-100"
+        >
+          <Icons.close className="size-3.5" />
+        </button>
+      )}
       {task.memberNotes && <p className="line-clamp-2 px-3 pb-2 pl-12 text-[11px] text-neutral-500">{task.memberNotes}</p>}
       {open && (
         <div className="animate-rise px-3 pb-3 pl-12">

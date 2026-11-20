@@ -118,7 +118,8 @@ export const api = {
   requestTaskChanges: (taskId: string, feedback: string) => post(`/tasks/${taskId}/request-changes`, { feedback }),
   editTask: (taskId: string, data: { title?: string; module?: string; description?: string; priority?: TaskPriority }) => patch(`/tasks/${taskId}`, data),
   approveTasks: (groupId: string, taskIds: string[], feedback?: string) => post<{ count: number }>(`/groups/${groupId}/tasks/approve`, { taskIds, feedback }),
-  importTasks: (groupId: string, tasks: unknown[]) => post<{ count: number; ids: string[] }>(`/groups/${groupId}/tasks/import`, { tasks }),
+  importTasks: (groupId: string, tasks: unknown[], replace = false) => post<{ count: number; ids: string[] }>(`/groups/${groupId}/tasks/import`, { tasks, replace }),
+  addTeamMembers: (taskId: string, assigneeIds: string[]) => post<{ count: number }>(`/tasks/${taskId}/team-members`, { assigneeIds }),
   updateTaskStatus: (taskId: string, status: Exclude<TaskStatus, 'approved'>, memberNotes?: string) =>
     patch(`/tasks/${taskId}/status`, { status, memberNotes }),
   updateTaskProgress: (taskId: string, progress: number, memberNotes?: string) =>

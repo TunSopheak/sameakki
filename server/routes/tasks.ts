@@ -169,7 +169,63 @@ tasksRouter.post('/groups/:groupId/tasks', async (req, res) => {
   res.status(201).json({ id: ids[0], ids });
 });
 
-const importSchema = z.object({ tasks: z.array(createTaskSchema).min(1).max(200) });
+// Add people to a team task. A single task becomes a team task. Each new person starts at 0%.
+const addMembersSchema = z.object({ assigneeIds: z.array(z.string().uuid()).min(1).max(200) });
+
+tasksRouter.post('/tasks/:taskId/team-members', async (req, res) => {
+  const user = req.user!;
+  const db = await getDb();
+  const { task, access } = await loadTask(db, user, req.params.taskId);
+  assertWritable(access);
+  assert(access.canLead, 'Only team leads can change who has a task.');
+  const input = addMembersSchema.parse(req.body);
+
+  const added = await db.transaction(async tx => {
+    const batchId: string = task.batch_id ?? randomUUID();
+    if (!task.batch_id) await tx.query('UPDATE tasks SET batch_id = $2 WHERE id = $1', [task.id, batchId]);
+    const { rows: have } = await tx.query('SELECT assigned_to FROM tasks WHERE batch_id = $1 AND is_active = 1', [batchId]);
+    const taken = new Set(have.map((r: any) => r.assigned_to));
+
+    let count = 0;
+    for (const userId of new Set(input.assigneeIds)) {
+      if (taken.has(userId)) continue;
+      const person = await loadAssignee(tx, task.group_id, userId);
+      const { rows } = await tx.query(
+        `INSERT INTO tasks (group_id, title, module, description, assigned_to, assigned_by, priority, due_date, due_time, start_date, batch_id)
+         VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11) RETURNING id`,
+        [task.group_id, task.title, task.module, task.description, userId, user.id, task.priority, task.due_date, task.due_time, task.start_date, batchId]
+      );
+      await logActivity(tx, user, {
+        groupId: task.group_id,
+        type: 'task_assigned',
+        targetId: rows[0].id,
+        targetTitle: task.title,
+        description: `added ${person.name} to task "${task.title}"`,
+        descriptionKm: `បានបន្ថែម ${person.name} ទៅកិច្ចការ "${task.title}"`,
+      });
+      if (userId !== user.id) {
+        await notify(tx, {
+          userId,
+          type: 'task_assigned',
+          groupId: task.group_id,
+          targetId: rows[0].id,
+          actorName: user.name,
+          params: { title: task.title, dueDate: task.due_date },
+        });
+      }
+      count++;
+    }
+    return count;
+  });
+
+  res.status(201).json({ count: added });
+});
+
+const importSchema = z.object({
+  tasks: z.array(createTaskSchema).min(1).max(200),
+  // Remove the current tasks first (approved work is kept)
+  replace: z.boolean().default(false),
+});
 
 // Many tasks at once (from a spreadsheet). All are created, or none.
 tasksRouter.post('/groups/:groupId/tasks/import', async (req, res) => {
@@ -178,9 +234,22 @@ tasksRouter.post('/groups/:groupId/tasks/import', async (req, res) => {
   const access = await getGroupAccess(db, user, req.params.groupId);
   assertWritable(access);
   assert(access.canLead, 'Only team leads can assign tasks.');
-  const { tasks } = importSchema.parse(req.body);
+  const { tasks, replace } = importSchema.parse(req.body);
 
   const ids = await db.transaction(async tx => {
+    if (replace) {
+      const { rows } = await tx.query(`UPDATE tasks SET is_active = 0 WHERE group_id = $1 AND is_active = 1 AND status <> 'approved' RETURNING id`, [
+        access.groupId,
+      ]);
+      await logActivity(tx, user, {
+        groupId: access.groupId,
+        type: 'task_edited',
+        targetId: access.groupId,
+        targetTitle: '',
+        description: `replaced the plan: removed ${rows.length} tasks, importing ${tasks.length}`,
+        descriptionKm: `បានជំនួសផែនការ៖ លុប ${rows.length} កិច្ចការ នាំចូល ${tasks.length}`,
+      });
+    }
     const all: string[] = [];
     for (const input of tasks) all.push(...(await createTasksIn(tx, user, access.groupId, input)));
     return all;

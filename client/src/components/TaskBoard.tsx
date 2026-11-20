@@ -49,6 +49,7 @@ export const TaskBoard: React.FC<TaskBoardProps> = ({
     approveTasks,
     reassignTask,
     deleteTask,
+    addTeamMembers,
     t,
     language,
   } = useApp();
@@ -444,6 +445,9 @@ export const TaskBoard: React.FC<TaskBoardProps> = ({
                   onProgress={(id, value) => updateTaskProgress(id, value)}
                   onOpenIndividual={() => setBatchFilter(task.batchId!)}
                   onDelete={() => deleteTeamTask(task.batchId!)}
+                  addable={assignableMembers.filter(m => !row.team!.some(item => item.assignedTo === m.id))}
+                  onAddMember={id => addTeamMembers(task.id, [id])}
+                  onRemoveMember={id => deleteTask(id)}
                   onDeadline={date => updateTaskDeadline(task.id, date)}
                   onEdit={() => setEditing({ task: row.team!.find(item => item.status !== 'approved') ?? task, size: row.team!.length })}
                 />
