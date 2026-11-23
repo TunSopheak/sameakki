@@ -23,12 +23,13 @@ export const TeamMemberRow: React.FC<TeamMemberRowProps> = ({ task, person, isMe
   const name = person?.name ?? '-';
 
   return (
-    <li className={`group/member relative ${isMe ? 'bg-neutral-50' : ''}`}>
+    <li className={`group/member ${isMe ? 'bg-neutral-50' : ''}`}>
+      <div className="flex items-stretch">
       <button
         type="button"
         disabled={!isTeamLead || !canEdit || isMe}
         onClick={onToggle}
-        className="flex w-full items-center gap-2.5 px-3 py-2 text-left enabled:cursor-pointer enabled:hover:bg-neutral-50"
+        className="flex min-w-0 flex-1 items-center gap-2.5 px-3 py-2.5 text-left enabled:cursor-pointer enabled:hover:bg-neutral-50 sm:py-2"
       >
         <Avatar name={person?.name ?? '?'} avatar={person?.avatar} className="size-7 shrink-0" />
         <span className="min-w-0 flex-1">
@@ -51,11 +52,12 @@ export const TeamMemberRow: React.FC<TeamMemberRowProps> = ({ task, person, isMe
           title={t.teamRemoveMember.replace('{name}', name)}
           aria-label={t.teamRemoveMember.replace('{name}', name)}
           onClick={() => confirm(t.teamRemoveConfirm.replace('{name}', name)) && onRemove()}
-          className="absolute right-1 top-1 cursor-pointer rounded-md bg-white p-0.5 text-neutral-400 shadow-xs transition-opacity hover:text-black focus-visible:opacity-100 sm:opacity-0 sm:group-hover/member:opacity-100"
+          className="flex w-10 shrink-0 cursor-pointer items-center justify-center text-neutral-400 transition-colors hover:bg-neutral-100 hover:text-black focus-visible:opacity-100 sm:w-8 sm:opacity-0 sm:group-hover/member:opacity-100"
         >
-          <Icons.close className="size-3.5" />
+          <Icons.close className="size-4 sm:size-3.5" />
         </button>
       )}
+      </div>
       {task.memberNotes && <p className="line-clamp-2 px-3 pb-2 pl-12 text-[11px] text-neutral-500">{task.memberNotes}</p>}
       {open && (
         <div className="animate-rise px-3 pb-3 pl-12">

@@ -50,7 +50,7 @@ export const TeamTaskCard: React.FC<TeamTaskCardProps> = ({ tasks, users, priori
   );
 
   return (
-    <div className="lift flex h-full flex-col gap-4 rounded-xl border border-neutral-200 bg-white p-5 shadow-xs">
+    <div className="lift flex h-full flex-col gap-4 rounded-xl border border-neutral-200 bg-white p-4 shadow-xs sm:p-5">
       <div className="space-y-2">
         <div className="flex items-center justify-between gap-2">
           <div className="flex min-w-0 items-center gap-1.5">
@@ -63,7 +63,7 @@ export const TeamTaskCard: React.FC<TeamTaskCardProps> = ({ tasks, users, priori
           <div className="flex items-center gap-2">
             <span className={`rounded-lg px-2 py-0.5 text-[11px] uppercase ${priority.className}`}>{priority.label}</span>
             {isTeamLead && tasks.some(task => task.status !== 'approved') && (
-              <button type="button" onClick={onEdit} title={t.editTask} aria-label={t.editTask} className="cursor-pointer p-0.5 text-neutral-400 transition-colors hover:text-black">
+              <button type="button" onClick={onEdit} title={t.editTask} aria-label={t.editTask} className="-m-1 cursor-pointer p-1.5 text-neutral-400 transition-colors hover:text-black sm:m-0 sm:p-0.5">
                 <Icons.edit className="size-3.5" />
               </button>
             )}
@@ -72,7 +72,8 @@ export const TeamTaskCard: React.FC<TeamTaskCardProps> = ({ tasks, users, priori
                 type="button"
                 onClick={() => confirm(t.teamTaskDeleteConfirm.replace('{n}', String(tasks.length))) && onDelete()}
                 title={t.delete}
-                className="cursor-pointer p-0.5 text-neutral-400 transition-colors hover:text-black"
+                aria-label={t.delete}
+                className="-m-1 cursor-pointer p-1.5 text-neutral-400 transition-colors hover:text-black sm:m-0 sm:p-0.5"
               >
                 <Icons.remove className="size-3.5" />
               </button>
@@ -109,7 +110,7 @@ export const TeamTaskCard: React.FC<TeamTaskCardProps> = ({ tasks, users, priori
               label={t.teamAddMember}
               display={`+ ${t.teamAddMember}`}
               disabled={addable.length === 0}
-              className="inline-flex cursor-pointer items-center gap-1 text-[11px] font-semibold text-brand-ink hover:underline disabled:cursor-default disabled:opacity-40 disabled:no-underline"
+              className="-my-1 inline-flex cursor-pointer items-center gap-1 py-1.5 text-[11px] font-semibold text-brand-ink hover:underline disabled:cursor-default disabled:opacity-40 disabled:no-underline"
               onChange={onAddMember}
               options={addable.map(m => ({ value: m.id, label: m.name, avatar: <Avatar name={m.name} avatar={m.avatar} className="size-6" /> }))}
             />
@@ -136,23 +137,25 @@ export const TeamTaskCard: React.FC<TeamTaskCardProps> = ({ tasks, users, priori
         </ul>
       </div>
 
-      <div className="mt-auto flex items-center justify-between gap-2 border-t border-neutral-100 pt-3 text-xs">
+      <div className="mt-auto flex flex-wrap items-center justify-between gap-x-3 gap-y-2 border-t border-neutral-100 pt-3 text-xs">
         <EditableDate
           value={first.dueDate}
           canEdit={isTeamLead && tasks.some(task => task.status !== 'approved')}
           onSave={onDeadline}
-          className={`gap-1.5 rounded-lg px-2 py-0.5 text-xs font-semibold transition-colors ${
+          className={`max-w-full gap-1.5 rounded-lg px-2.5 py-1.5 text-xs font-semibold transition-colors sm:px-2 sm:py-0.5 ${
             deadline?.overdue ? 'bg-brand-soft text-brand-ink hover:bg-brand/20' : 'bg-neutral-100 text-black hover:bg-neutral-200'
           }`}
         >
           <Icons.date className="size-3.5 shrink-0" />
-          <span className="whitespace-nowrap">
-            {formatDateShort(first.dueDate, language)}
-            {first.dueTime ? ` · ${first.dueTime}` : ''}
-            {deadline && <span className="ml-1 font-medium opacity-70">({deadline.text})</span>}
+          <span className="min-w-0">
+            <span className="whitespace-nowrap">
+              {formatDateShort(first.dueDate, language)}
+              {first.dueTime ? ` · ${first.dueTime}` : ''}
+            </span>
+            {deadline && <span className="ml-1 whitespace-nowrap font-medium opacity-70">({deadline.text})</span>}
           </span>
         </EditableDate>
-        <button type="button" onClick={onOpenIndividual} className="cursor-pointer font-semibold text-brand-ink hover:underline">
+        <button type="button" onClick={onOpenIndividual} className="cursor-pointer py-1.5 font-semibold text-brand-ink hover:underline sm:py-0">
           {t.teamTaskOpen}
         </button>
       </div>

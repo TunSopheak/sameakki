@@ -467,7 +467,7 @@ export const TaskBoard: React.FC<TaskBoardProps> = ({
             return (
               <div
                 key={task.id}
-                className="lift flex h-full flex-col gap-4 rounded-xl border border-neutral-200 bg-white p-5 shadow-xs"
+                className="lift flex h-full flex-col gap-4 rounded-xl border border-neutral-200 bg-white p-4 shadow-xs sm:p-5"
               >
                 <div className="space-y-2">
                   <div className="flex items-center justify-between gap-2">
@@ -489,7 +489,7 @@ export const TaskBoard: React.FC<TaskBoardProps> = ({
                       {isTeamLead && task.status !== 'approved' && (
                         <button
                           onClick={() => setEditing({ task, size: 1 })}
-                          className="text-neutral-400 hover:text-black p-0.5 transition-colors cursor-pointer"
+                          className="-m-1 cursor-pointer p-1.5 text-neutral-400 transition-colors hover:text-black sm:m-0 sm:p-0.5"
                           title={t.editTask}
                           aria-label={t.editTask}
                         >
@@ -504,8 +504,9 @@ export const TaskBoard: React.FC<TaskBoardProps> = ({
                               deleteTask(task.id);
                             }
                           }}
-                          className="text-neutral-400 hover:text-black p-0.5 transition-colors cursor-pointer"
+                          className="-m-1 cursor-pointer p-1.5 text-neutral-400 transition-colors hover:text-black sm:m-0 sm:p-0.5"
                           title={t.delete}
+                          aria-label={t.delete}
                         >
                           <Icons.remove className="size-3.5" />
                         </button>
@@ -576,7 +577,7 @@ export const TaskBoard: React.FC<TaskBoardProps> = ({
                         value={assignableMembers.some(m => m.id === task.assignedTo) ? task.assignedTo : ''}
                         label={t.taskAssignTo}
                         display={t.reassignTask}
-                        className="inline-flex items-center gap-1 text-[11px] font-semibold text-neutral-500 transition-colors hover:text-black"
+                        className="inline-flex items-center gap-1 py-1.5 text-[11px] font-semibold text-neutral-500 transition-colors hover:text-black sm:py-0"
                         onChange={id => reassignTask(task.id, id)}
                         options={assignableMembers.map(m => ({
                           value: m.id,
@@ -591,18 +592,20 @@ export const TaskBoard: React.FC<TaskBoardProps> = ({
                       value={task.dueDate}
                       canEdit={isTeamLead && task.status !== 'approved'}
                       onSave={date => updateTaskDeadline(task.id, date)}
-                      className={`ml-auto gap-1.5 rounded-lg px-2 py-0.5 text-xs font-semibold transition-colors ${
+                      className={`ml-auto max-w-full gap-1.5 rounded-lg px-2.5 py-1.5 text-xs font-semibold transition-colors sm:px-2 sm:py-0.5 ${
                         deadlineInfo.isOverdue && task.status !== 'approved' && task.status !== 'ready_for_review'
                           ? 'bg-brand-soft text-brand-ink hover:bg-brand/20'
                           : 'bg-neutral-100 text-black hover:bg-neutral-200'
                       }`}
                     >
                       <Icons.date className="size-3.5 shrink-0" />
-                      <span className="whitespace-nowrap">
-                        {formatDateShort(task.dueDate, language)}
-                        {task.dueTime ? ` · ${task.dueTime}` : ''}
+                      <span className="min-w-0">
+                        <span className="whitespace-nowrap">
+                          {formatDateShort(task.dueDate, language)}
+                          {task.dueTime ? ` · ${task.dueTime}` : ''}
+                        </span>
                         {task.status !== 'approved' && task.status !== 'ready_for_review' && (
-                          <span className="ml-1 font-medium opacity-70">({deadlineInfo.text})</span>
+                          <span className="ml-1 whitespace-nowrap font-medium opacity-70">({deadlineInfo.text})</span>
                         )}
                       </span>
                     </EditableDate>
