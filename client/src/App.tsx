@@ -129,19 +129,15 @@ const MainApp: React.FC = () => {
 
         <footer className="border-t border-neutral-200 bg-white pb-24 pt-6 text-xs text-neutral-500 lg:pb-6">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row items-center justify-between gap-4">
-            <div className="flex items-center gap-2">
+            <div className="flex flex-wrap items-center justify-center gap-x-2 gap-y-1 text-center sm:justify-start sm:text-left">
               <img src="/khmer/flag-of-cambodia.svg" alt="" width="24" height="15" className="flag-kh" />
               <span className="font-bold text-black">{APP_NAME}</span>
               <span className="rounded-full bg-neutral-100 px-2 py-0.5 text-[11px] font-semibold text-neutral-600 font-mono-numbers" title={t.versionLabel}>v{APP_VERSION}</span>
-              <span>·</span>
-              <span>
-                {t.footerTagline}
-              </span>
+              <span className="hidden sm:inline">·</span>
+              <span className="basis-full sm:basis-auto">{t.footerTagline}</span>
             </div>
-            <div className="flex items-center gap-4">
-              <span>
-                {currentUser.name} ({currentUser.email})
-              </span>
+            <div className="max-w-full break-words text-center sm:text-right">
+              {currentUser.name} ({currentUser.email})
             </div>
           </div>
         </footer>

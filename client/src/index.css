@@ -74,6 +74,12 @@ html.dark .angkor-watermark {
 }
 
 @layer base {
+  /* Nothing may push the page sideways on a phone (it also widens fixed bars such as the tab bar) */
+  html,
+  body {
+    overflow-x: clip;
+  }
+
   body {
     font-family: var(--font-sans);
     color: var(--color-black);

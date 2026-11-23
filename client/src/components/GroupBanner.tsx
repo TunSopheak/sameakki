@@ -105,7 +105,7 @@ export const GroupBanner: React.FC<GroupBannerProps> = ({
 
                 {showGroupSwitcher && (
                   <div
-                    className="absolute left-0 mt-1.5 w-80 bg-white rounded-xl shadow-2xl border border-neutral-200 py-2 z-50 text-left"
+                    className="absolute left-0 mt-1.5 w-80 max-w-[calc(100vw-2rem)] bg-white rounded-xl shadow-2xl border border-neutral-200 py-2 z-50 text-left"
                     onMouseLeave={() => setShowGroupSwitcher(false)}
                   >
                     <div className="px-3 py-1.5 border-b border-neutral-100 flex items-center justify-between">
