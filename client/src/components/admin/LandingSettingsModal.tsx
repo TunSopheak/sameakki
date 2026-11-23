@@ -100,7 +100,7 @@ export const LandingSettingsModal: React.FC<{ onClose: () => void }> = ({ onClos
             <fieldset className="space-y-4">
               <legend className="mb-1 text-xs font-bold uppercase tracking-wide text-neutral-500">{t.landingStudentPlan}</legend>
 
-              <div className="grid gap-4 sm:grid-cols-2">
+              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                 <label className="block">
                   <span className="mb-1 block text-xs font-bold text-black">{t.landingPrice}</span>
                   <input value={form.studentPrice} maxLength={LANDING_LIMITS.price} onChange={e => set('studentPrice', e.target.value)} placeholder="$4" className={fieldClass} />

@@ -287,27 +287,27 @@ export const OverviewDashboard: React.FC<OverviewDashboardProps> = ({
                 {t.allTasksDone}
               </div>
             ) : (
-              <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
+              <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-3">
                 {urgentTasks.map(({ task, team }) => {
                   const assignee = activeGroupMembers.find(m => m.id === task.assignedTo);
                   return (
                     <div
                       key={task.id}
-                      className="p-3 bg-neutral-50 rounded-lg space-y-1.5"
+                      className="min-w-0 p-3 bg-neutral-50 rounded-lg space-y-1.5"
                     >
-                      <div className="flex items-center justify-between text-xs">
-                        <span className="font-semibold text-[11px] uppercase tracking-wider text-black">
+                      <div className="flex items-center justify-between gap-2 text-xs">
+                        <span className="min-w-0 truncate font-semibold text-[11px] uppercase tracking-wider text-black">
                           {task.module}
                         </span>
-                        <span className="font-mono-numbers text-[11px] text-neutral-500">
+                        <span className="shrink-0 font-mono-numbers text-[11px] text-neutral-500">
                           {task.dueDate}
                         </span>
                       </div>
                       <h4 className="text-xs font-bold text-black truncate">
                         {task.title}
                       </h4>
-                      <div className="flex items-center justify-between text-[11px] text-neutral-600 pt-1">
-                        <span>{team ? `${t.teamTask} · ${t.teamTaskPeople.replace('{n}', String(team.length))}` : assignee?.name}</span>
+                      <div className="flex items-center justify-between gap-2 text-[11px] text-neutral-600 pt-1">
+                        <span className="min-w-0 truncate">{team ? `${t.teamTask} · ${t.teamTaskPeople.replace('{n}', String(team.length))}` : assignee?.name}</span>
                         <span className="font-semibold text-black">{team ? `${averageProgress(team)}%` : statusLabel[task.status]}</span>
                       </div>
                     </div>

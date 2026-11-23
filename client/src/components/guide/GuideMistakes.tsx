@@ -22,7 +22,7 @@ export const GuideMistakes: React.FC<GuideMistakesProps> = ({ items, wrongLabel,
   <ul className="space-y-3">
     {items.map(item => (
       <li key={item.wrong} className="space-y-2">
-        <div className="grid gap-2 sm:grid-cols-2">
+        <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
           <Sample label={wrongLabel} text={item.wrong} />
           <Sample label={rightLabel} text={item.right} good />
         </div>

@@ -82,7 +82,7 @@ export const TaskDetailPanel: React.FC<TaskDetailPanelProps> = ({ task, assignee
         <ExpandableText text={taskDescription(task.description)} lines={4} className="text-sm leading-relaxed text-neutral-600" />
       </div>
 
-      <div className="mt-4 grid items-end gap-3 sm:grid-cols-[1fr_1fr_auto]">
+      <div className="mt-4 grid grid-cols-1 items-end gap-3 sm:grid-cols-[1fr_1fr_auto]">
         <div className="block">
           <span className="mb-1 block text-xs font-bold">{t.taskStartDate}</span>
           <DatePicker value={start} disabled={!canEdit} onChange={changeStart} className={dateField} />

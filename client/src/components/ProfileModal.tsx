@@ -95,7 +95,7 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({ isOpen, onClose }) =
           </div>
 
           <div className="space-y-4 overflow-y-auto px-5 py-5">
-            <div className="grid gap-4 sm:grid-cols-2">
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
               {field(t.memberName, <input required value={name} onChange={e => setName(e.target.value)} className={input} />)}
               {field(t.khmerName, <input value={nameKm} onChange={e => setNameKm(e.target.value)} className={input} />)}
             </div>
